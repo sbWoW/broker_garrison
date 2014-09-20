@@ -41,7 +41,7 @@ local GARRISON_CURRENCY = 824;
 --local Garrison = CreateFrame("frame")
 --LibStub("AceEvent-3.0"):Embed(Garrison)
 
-Garrison.dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(L[ADDON_NAME], 
+Garrison.dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME, 
   { type = "data source", 
    label = L["Broker Garrison"], 
 	icon = "Interface\\Icons\\Inv_Garrison_Resource",
@@ -392,9 +392,9 @@ do
 				tooltip:SetCell(row, 2, ("%s"):format(Garrison:getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
 				tooltip:SetCell(row, 3, ("%s %s"):format(currencyIcon, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
 				
-				tooltip:SetCell(row, 4, Garrison:getColoredString(("Total: %s"):format(numMissionsTotal), colors.lightGray))
-				tooltip:SetCell(row, 5, Garrison:getColoredString(("In Progress: %s"):format(numMissionsInProgress), colors.lightGray))
-				tooltip:SetCell(row, 6, Garrison:getColoredString(("Complete: %s"):format(numMissionsCompleted), colors.lightGray))
+				tooltip:SetCell(row, 4, Garrison:getColoredString((L["Total: %s"]):format(numMissionsTotal), colors.lightGray))
+				tooltip:SetCell(row, 5, Garrison:getColoredString((L["In Progress: %s"]):format(numMissionsInProgress), colors.lightGray))
+				tooltip:SetCell(row, 6, Garrison:getColoredString((L["Complete: %s"]):format(numMissionsCompleted), colors.lightGray))
 						
 				tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, ("%s:%s"):format(realmName, playerName))
 				tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, playerData.expanded)
@@ -419,7 +419,7 @@ do
 						tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
 						
 						if (timeLeft == 0) then
-							tooltip:SetCell(row, 4, Garrison:getColoredString("Complete!", colors.green), nil, "RIGHT", 3)
+							tooltip:SetCell(row, 4, Garrison:getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
 						else							
 							tooltip:SetCell(row, 4, ("%s%s"):format(
 								Garrison:getColoredString(("%s | "):format(FormattedSeconds(missionData.duration)), colors.lightGray),
