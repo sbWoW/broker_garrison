@@ -1,21 +1,42 @@
+local ADDON_NAME, private = ...
+
+local BrokerGarrison = LibStub('AceAddon-3.0'):NewAddon(ADDON_NAME, 'AceConsole-3.0', 'AceEvent-3.0', 'AceTimer-3.0')
+local Garrison = BrokerGarrison
+
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
-local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale( "Broker_Garrison")
+local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale(ADDON_NAME)
 local LibQTip = LibStub('LibQTip-1.0')
-local L_GOLD = L["g"]
-local L_SILVER = L["s"]
-local L_COPPER = L["c"]
+local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+
+local _G = getfenv(0)
 
 
-local Garrison = CreateFrame("frame")
-LibStub("AceEvent-3.0"):Embed(Garrison)
+local math = _G.math
+local string = _G.string
+local table = _G.table
+local print = _G.print
+local pairs = _G.pairs
+local ipairs = _G.ipairs
 
-Garrison.dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(L["Broker_Garrison"], 
+local DEBUG = true
+
+local timers = {}
+
+local InterfaceOptionsFrameAddOns = _G.InterfaceOptionsFrameAddOns
+local OptionsListButtonToggle_OnClick = _G.OptionsListButtonToggle_OnClick
+
+
+--local Garrison = CreateFrame("frame")
+--LibStub("AceEvent-3.0"):Embed(Garrison)
+
+Garrison.dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(L[ADDON_NAME], 
   { type = "data source", 
    label = L["Broker Garrison"], 
-	icon = "Interface\\garrison_building_salvageyard",
-	text = "5",
+	icon = "Interface\\Icons\\Inv_Garrison_Resource",
+	text = "Garrison: Missions",
    })
 
+local ldb_object = Garrison.dataobj
 
 local charInfo = {
 	playerName = UnitName("player"),
@@ -24,6 +45,16 @@ local charInfo = {
 	playerLevel = UnitLevel("player"),
 	realmName = GetRealmName(),
 }	
+
+local unitColor = {}
+local SECONDS_PER_DAY = 24 * 60 * 60
+local SECONDS_PER_HOUR = 60 * 60
+
+local ICON_MINUS = [[|TInterface\MINIMAP\UI-Minimap-ZoomOutButton-Up:16:16|t]]
+local ICON_MINUS_DOWN = [[|TInterface\MINIMAP\UI-Minimap-ZoomOutButton-Down:16:16|t]]
+
+local ICON_PLUS = [[|TInterface\MINIMAP\UI-Minimap-ZoomInButton-Up:16:16|t]]
+local ICON_PLUS_DOWN = [[|TInterface\MINIMAP\UI-Minimap-ZoomInButton-Down:16:16|t]]
 
 
 local function pairsByKeys(t,f)
@@ -42,10 +73,7 @@ end
 
 local function returnchars()
 	local a = {}
-	for name,value in pairsByKeys(Broker_GarrisonDB.data[charInfo.realmName].Alliance) do
-		table.insert(a,name)
-	end
-	for name,value in pairsByKeys(Broker_GarrisonDB.data[charInfo.realmName].Horde) do
+	for name,value in pairsByKeys(Broker_GarrisonDB.data[charInfo.realmName]) do
 		table.insert(a,name)
 	end
 	table.sort(a)
@@ -54,111 +82,12 @@ end
 
 local function deletechar(char)
 	if not char or char == nil or char == "" then return nil end
-	for factionName,factionTable in pairs(Broker_GarrisonDB.data[charInfo.realmName]) do	
-		for name,value in pairsByKeys(factionTable) do
-			if name == char then
-				Broker_GarrisonDB.data[charInfo.realmName][charInfo.factionName][charInfo.playerName] = nil
-				print("Broker_Garrison: "..char.." deleted.")
-			end
+	for name,value in pairsByKeys(Broker_GarrisonDB.data[charInfo.realmName]) do
+		if name == char then
+			Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName] = nil
+			print(ADDON_NAME..char.." deleted.")
 		end
 	end
-end
-
-
-local sorting = {
-	["Time left"] = L["Time left"],
-	["Name"] = L["Name"],
-}
-
-local options = {
-	name = L["Broker Garrison"],
-	type = "group",
-	args = {
-		confdesc = {
-			order = 1,
-			type = "description",
-			name = L["Simple instance-lock+vp/jp display for LDB\n"],
-			cmdHidden = true,
-		},
-		showCoinIcons = {
-			order = 10, 
-			type = "toggle", 
-			width = "full",
-			name = L["Compress LFR display"],
-			desc = L["Display LFR information as one column"],
-			get = function() return true end,
-			set = function(_,v) local val = v end,
-		},
-		deletechar = {
-			name = L["Delete char"],
-			desc = L["Delete the selected char"],
-			order = 100,
-			type = "select",
-			values = returnchars,
-			set = function(info, val) local t=returnchars(); deletechar(t[val]); Garrison:UpdateConfig() end,
-			get = function(info) return nil end
-		},		
-		todoText = {
-			order = 505,
-			type = "description",
-			name = "TODO: MORE OPTIONS!!!11",
-			cmdHidden = true,
-		},			
-		aboutHeader = {
-			order = 900,
-			type = "header",
-			name = "About",
-			cmdHidden = true,
-		},
-		about = {
-			order = 910,
-			type = "description",
-			name = "Author: "..sbi:getColoredUnitName("Smb","PRIEST").." <EU-Khaz'Goroth>\nAddon-idea/inspiration: "..sbi:getColoredUnitName("Mordac","ROGUE").." <EU-Khaz'Goroth>",
-			cmdHidden = true,
-		},		
-	}
-}	
-   
-LibStub("AceConfig-3.0"):RegisterOptionsTable(L["Broker Garrison"], options)
-LibStub("AceConfigDialog-3.0"):AddToBlizOptions(L["Broker Garrison"])
-
-local toolTipRef
-
-function Garrison:UpdateConfig() 
-	if not Broker_GarrisonConfig then 
-		Broker_GarrisonConfig = { 		
-			Sorting = "Name",
-			SortReverse = false,
-			ShowAllCharacters = false,
-        }
-  	end
-	
-	if not Broker_GarrisonDB or not Broker_GarrisonDB.data then
-		Broker_GarrisonDB = {			
-			data = {},
-		}
-	end
-	if not Broker_GarrisonDB.data[charInfo.realmName] then
-		Broker_GarrisonDB.data[charInfo.realmName] = {}
-	end
-
-	if (not Broker_GarrisonDB.data[charInfo.realmName]["Horde"] or not Broker_GarrisonDB.data[charInfo.realmName]["Alliance"]) then
-		Broker_GarrisonDB.data[charInfo.realmName] = {}
-		Broker_GarrisonDB.data[charInfo.realmName]["Horde"] = {}
-		Broker_GarrisonDB.data[charInfo.realmName]["Alliance"] = {}		
-	end
-
-	if (not Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerFaction][charInfo.playerName]) then
-		Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerFaction][charInfo.playerName] = {
-			lfr = {},
-			dungeon = {},
-			raid = {},
-			currency = {}, -- VP/JP/...?
-			info = charInfo,
-		}
-	end
-	
-	Garrison:Update()
 end
 
 
@@ -188,108 +117,139 @@ function Garrison:getColoredTooltipString(text, conditionTable)
 	return retText
 end
 
-
-local function GetTipAnchor(frame)
-	local x,y = frame:GetCenter()
-	if not x or not y then return "TOPLEFT", "BOTTOMLEFT" end
-	local hhalf = (x > UIParent:GetWidth()*2/3) and "RIGHT" or (x < UIParent:GetWidth()/3) and "LEFT" or ""
-	local vhalf = (y > UIParent:GetHeight()/2) and "TOP" or "BOTTOM"
-	return vhalf..hhalf, frame, (vhalf == "TOP" and "BOTTOM" or "TOP")..hhalf
+function Garrison:getColoredString(text, color)
+	return string.format("|cff%02x%02x%02x%s",color.r*255,color.g*255,color.b*255, text)	
 end
 
-function Garrison.dataobj.OnLeave()
-   -- Release the tooltip
-   LibQTip:Release(toolTipRef)
-   toolTipRef = nil
+local function FormattedSeconds(seconds)
+	local negative = ""
+
+	if not seconds then
+		seconds = 0
+	end
+
+	if seconds < 0 then
+		negative = "-"
+		seconds = -seconds
+	end
+	local L_DAY_ONELETTER_ABBR = _G.DAY_ONELETTER_ABBR:gsub("%s*%%d%s*", "")
+
+	if not seconds or seconds >= SECONDS_PER_DAY * 36500 then -- 100 years
+		return ("%s**%s **:**"):format(negative, L_DAY_ONELETTER_ABBR)
+	elseif seconds >= SECONDS_PER_DAY then
+		return ("%s%d%s %d:%02d"):format(negative, seconds / SECONDS_PER_DAY, L_DAY_ONELETTER_ABBR, math.fmod(seconds / SECONDS_PER_HOUR, 24), math.fmod(seconds / 60, 60))
+	elseif seconds >= 3600 then
+		return ("%s%d:%02d h"):format(negative, seconds / SECONDS_PER_HOUR, math.fmod(seconds / 60, 60))		
+	else
+		return ("%s%d:%02d min"):format(negative, seconds / 60, math.fmod(seconds, 60))
+	end
 end
 
 
-function Garrison:setTooltipText(tooltip, row, col, text)
-	tooltip:SetCell(row, col, text, nil, "CENTER")
-end
+local sorting = {
+	["Time left"] = L["Time left"],
+	["Name"] = L["Name"],
+}
 
-
-local next = next
-function Garrison.dataobj.OnEnter(self)
-	local tooltip = LibQTip:Acquire("BrokerGarrisonTooltip", 4, "LEFT", "RIGHT", "RIGHT", "RIGHT")
-	toolTipRef = tooltip
+local options = {
+	name = L["Broker Garrison"],
+	type = "group",
+	args = {
+		confdesc = {
+			order = 1,
+			type = "description",
+			name = L["Simple garrison mission display for LDB\n"],
+			cmdHidden = true,
+		},
+		deletechar = {
+			name = L["Delete char"],
+			desc = L["Delete the selected char"],
+			order = 100,
+			type = "select",
+			values = returnchars,
+			set = function(info, val) local t=returnchars(); deletechar(t[val]); Garrison:UpdateConfig() end,
+			get = function(info) return nil end
+		},		
+		todoText = {
+			order = 505,
+			type = "description",
+			name = "TODO: MORE OPTIONS!!!11",
+			cmdHidden = true,
+		},			
+		aboutHeader = {
+			order = 900,
+			type = "header",
+			name = "About",
+			cmdHidden = true,
+		},
+		about = {
+			order = 910,
+			type = "description",
+			name = "Author: "..Garrison:getColoredUnitName("Smb","PRIEST").." <EU-Khaz'Goroth>",
+			cmdHidden = true,
+		},		
+	}
+}	
    
-	--row, _ = tooltip:AddHeader("Broker_Garrison")
-	local name, playerObj
-	local headerTable = {}	
-	local columnTable = {}	
-	local col = 1
-		
-	headerTable[col] = "Character"
-	col = col + 1	
+LibStub("AceConfig-3.0"):RegisterOptionsTable(ADDON_NAME, options)
+LibStub("AceConfigDialog-3.0"):AddToBlizOptions(ADDON_NAME)
 
-	local row, _ = tooltip:AddLine()
+local toolTipRef
 
-	for hCol, hName in pairs(headerTable) do
-		if (hCol % 2 == 0) then
-			tooltip:SetColumnColor(hCol, 0.25, 0.25, 0.25)			
-		else
-			tooltip:SetColumnColor(hCol, 0, 0, 0)
-		end
-		Garrison:setTooltipText(tooltip, row, hCol, hName)
-	end
-
-
-	for name,playerObj in pairs(Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerFaction]) do
-		if playerObj ~= nil then
-			row, _ = tooltip:AddSeparator()			
-			row, _ = tooltip:AddLine()
-			tooltip:SetCell(row, 1, Garrison:getColoredUnitName(playerObj.info.name, playerObj.info.class))			
-			local col = 2
-
-			if(playerObj.missions ~= nil) then
-
-				for missionId, missionObj in pairs(playerObj.missions) do
-					
-					Garrison:setTooltipText(tooltip, row, 1,  string.format("%s: ", missionObj.name))
-					Garrison:setTooltipText(tooltip, row, 2,  string.format("%s", missionObj.timeLeft))
-					Garrison:setTooltipText(tooltip, row, 3,  string.format("%s: ", missionObj.duration))
-
-				end
-			end
-		end
-	end
-
-	tooltip:AddLine(" ")
-	
-
-	
-   tooltip:SmartAnchorTo(self)
-   
-   tooltip:Show()
+function Garrison:OnInitialize()
+	print("OnInitialize")
 end
 
-
-function sbi:testDump()
-	for name,playerObj in pairs(Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerFaction]) do
-		if playerObj ~= nil then
-			print(unpack({Garrison:getColoredUnitName(playerObj.info.name, playerObj.info.class)}))
-
-			row = row + 1
-
-			if(playerObj.missions ~= nil) then
-
-				for missionId, missionObj in pairs(playerObj.missions) do
-					print(unpack({string.format("%s: ", missionObj.name), 
-						string.format("%s", missionObj.timeLeft),
-						string.format("%s", missionObj.duration)}))
-
-					row = row + 1
-
-				end
-			end
-		end
+function Garrison:UpdateConfig() 
+	if not Broker_GarrisonConfig then 
+		Broker_GarrisonConfig = {	
+			Sorting = "Name",
+			SortReverse = false,
+			ShowAllCharacters = false,
+		}
+  	end
+	
+	if not Broker_GarrisonDB or not Broker_GarrisonDB.data then
+		Broker_GarrisonDB = {			
+			data = {},
+		}
 	end
+	if not Broker_GarrisonDB.data[charInfo.realmName] then
+		Broker_GarrisonDB.data[charInfo.realmName] = {}
+	end
+
+
+	if (not Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName]) then
+		Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName] = {
+			missions = {},
+			expanded = true,
+			info = charInfo,
+		}
+	end
+
+	if (not Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName]["missions"]) then		
+		Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName]["missions"] = {}
+	end
+	
+	--Garrison:Update()
 end
 
+local function tableSize(T) 
+	local count = 0
+	if T then
+		for _ in pairs(T) do count = count + 1 end
+	end
+	return count
+end
 
 local function round(num, idp)
 	return tonumber(string.format("%." .. (idp or 0) .. "f", num))
+end
+
+local function debugPrint(text) 
+	if(DEBUG) then
+		print(("%s: %s"):format(ADDON_NAME, text))
+	end
 end
 
 function Garrison:getData()
@@ -297,21 +257,305 @@ function Garrison:getData()
 end
 
 
-function Garrison:Update()
+function Garrison:GetPlayerMissionCount(missionCount, missions)
+	local now = _G.time()
+
+	local numMissionsPlayer = tableSize(missions)
+
+	if numMissionsPlayer > 0 then
+		for missionID, missionData in pairs(missions) do
+			local timeLeft = math.max(0, missionData.duration - (now - missionData.start))
+			if (timeLeft == 0) then
+				missionCount.complete = missionCount.complete + 1
+			else
+				missionCount.inProgress = missionCount.inProgress + 1
+			end	
+		end
+		missionCount.total = missionCount.total + numMissionsPlayer
+	end	
+end
+
+function Garrison:GetMissionCount(paramRealmName, paramPlayerName)	
+	local missionCount = {
+		total = 0,
+		inProgress = 0,
+		complete = 0,
+	}
+
+	if paramRealmName and paramPlayerName then		
+		Garrison:GetPlayerMissionCount(missionCount, Broker_GarrisonDB.data[paramRealmName][paramPlayerName].missions)
+	else 
+		for realmName, realmData in pairs(Broker_GarrisonDB.data) do		
+			for playerName, playerData in pairs(realmData) do									
+				Garrison:GetPlayerMissionCount(missionCount, playerData.missions)
+			end
+		end
+	end
+
+	return missionCount.total, missionCount.inProgress, missionCount.complete
+end
+
+
+local DrawTooltip
+do
+	local NUM_TOOLTIP_COLUMNS = 7
+	local tooltip
+	local LDB_anchor
+
+	local function ExpandButton_OnMouseUp(tooltip_cell, realm_and_character)
+		local realm, character_name = (":"):split(realm_and_character, 2)
+
+		Broker_GarrisonDB.data[realm][character_name].expanded = not Broker_GarrisonDB.data[realm][character_name].expanded
+		DrawTooltip(LDB_anchor)
+	end
+
+	local function ExpandButton_OnMouseDown(tooltip_cell, is_expanded)
+		local line, column = tooltip_cell:GetPosition()
+		tooltip:SetCell(line, column, is_expanded and ICON_MINUS_DOWN or ICON_PLUS_DOWN)
+	end
+
+	local function Tooltip_OnRelease(self)
+		tooltip = nil
+		LDB_anchor = nil
+	end	
+
+	function DrawTooltip(anchor_frame)
+		if not anchor_frame then
+			return
+		end
+		LDB_anchor = anchor_frame
 	
-	Broker_GarrisonDB.data[charInfo.realmName][charInfo.faction][charInfo.playerName].missions = C_Garrison.GetInProgressMissions()
-	Broker_GarrisonDB.data[charInfo.realmName][charInfo.faction][charInfo.playerName].updateTime = time()
+		if not tooltip then
+			tooltip = LibQTip:Acquire("BrokerGarrisonTooltip", NUM_TOOLTIP_COLUMNS, "LEFT", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER", "CENTER")
+			tooltip.OnRelease = Tooltip_OnRelease
+			tooltip:EnableMouse(true)
+			tooltip:SmartAnchorTo(anchor_frame)
+			tooltip:SetAutoHideDelay(0.25, anchor_frame)
+			tooltip:SetScale(1)
+		end
+		local now = _G.time()
+
+		tooltip:Clear()
+		tooltip:SetCellMarginH(0)
+		tooltip:SetCellMarginV(1)
+
+		local name, playerObj
+		local headerTable = {}	
+		local columnTable = {}	
+		local col = 1
+			
+		local row, column = tooltip:AddHeader()
+		tooltip:SetCell(row, 1, "Broker Garrison", "CENTER", NUM_TOOLTIP_COLUMNS)
+		tooltip:AddSeparator()
+
+		row = tooltip:AddLine(" ", "Name", "Total", "In Progress", "Complete")
+		tooltip:SetLineColor(row, 1, 1, 1, 0.25)
+		tooltip:AddSeparator()
+
+		local realmName, realmData, playerName, playerData, missionID, missionData
+
+		for realmName, realmData in pairs(Broker_GarrisonDB.data) do
+			for playerName, playerData in pairs(realmData) do				
+
+				local numMissionsTotal, numMissionsInProgress, numMissionsCompleted = Garrison:GetMissionCount(realmName, playerName)
+				--local numMissions = tableSize(playerData.missions)					
+				row = tooltip:AddLine()
+					
+				tooltip:SetCell(row, 1, playerData.expanded and ICON_MINUS or ICON_PLUS)
+				tooltip:SetCell(row, 2, Garrison:getColoredUnitName(playerData.info.playerName, playerData.info.playerClass))
+				tooltip:SetCell(row, 3, ("%s"):format(numMissionsTotal))
+				tooltip:SetCell(row, 4, ("%s"):format(numMissionsInProgress))
+				tooltip:SetCell(row, 5, ("%s"):format(numMissionsCompleted))
+						
+				tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, ("%s:%s"):format(realmName, playerName))
+				tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, playerData.expanded)
+
+				if playerData.expanded and numMissionsTotal > 0 then
+					tooltip:AddSeparator()
+					row = tooltip:AddLine(" ")
+					tooltip:SetLineColor(row, 1, 1, 1, 0.25)
+					tooltip:SetCell(row, 2, "Name", "CENTER", 2)
+					tooltip:SetCell(row, 4, "timeLeft")
+					tooltip:SetCell(row, 5, "duration")
+					tooltip:AddSeparator()							
+
+					for missionID, missionData in pairs(playerData.missions) do
+						local timeLeft = math.max(0, missionData.duration - (now - missionData.start))
+
+						row = tooltip:AddLine(" ")
+							local conditionTable = {
+							completed = {
+								condition = (timeLeft == 0),
+								color = { r = 0, g = 1, b = 0 }
+							},
+							inprogress = {
+								condition = (timeLeft > 0),
+								color = { r = 1, g = 1, b = 1 }
+							},
+						}
+						
+						tooltip:SetCell(row, 2, missionData.name, "LEFT", 2)
+						
+						if (timeLeft == 0) then
+							tooltip:SetCell(row, 4, Garrison:getColoredTooltipString("Complete!", conditionTable), 2)
+						else							
+							tooltip:SetCell(row, 4, Garrison:getColoredTooltipString(FormattedSeconds(timeLeft), conditionTable))
+							tooltip:SetCell(row, 5, ("%s"):format(FormattedSeconds(missionData.duration)))
+						end
+					end
+
+					tooltip:AddSeparator()
+				end
+			end
+		end	   
+	   tooltip:Show()		
+	end
+
+	function ldb_object:OnEnter()
+		DrawTooltip(self)
+	end
+
+	function ldb_object:OnLeave()
+	end
+
+	function ldb_object:OnClick(self, button)
+		debugPrint("button: "..button)
+		if button == "LeftButton" then
 	
+		else	
+			for i, button in ipairs(InterfaceOptionsFrameAddOns.buttons) do
+				if button.element and button.element.name == ADDON_NAME and button.element.collapsed then
+					OptionsListButtonToggle_OnClick(button.toggle)
+				end
+			end									
+			if AceConfigDialog.OpenFrames[ADDON_NAME] then
+				AceConfigDialog:Close(ADDON_NAME)
+			else
+				AceConfigDialog:Open(ADDON_NAME)
+			end	
+		end		
+	end
+end
+
+
+function Garrison:Update(...)
+	
+
+	--Broker_GarrisonDB.data[charInfo.realmName][charInfo.faction][charInfo.playerName].missions = C_Garrison.GetInProgressMissions()
+	--Broker_GarrisonDB.data[charInfo.realmName][charInfo.faction][charInfo.playerName].updateTime = time()
+
+	--print("event: "..event)
+
+	--local args = {...}
+	local i  = 0
+	local arg = {n=select('#',...),...}
+
+	local event = arg[1]
+	local missionID = arg[2]
+
+	--if(#args > 0) then
+--		for i = 1,arg.n do
+--			local v = arg[i]
+--			-print(j)
+--			if v == nil then
+--				print(i..": no-arg")
+--			else
+--				print(i..": "..v)
+--			end
+			--i = i + 1
+		--end
+	--print(unpack(arg))
+
+	if (event == "GARRISON_MISSION_STARTED") then
+
+		for key,garrisonMission in pairs(C_Garrison.GetInProgressMissions()) do
+			--garrisonMission.durationSeconds
+			
+
+			if (garrisonMission.missionID == missionID) then
+				local mission = {
+					id = garrisonMission.missionID,
+					name = garrisonMission.name,
+					start = time(),
+					duration = garrisonMission.durationSeconds,
+				}
+
+				Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
+
+				debugPrint("Added Mission: "..missionID)
+			elseif (not Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then				
+				-- Not current mission but Mission not found - record
+
+				local mission = {
+					id = garrisonMission.missionID,
+					name = garrisonMission.name,
+					start = time(),
+					duration = garrisonMission.durationSeconds,
+					timeLeft = garrisonMission.timeLeft,
+				}
+
+				Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
+
+			end
+
+		end
+	end
+
+	if (event == "GARRISON_MISSION_COMPLETED") then
+		if (Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then				
+			debugPrint("Removed Mission: "..missionID)
+			Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
+		end
+	end
+	if (event == "GARRISON_MISSION_FINISHED") then
+
+	end
+
+	Garrison:UpdateIcon()
 
 	if tipshown then dataobj.OnEnter(tipshown) end
 end
 
+function Garrison:UpdateIcon()	
+
+	local numMissionsTotal, numMissionsInProgress, numMissionsCompleted = Garrison:GetMissionCount(nil, nil)
+
+	local conditionTable = {
+		completed = {
+			condition = (numMissionsTotal > 0 and numMissionsCompleted > 0),
+			color = { r = 0, g = 1, b = 0 }
+		},
+		inprogress = {
+			condition = (numMissionsTotal > 0 and numMissionsCompleted == 0),
+			color = { r = 1, g = 1, b = 1 }
+		},
+		nomission = {
+			condition = (numMissionsTotal == 0),
+			color = { r = 1, g = 0, b = 0 }
+		},
+	}	
+
+
+	ldb_object.text = Garrison:getColoredTooltipString(("Missions: P: %s C: %s"):format(numMissionsInProgress, numMissionsCompleted), conditionTable)
+	for name, val in pairs(conditionTable) do
+		if (val.condition) then		
+			ldb_object.iconR, ldb_object.iconG, ldb_object.iconB = val.color.r, val.color.g, val.color.b
+		end
+	end	
+end
+
+
 function Garrison:EnteringWorld()
 	Garrison:UpdateConfig()
+
+	Garrison:UpdateIcon()
+	timers.icon_update = Garrison:ScheduleRepeatingTimer("UpdateIcon", 60)
+
 end
 
 Garrison:RegisterEvent("GARRISON_MISSION_STARTED", "Update")
 Garrison:RegisterEvent("GARRISON_MISSION_COMPLETED", "Update")
+Garrison:RegisterEvent("GARRISON_MISSION_FINISHED", "Update")
 Garrison:RegisterEvent("PLAYER_LOGIN", "EnteringWorld")
 
 Garrison:UpdateConfig()
