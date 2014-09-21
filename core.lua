@@ -542,6 +542,8 @@ end
 function Garrison:UpdateCurrency()
 	local _, amount, _ = GetCurrencyInfo(GARRISON_CURRENCY);
 	Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
+
+	Garrison:UpdateIcon()
 end
 
 function Garrison:UpdateIcon()	
