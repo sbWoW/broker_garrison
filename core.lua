@@ -27,6 +27,10 @@ local COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
 local InterfaceOptionsFrameAddOns = _G.InterfaceOptionsFrameAddOns
 local OptionsListButtonToggle_OnClick = _G.OptionsListButtonToggle_OnClick
 
+local GarrisonLandingPage = _G.GarrisonLandingPage
+local ShowUIPanel = _G.ShowUIPanel
+local HideUIPanel = _G.HideUIPanel
+
 local toolTipRef
 
 local DEBUG = true
@@ -474,7 +478,25 @@ do
 
 	function ldb_object:OnClick(button)
 		if button == "LeftButton" then
-			-- Show Garrison Mission UI?!
+			if not GarrisonLandingPage then
+				debugPrint("Loading Blizzard_GarrisonUI...");
+				local loaded, reason = LoadAddOn("Blizzard_GarrisonUI")
+				if not loaded then
+					debugPrint("Blizzard_GarrisonUI not loaded: "..reason);
+				else
+					GarrisonLandingPage = _G.GarrisonLandingPage
+				end
+			end
+
+			if GarrisonLandingPage then
+				if (not GarrisonLandingPage:IsShown()) then
+					ShowUIPanel(GarrisonLandingPage);
+				else
+					HideUIPanel(GarrisonLandingPage);
+				end
+			else
+				
+			end
 		else	
 			for i, button in ipairs(InterfaceOptionsFrameAddOns.buttons) do
 				if button.element and button.element.name == ADDON_NAME and button.element.collapsed then
