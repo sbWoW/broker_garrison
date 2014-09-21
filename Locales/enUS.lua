@@ -12,3 +12,10 @@ L["Total: %s"] = true
 L["In Progress: %s"] = true
 L["Complete: %s"] = true
 L["Complete!"] = true
+
+L["Show resources"] = true
+L["Show garrison resources in LDB"] = true
+L["Show active missions"] = true
+L["Show active missions in LDB"] = true
+L["Show completed missions"] = true
+L["Show completed missions in LDB"] = true

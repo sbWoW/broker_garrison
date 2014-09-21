@@ -206,8 +206,8 @@ local options = {
 			order = 101, 
 			type = "toggle", 
 			width = "full",
-			name = L["Show currency"],
-			desc = L["Show garrison currency in LDB"],
+			name = L["Show resources"],
+			desc = L["Show garrison resources in LDB"],
 			get = function() return Broker_GarrisonConfig.showCurrency end,
 			set = function(_,v) Broker_GarrisonConfig.showCurrency = v 
 				Garrison:UpdateIcon()
