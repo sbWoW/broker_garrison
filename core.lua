@@ -10,16 +10,26 @@ local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 
 local _G = getfenv(0)
 
-
 local math = _G.math
 local string = _G.string
 local table = _G.table
 local print = _G.print
 local pairs = _G.pairs
 local ipairs = _G.ipairs
+local tonumber = _G.tonumber
+local strupper = _G.strupper
+local BreakUpLargeNumbers = _G.BreakUpLargeNumbers
+local C_Garrison = _G.C_Garrison
+local select = _G.select
+local GetCurrencyInfo = _G.GetCurrencyInfo
+local time = _G.time
+local COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
+local InterfaceOptionsFrameAddOns = _G.InterfaceOptionsFrameAddOns
+local OptionsListButtonToggle_OnClick = _G.OptionsListButtonToggle_OnClick
+
+local toolTipRef
 
 local DEBUG = true
-
 local timers = {}
 local colors = {
 	green = {r=0, g=1, b=0, a=1},
@@ -27,28 +37,8 @@ local colors = {
 	lightGray = {r=0.25, g=0.25, b=0.25, a=1},
 	darkGray = {r=0.1, g=0.1, b=0.1, a=1},
 }
-
-local COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
-
-local currencyIcon = string.format("\124TInterface\\Icons\\Inv_Garrison_Resource:%d:%d:1:0\124t", 16, 16)
-
-local InterfaceOptionsFrameAddOns = _G.InterfaceOptionsFrameAddOns
-local OptionsListButtonToggle_OnClick = _G.OptionsListButtonToggle_OnClick
-
-
 local GARRISON_CURRENCY = 824;
-
---local Garrison = CreateFrame("frame")
---LibStub("AceEvent-3.0"):Embed(Garrison)
-
-Garrison.dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME, 
-  { type = "data source", 
-   label = L["Broker Garrison"], 
-	icon = "Interface\\Icons\\Inv_Garrison_Resource",
-	text = "Garrison: Missions",
-   })
-
-local ldb_object = Garrison.dataobj
+local ICON_CURRENCY = string.format("\124TInterface\\Icons\\Inv_Garrison_Resource:%d:%d:1:0\124t", 16, 16)
 
 local charInfo = {
 	playerName = UnitName("player"),
@@ -66,6 +56,16 @@ local ICON_MINUS_DOWN = [[|TInterface\MINIMAP\UI-Minimap-ZoomOutButton-Down:16:1
 
 local ICON_PLUS = [[|TInterface\MINIMAP\UI-Minimap-ZoomInButton-Up:16:16|t]]
 local ICON_PLUS_DOWN = [[|TInterface\MINIMAP\UI-Minimap-ZoomInButton-Down:16:16|t]]
+
+
+Garrison.dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME, 
+  { type = "data source", 
+   label = L["Broker Garrison"], 
+	icon = "Interface\\Icons\\Inv_Garrison_Resource",
+	text = "Garrison: Missions",
+   })
+
+local ldb_object = Garrison.dataobj
 
 local function tableSize(T) 
 	local count = 0
@@ -196,10 +196,56 @@ local options = {
 			name = L["Garrison Mission display for LDB\n"],
 			cmdHidden = true,
 		},
+		ldbHeader = {
+			order = 100,
+			type = "header",
+			name = "LDB",
+			cmdHidden = true,
+		},		
+		showCurrency = {
+			order = 101, 
+			type = "toggle", 
+			width = "full",
+			name = L["Show currency"],
+			desc = L["Show garrison currency in LDB"],
+			get = function() return Broker_GarrisonConfig.showCurrency end,
+			set = function(_,v) Broker_GarrisonConfig.showCurrency = v 
+				Garrison:UpdateIcon()
+			end,
+		},
+
+		showProgress = {
+			order = 102, 
+			type = "toggle", 
+			width = "full",
+			name = L["Show active missions"],
+			desc = L["Show active missions in LDB"],
+			get = function() return Broker_GarrisonConfig.showProgress end,
+			set = function(_,v) Broker_GarrisonConfig.showProgress = v 
+				Garrison:UpdateIcon()
+			end,
+		},		
+		showComplete = {
+			order = 103, 
+			type = "toggle", 
+			width = "full",
+			name = L["Show completed missions"],
+			desc = L["Show completed missions in LDB"],
+			get = function() return Broker_GarrisonConfig.showComplete end,
+			set = function(_,v) Broker_GarrisonConfig.showComplete = v 
+				Garrison:UpdateIcon()
+			end,
+		},	
+		deleteHeader = {
+			order = 200,
+			type = "header",
+			name = "Data",
+			cmdHidden = true,
+		},		
 		deletechar = {
 			name = L["Delete char"],
 			desc = L["Delete the selected char"],
-			order = 100,
+			order = 201,
 			type = "select",
 			values = returnchars,
 			set = function(info, val) local t=returnchars(); deletechar(t[val]); Garrison:UpdateConfig() end,
@@ -230,20 +276,18 @@ local options = {
 LibStub("AceConfig-3.0"):RegisterOptionsTable(ADDON_NAME, options)
 LibStub("AceConfigDialog-3.0"):AddToBlizOptions(ADDON_NAME)
 
-local toolTipRef
-
-function Garrison:OnInitialize()
-	print("OnInitialize")
+function BrokerGarrison:OnInitialize()
+	debugPrint("OnInitialize!!!!")
 end
 
 function Garrison:UpdateConfig() 
-	if not Broker_GarrisonConfig then 
-		Broker_GarrisonConfig = {	
-			Sorting = "Name",
-			SortReverse = false,
-			ShowAllCharacters = false,
+	if not Broker_GarrisonConfig then
+		Broker_GarrisonConfig = {
+			showCurrency = true,
+			showProgress = true,
+			showComplete = true,
 		}
-  	end
+	end
 	
 	if not Broker_GarrisonDB or not Broker_GarrisonDB.data then
 		Broker_GarrisonDB = {			
@@ -268,12 +312,11 @@ function Garrison:UpdateConfig()
 		Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName]["missions"] = {}
 	end
 	
-	--Garrison:Update()
 end
 
 
 function Garrison:GetPlayerMissionCount(missionCount, missions)
-	local now = _G.time()
+	local now = time()
 
 	local numMissionsPlayer = tableSize(missions)
 
@@ -352,24 +395,13 @@ do
 			tooltip:SetAutoHideDelay(0.25, anchor_frame)
 			tooltip:SetScale(1)
 		end
-		local now = _G.time()
+		
+		local now = time()
+		local name, row, realmName, realmData, playerName, playerData, missionID, missionData
 
 		tooltip:Clear()
 		tooltip:SetCellMarginH(0)
 		tooltip:SetCellMarginV(0)
-
-		local name, playerObj
-		local col = 1
-			
-		--local row, column = tooltip:AddHeader()
-		--tooltip:SetCell(row, 1, "Broker Garrison", "CENTER", NUM_TOOLTIP_COLUMNS)
-		--AddSeparator(tooltip)
-
-		local row
-		--row = tooltip:AddLine(" ", L["Name"], L["Total"], L["In Progress"], L["Complete"])
-		--tooltip:SetLineColor(row, 1, 1, 1, 0.25)
-
-		local realmName, realmData, playerName, playerData, missionID, missionData
 
 		for realmName, realmData in pairsByKeys(Broker_GarrisonDB.data) do
 			row = tooltip:AddLine()
@@ -382,14 +414,12 @@ do
 				
 				local numMissionsTotal, numMissionsInProgress, numMissionsCompleted = Garrison:GetMissionCount(realmName, playerName)
 
-				--local numMissions = tableSize(playerData.missions)
 				row = tooltip:AddLine(" ")
-
 				row = tooltip:AddLine()
 
 				tooltip:SetCell(row, 1, playerData.expanded and ICON_MINUS or ICON_PLUS)
 				tooltip:SetCell(row, 2, ("%s"):format(Garrison:getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
-				tooltip:SetCell(row, 3, ("%s %s"):format(currencyIcon, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
+				tooltip:SetCell(row, 3, ("%s %s"):format(ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
 				
 				tooltip:SetCell(row, 4, Garrison:getColoredString((L["Total: %s"]):format(numMissionsTotal), colors.lightGray))
 				tooltip:SetCell(row, 5, Garrison:getColoredString((L["In Progress: %s"]):format(numMissionsInProgress), colors.lightGray))
@@ -401,9 +431,6 @@ do
 				if playerData.expanded and numMissionsTotal > 0 then
 					row = tooltip:AddLine(" ")
 					AddSeparator(tooltip)
-					--row = tooltip:AddLine(" ")
-					--tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
-					--AddSeparator(tooltip)
 
 					row = tooltip:AddLine(" ")
 					tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
@@ -446,7 +473,6 @@ do
 	end
 
 	function ldb_object:OnClick(button)
-		--debugPrint("button: "..button)
 		if button == "LeftButton" then
 			-- Show Garrison Mission UI?!
 		else	
@@ -466,38 +492,13 @@ end
 
 
 function Garrison:Update(...)
-	
-
-	--Broker_GarrisonDB.data[charInfo.realmName][charInfo.faction][charInfo.playerName].missions = C_Garrison.GetInProgressMissions()
-	--Broker_GarrisonDB.data[charInfo.realmName][charInfo.faction][charInfo.playerName].updateTime = time()
-
-	--print("event: "..event)
-
-	--local args = {...}
-	local i  = 0
 	local arg = {n=select('#',...),...}
-
 	local event = arg[1]
 	local missionID = arg[2]
-
-	--if(#args > 0) then
---		for i = 1,arg.n do
---			local v = arg[i]
---			-print(j)
---			if v == nil then
---				print(i..": no-arg")
---			else
---				print(i..": "..v)
---			end
-			--i = i + 1
-		--end
-	--print(unpack(arg))
 
 	if (event == "GARRISON_MISSION_STARTED") then
 
 		for key,garrisonMission in pairs(C_Garrison.GetInProgressMissions()) do
-			--garrisonMission.durationSeconds
-			
 
 			if (garrisonMission.missionID == missionID) then
 				local mission = {
@@ -534,13 +535,8 @@ function Garrison:Update(...)
 			Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
 		end
 	end
-	if (event == "GARRISON_MISSION_FINISHED") then
-
-	end
 
 	Garrison:UpdateIcon()
-
-	if tipshown then dataobj.OnEnter(tipshown) end
 end
 
 function Garrison:UpdateCurrency()
@@ -567,8 +563,25 @@ function Garrison:UpdateIcon()
 		},
 	}	
 
+	local ldbText = ""
 
-	ldb_object.text = Garrison:getColoredTooltipString(("Missions: "..L["In Progress: %s"].." "..L["Complete: %s"]):format(numMissionsInProgress, numMissionsCompleted), conditionTable)
+	if Broker_GarrisonConfig.showCurrency then
+		local currencyAmount = Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].currencyAmount
+		ldbText = ldbText..("%s %s"):format(BreakUpLargeNumbers(currencyAmount), ICON_CURRENCY)
+	end
+	if Broker_GarrisonConfig.showProgress then
+		ldbText = ldbText.." "..(L["In Progress: %s"]):format(numMissionsInProgress)
+	end
+	if Broker_GarrisonConfig.showComplete then
+		ldbText = ldbText.." "..(L["Complete: %s"]):format(numMissionsCompleted)
+	end	
+
+
+	if ldbText == "" then
+		ldbText = L["Missions"]
+	end
+
+	ldb_object.text = Garrison:getColoredTooltipString(ldbText, conditionTable)
 	for name, val in pairs(conditionTable) do
 		if (val.condition) then		
 			ldb_object.iconR, ldb_object.iconG, ldb_object.iconB = val.color.r, val.color.g, val.color.b
