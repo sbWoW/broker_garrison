@@ -54,7 +54,6 @@ local charInfo = {
 	playerName = UnitName("player"),
 	playerClass = UnitClass("player"),	
 	playerFaction = UnitFactionGroup("player"),
-	playerLevel = UnitLevel("player"),
 	realmName = GetRealmName(),
 }	
 
@@ -569,7 +568,7 @@ function Garrison:UpdateIcon()
 	}	
 
 
-	ldb_object.text = Garrison:getColoredTooltipString(("Missions: P: %s C: %s"):format(numMissionsInProgress, numMissionsCompleted), conditionTable)
+	ldb_object.text = Garrison:getColoredTooltipString(("Missions: "..L["In Progress: %s"].." "..L["Complete: %s"]):format(numMissionsInProgress, numMissionsCompleted), conditionTable)
 	for name, val in pairs(conditionTable) do
 		if (val.condition) then		
 			ldb_object.iconR, ldb_object.iconG, ldb_object.iconB = val.color.r, val.color.g, val.color.b
