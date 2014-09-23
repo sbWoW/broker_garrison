@@ -1,6 +1,6 @@
 local ADDON_NAME, private = ...
 
-local BrokerGarrison = LibStub('AceAddon-3.0'):NewAddon(ADDON_NAME, 'AceConsole-3.0', 'AceEvent-3.0', 'AceTimer-3.0')
+local BrokerGarrison = LibStub('AceAddon-3.0'):NewAddon(ADDON_NAME, 'AceConsole-3.0', 'AceEvent-3.0', 'AceTimer-3.0', "LibSink-2.0", "LibToast-2.0")
 local Garrison = BrokerGarrison
 
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
@@ -33,6 +33,9 @@ local HideUIPanel = _G.HideUIPanel
 
 local toolTipRef
 
+local addonInitialized = false
+
+local CONFIG_VERSION = 1
 local DEBUG = true
 local timers = {}
 local colors = {
@@ -202,44 +205,46 @@ local options = {
 		},
 		ldbHeader = {
 			order = 100,
-			type = "header",
+			type = "group",
 			name = "LDB",
 			cmdHidden = true,
-		},		
-		showCurrency = {
-			order = 101, 
-			type = "toggle", 
-			width = "full",
-			name = L["Show resources"],
-			desc = L["Show garrison resources in LDB"],
-			get = function() return Broker_GarrisonConfig.showCurrency end,
-			set = function(_,v) Broker_GarrisonConfig.showCurrency = v 
-				Garrison:UpdateIcon()
-			end,
-		},
+			args = {
+				showCurrency = {
+					order = 101, 
+					type = "toggle", 
+					width = "full",
+					name = L["Show resources"],
+					desc = L["Show garrison resources in LDB"],
+					get = function() return Broker_GarrisonConfig.showCurrency end,
+					set = function(_,v) Broker_GarrisonConfig.showCurrency = v 
+						Garrison:Update()
+					end,
+				},
 
-		showProgress = {
-			order = 102, 
-			type = "toggle", 
-			width = "full",
-			name = L["Show active missions"],
-			desc = L["Show active missions in LDB"],
-			get = function() return Broker_GarrisonConfig.showProgress end,
-			set = function(_,v) Broker_GarrisonConfig.showProgress = v 
-				Garrison:UpdateIcon()
-			end,
-		},		
-		showComplete = {
-			order = 103, 
-			type = "toggle", 
-			width = "full",
-			name = L["Show completed missions"],
-			desc = L["Show completed missions in LDB"],
-			get = function() return Broker_GarrisonConfig.showComplete end,
-			set = function(_,v) Broker_GarrisonConfig.showComplete = v 
-				Garrison:UpdateIcon()
-			end,
-		},	
+				showProgress = {
+					order = 102, 
+					type = "toggle", 
+					width = "full",
+					name = L["Show active missions"],
+					desc = L["Show active missions in LDB"],
+					get = function() return Broker_GarrisonConfig.showProgress end,
+					set = function(_,v) Broker_GarrisonConfig.showProgress = v 
+						Garrison:Update()
+					end,
+				},		
+				showComplete = {
+					order = 103, 
+					type = "toggle", 
+					width = "full",
+					name = L["Show completed missions"],
+					desc = L["Show completed missions in LDB"],
+					get = function() return Broker_GarrisonConfig.showComplete end,
+					set = function(_,v) Broker_GarrisonConfig.showComplete = v 
+						Garrison:Update()
+					end,
+				},
+			},
+		},
 		deleteHeader = {
 			order = 200,
 			type = "header",
@@ -256,42 +261,95 @@ local options = {
 			get = function(info) return nil end,
 			width = "double",
 		},		
-		todoText = {
-			order = 505,
-			type = "description",
-			name = "TODO: MORE OPTIONS!!!11",
+		
+		notificationGroup = {
+			order = 300,
+			type = "group",
+			name = L["Notifications"],
 			cmdHidden = true,
-		},			
-		aboutHeader = {
-			order = 900,
-			type = "header",
-			name = "About",
-			cmdHidden = true,
+			args = {		
+				notificationHeader = {
+					order = 100,
+					type = "header",
+					name = L["Notifications"],
+					cmdHidden = true,
+					disabled = function() return not Broker_GarrisonConfig.notification.enabled end,
+				},
+				notificationLibSink = {
+					order = 200,
+					type = "group",
+					args = {},
+					disabled = function() return not Broker_GarrisonConfig.notification.enabled end,
+				},
+				notificationRepeatOnLoad = {
+					order = 300,
+					type = "toggle", 
+					width = "full",
+					name = L["Repeat on Load"],
+					desc = L["Shows notification on each login/ui-reload"],
+					get = function() return Broker_GarrisonConfig.notification.repeatOnLoad end,
+					set = function(_,v) Broker_GarrisonConfig.notification.repeatOnLoad = v 
+						Garrison:Update()
+					end,
+					disabled = function() return not Broker_GarrisonConfig.notification.enabled end,
+				},						
+			},
 		},
+		aboutHeader = {
+					order = 900,
+					type = "header",
+					name = "About",
+					cmdHidden = true,
+				},		
 		about = {
 			order = 910,
 			type = "description",
 			name = ("Author: %s <EU-Khaz'Goroth>\nLayout: %s <EU-Khaz'Goroth>"):format(Garrison:getColoredUnitName("Smb","PRIEST"), Garrison:getColoredUnitName("Hotaruby","DRUID")),
 			cmdHidden = true,
 		},		
+
+		todoText = {
+			order = 920,
+			type = "description",
+			name = "TODO: MORE OPTIONS!!!11",
+			cmdHidden = true,
+		},			
+
 	}
 }	
    
 LibStub("AceConfig-3.0"):RegisterOptionsTable(ADDON_NAME, options)
 LibStub("AceConfigDialog-3.0"):AddToBlizOptions(ADDON_NAME)
 
+options.notificationGroup.notificationLibSink.args.output = Garrison:GetSinkAce3OptionsDataTable()
+Garrison:SetSinkStorage(Broker_GarrisonConfig)
+
+Garrison:DefineSinkToast(L["Broker Garrison - Missions"], nil)
+
 function BrokerGarrison:OnInitialize()
 	debugPrint("OnInitialize!!!!")
 end
 
 function Garrison:UpdateConfig() 
-	if not Broker_GarrisonConfig then
+
+	if (not Broker_GarrisonConfig or not Broker_GarrisonConfig.configVersion) then
 		Broker_GarrisonConfig = {
-			showCurrency = true,
-			showProgress = true,
-			showComplete = true,
+			ldbConfig = {
+				showCurrency = true,
+				showProgress = true,
+				showComplete = true,
+			},
+			notification = {
+				enabled = true,
+				repeatOnLoad = false,
+			},
+			tooltip = {
+
+			},		
+			configVersion = CONFIG_VERSION,
 		}
 	end
+
 	
 	if not Broker_GarrisonDB or not Broker_GarrisonDB.data then
 		Broker_GarrisonDB = {			
@@ -318,6 +376,26 @@ function Garrison:UpdateConfig()
 	
 end
 
+local function FormatRealmPlayer(realmName, playerName)
+	return ("%s-%s"):format(realmName, playerName);
+end
+
+function Garrison:SendNotification(missionData)
+	self:Pour((L["Mission completed (%s): %s"]):format(FormatRealmPlayer(missionData.realmName, missionData.playerName), missionData.name), colors.green.r, colors.green.g, colors.green.b)
+
+	missionData.notification = 1 
+end 
+
+function Garrison:HandleMission(missionData, timeLeft) 
+	if timeLeft == 0 then
+		if Broker_GarrisonConfig.notifications.enabled then
+			if (missionData.notification == 0 or (addonInitialized and Broker_GarrisonConfig.notifications.repeatOnLoad)) then
+				-- Show Notification
+				Garrison:SendNotification(missionData)				
+			end
+		end
+	end
+end
 
 function Garrison:GetPlayerMissionCount(missionCount, missions)
 	local now = time()
@@ -327,6 +405,9 @@ function Garrison:GetPlayerMissionCount(missionCount, missions)
 	if numMissionsPlayer > 0 then
 		for missionID, missionData in pairs(missions) do
 			local timeLeft = math.max(0, missionData.duration - (now - missionData.start))
+			-- Do mission handling while we are at it
+			Garrison:HandleMission(missionData, timeLeft) 
+
 			if (timeLeft == 0) then
 				missionCount.complete = missionCount.complete + 1
 			else
@@ -513,7 +594,7 @@ do
 end
 
 
-function Garrison:Update(...)
+function Garrison:UpdateEvent(...)
 	local arg = {n=select('#',...),...}
 	local event = arg[1]
 	local missionID = arg[2]
@@ -528,24 +609,12 @@ function Garrison:Update(...)
 					name = garrisonMission.name,
 					start = time(),
 					duration = garrisonMission.durationSeconds,
+					notification = 0,
 				}
 
 				Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
 
 				debugPrint("Added Mission: "..missionID)
-			elseif (not Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then				
-				-- Not current mission but Mission not found - record
-
-				local mission = {
-					id = garrisonMission.missionID,
-					name = garrisonMission.name,
-					start = time(),
-					duration = garrisonMission.durationSeconds,
-					timeLeft = garrisonMission.timeLeft,
-				}
-
-				Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
-
 			end
 
 		end
@@ -558,18 +627,19 @@ function Garrison:Update(...)
 		end
 	end
 
-	Garrison:UpdateIcon()
+	Garrison:Update()
 end
 
 function Garrison:UpdateCurrency()
 	local _, amount, _ = GetCurrencyInfo(GARRISON_CURRENCY);
 	Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
 
-	Garrison:UpdateIcon()
+	Garrison:Update()
 end
 
-function Garrison:UpdateIcon()	
+function Garrison:Update()	
 
+	-- LDB Text
 	local numMissionsTotal, numMissionsInProgress, numMissionsCompleted = Garrison:GetMissionCount(nil, nil)
 
 	local conditionTable = {
@@ -611,19 +681,22 @@ function Garrison:UpdateIcon()
 			ldb_object.iconR, ldb_object.iconG, ldb_object.iconB = val.color.r, val.color.g, val.color.b
 		end
 	end	
+
+	-- First update 
+	addonInitialized = true
 end
 
 
 function Garrison:EnteringWorld()
 	Garrison:UpdateConfig()
 
-	Garrison:UpdateIcon()
-	timers.icon_update = Garrison:ScheduleRepeatingTimer("UpdateIcon", 60)
+	Garrison:Update()
+	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
 end
 
-Garrison:RegisterEvent("GARRISON_MISSION_STARTED", "Update")
-Garrison:RegisterEvent("GARRISON_MISSION_COMPLETED", "Update")
-Garrison:RegisterEvent("GARRISON_MISSION_FINISHED", "Update")
+Garrison:RegisterEvent("GARRISON_MISSION_STARTED", "UpdateEvent")
+Garrison:RegisterEvent("GARRISON_MISSION_COMPLETED", "UpdateEvent")
+Garrison:RegisterEvent("GARRISON_MISSION_FINISHED", "UpdateEvent")
 Garrison:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")
 Garrison:RegisterEvent("PLAYER_LOGIN", "EnteringWorld")
 
