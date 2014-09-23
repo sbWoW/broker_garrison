@@ -20,8 +20,8 @@ Libs\AceEvent-3.0\AceEvent-3.0.xml
 Libs\AceTimer-3.0\AceTimer-3.0.xml
 Libs\LibQTip-1.0\LibQTip-1.0.lua
 
-Libs\LibSink-2.0\LibSink-2.0.lua
-Libs\LibToast-1.0\LibToast-1.0.lua
+Libs\LibSink-2.0\lib.xml
+Libs\LibToast-1.0\lib.xml
 
 #@end-no-lib-strip@
 Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
