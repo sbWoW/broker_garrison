@@ -199,7 +199,9 @@ function Garrison:SendNotification(paramCharInfo, missionData)
 	debugPrint(notificationText)
 	self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
 
-	Toast:Spawn("BrokerGarrisonMissionCompleteToast", toastText)
+	if Broker_GarrisonConfig.notification.toastEnabled then
+		Toast:Spawn("BrokerGarrisonMissionCompleteToast", toastText)
+	end
 
 	missionData.notification = 1 
 end 
@@ -367,6 +369,12 @@ local options = {
 				aboutHeader = {
 					order = 300,
 					type = "header",
+					name = L["Toast"],
+					cmdHidden = true,
+				},					
+				aboutHeader = {
+					order = 400,
+					type = "header",
 					name = L["Output"],
 					cmdHidden = true,
 				},		
@@ -397,7 +405,7 @@ local options = {
 }	
    
 -- Fix sink config options
-options.args.notificationGroup.args.notificationLibSink.order = 400
+options.args.notificationGroup.args.notificationLibSink.order = 500
 options.args.notificationGroup.args.notificationLibSink.inline = true
 options.args.notificationGroup.args.notificationLibSink.name = ""
 options.args.notificationGroup.args.notificationLibSink.disabled = function() return not Broker_GarrisonConfig.notification.enabled end
@@ -424,6 +432,8 @@ function Garrison:UpdateConfig()
 				enabled = true,
 				repeatOnLoad = false,
 				sink = {},
+				toast = true,
+				toastPersistent = true,
 			},			
 			tooltip = {
 
@@ -461,7 +471,9 @@ function Garrison:UpdateConfig()
 	--Garrison:DefineSinkToast("BrokerGarrisonMissionsToast", nil)
 
 	Toast:Register("BrokerGarrisonMissionCompleteToast", function(toast, ...)
-		toast:MakePersistent()
+		if Broker_GarrisonConfig.notification.toastPersistent then
+			toast:MakePersistent()
+		end
 		toast:SetTitle(L["Garrison: Mission complete"])
 		--toast:SetFormattedText("%s%s|r", _G.GREEN_FONT_COLOR_CODE, ...)
 		toast:SetFormattedText(getColoredString(..., colors.green))
