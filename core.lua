@@ -359,7 +359,7 @@ local options = {
 				aboutHeader = {
 					order = 300,
 					type = "header",
-					name = "Output Options",
+					name = L["Output"],
 					cmdHidden = true,
 				},		
 				notificationLibSink = Garrison:GetSinkAce3OptionsDataTable(),				
@@ -701,7 +701,6 @@ end
 function Garrison:EnteringWorld()
 	Garrison:UpdateConfig()
 
-	Garrison:Update()
 	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
 
 	Garrison:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")

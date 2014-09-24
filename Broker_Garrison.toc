@@ -2,7 +2,7 @@
 ## Title: Broker: Garrison
 ## Notes: Display Garrison missons for all Characters
 ## Author: smb
-## Version: 0.94
+## Version: 0.95
 ## X-Category: Miscellaneous
 ## SavedVariablesPerCharacter: Broker_GarrisonConfig
 ## SavedVariables: Broker_GarrisonDB
@@ -19,7 +19,6 @@ Libs\AceLocale-3.0\AceLocale-3.0.xml
 Libs\AceEvent-3.0\AceEvent-3.0.xml
 Libs\AceTimer-3.0\AceTimer-3.0.xml
 Libs\LibQTip-1.0\LibQTip-1.0.lua
-
 Libs\LibSink-2.0\lib.xml
 Libs\LibToast-1.0\lib.xml
 
