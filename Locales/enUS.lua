@@ -19,3 +19,12 @@ L["Show active missions"] = true
 L["Show active missions in LDB"] = true
 L["Show completed missions"] = true
 L["Show completed missions in LDB"] = true
+
+L["Notifications"] = true
+L["Enable Notifications"] = true
+L["Repeat on Load"] = true
+L["Shows notification on each login/ui-reload"] = true
+L["Output"] = true
+L["Broker Garrison - Missions"] = true
+L["Mission complete (%s): %s"] = true
+L["Garrison: Mission complete"] = true

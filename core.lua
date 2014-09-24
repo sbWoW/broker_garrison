@@ -7,6 +7,7 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale(ADDON_NAME)
 local LibQTip = LibStub('LibQTip-1.0')
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
+local Toast = LibStub("LibToast-1.0")
 
 -- Local variables
 local _G = getfenv(0)
@@ -122,10 +123,6 @@ local function returnchars()
 	return a
 end
 
-local function FormatRealmPlayer(realmName, playerName)
-	return ("%s-%s"):format(realmName, playerName);
-end
-
 local function deletechar(realm_and_character)
 	local playerName, realmName = (":"):split(realm_and_character, 2)
 	if not realmName or realmName == nil or realmName == "" then return nil end
@@ -187,28 +184,39 @@ local function FormattedSeconds(seconds)
 	end
 end
 
+local function FormatRealmPlayer(paramCharInfo, colored)
+	if colored then
+		return ("%s (%s)"):format(getColoredUnitName(paramCharInfo.playerName, paramCharInfo.playerClass), paramCharInfo.realmName);
+	else		
+		return ("%s-%s"):format(paramCharInfo.playerName, paramCharInfo.realmName);
+	end
+end
 
-function Garrison:SendNotification(realmName, playerName, missionData)
-	local notificationText = (L["Mission completed (%s): %s"]):format(FormatRealmPlayer(realmName, playerName), missionData.name)
+function Garrison:SendNotification(paramCharInfo, missionData)
+	local notificationText = (L["Mission complete (%s): %s"]):format(FormatRealmPlayer(paramCharInfo, false), missionData.name)
+	local toastText = (L["%s\n\n%s"]):format(FormatRealmPlayer(paramCharInfo, true), missionData.name)
+
 	debugPrint(notificationText)
 	self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
+
+	Toast:Spawn("BrokerGarrisonMissionCompleteToast", toastText)
 
 	missionData.notification = 1 
 end 
 
-function Garrison:HandleMission(realmName, playerName, missionData, timeLeft) 
+function Garrison:HandleMission(paramCharInfo, missionData, timeLeft) 
 	if timeLeft == 0 then
 		if Broker_GarrisonConfig.notification.enabled then
 			if (missionData.notification == 0 or (not addonInitialized and Broker_GarrisonConfig.notification.repeatOnLoad)) then
 				-- Show Notification
 
-				Garrison:SendNotification(realmName, playerName, missionData)				
+				Garrison:SendNotification(paramCharInfo, missionData)				
 			end
 		end
 	end
 end
 
-function Garrison:GetPlayerMissionCount(realmName, playerName, missionCount, missions)
+function Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, missions)
 	local now = time()
 
 	local numMissionsPlayer = tableSize(missions)
@@ -217,7 +225,7 @@ function Garrison:GetPlayerMissionCount(realmName, playerName, missionCount, mis
 		for missionID, missionData in pairs(missions) do
 			local timeLeft = math.max(0, missionData.duration - (now - missionData.start))
 			-- Do mission handling while we are at it
-			Garrison:HandleMission(realmName, playerName, missionData, timeLeft) 
+			Garrison:HandleMission(paramCharInfo, missionData, timeLeft) 
 
 			if (timeLeft == 0) then
 				missionCount.complete = missionCount.complete + 1
@@ -229,19 +237,19 @@ function Garrison:GetPlayerMissionCount(realmName, playerName, missionCount, mis
 	end	
 end
 
-function Garrison:GetMissionCount(paramRealmName, paramPlayerName)	
+function Garrison:GetMissionCount(paramCharInfo)	
 	local missionCount = {
 		total = 0,
 		inProgress = 0,
 		complete = 0,
 	}
 
-	if paramRealmName and paramPlayerName then		
-		Garrison:GetPlayerMissionCount(paramRealmName, paramPlayerName, missionCount, Broker_GarrisonDB.data[paramRealmName][paramPlayerName].missions)
+	if paramCharInfo then		
+		Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, Broker_GarrisonDB.data[paramCharInfo.realmName][paramCharInfo.playerName].missions)
 	else 
 		for realmName, realmData in pairs(Broker_GarrisonDB.data) do		
 			for playerName, playerData in pairs(realmData) do									
-				Garrison:GetPlayerMissionCount(realmName, playerName, missionCount, playerData.missions)
+				Garrison:GetPlayerMissionCount(playerData.info, missionCount, playerData.missions)
 			end
 		end
 	end
@@ -355,7 +363,7 @@ local options = {
 						Garrison:Update()
 					end,
 					disabled = function() return not Broker_GarrisonConfig.notification.enabled end,
-				},
+				},		
 				aboutHeader = {
 					order = 300,
 					type = "header",
@@ -450,7 +458,16 @@ function Garrison:UpdateConfig()
 	
 
 	Garrison:SetSinkStorage(Broker_GarrisonConfig.notification.sink)
-	Garrison:DefineSinkToast(L["Broker Garrison - Missions"], nil)
+	--Garrison:DefineSinkToast("BrokerGarrisonMissionsToast", nil)
+
+	Toast:Register("BrokerGarrisonMissionCompleteToast", function(toast, ...)
+		toast:MakePersistent()
+		toast:SetTitle(L["Garrison: Mission complete"])
+		--toast:SetFormattedText("%s%s|r", _G.GREEN_FONT_COLOR_CODE, ...)
+		toast:SetFormattedText(getColoredString(..., colors.green))
+		toast:SetIconTexture([[Interface\Icons\Inv_Garrison_Resource]])
+	end)	
+
 end
 
 local DrawTooltip
@@ -511,7 +528,7 @@ do
 
 			for playerName, playerData in pairsByKeys(realmData) do				
 				
-				local numMissionsTotal, numMissionsInProgress, numMissionsCompleted = Garrison:GetMissionCount(realmName, playerName)
+				local numMissionsTotal, numMissionsInProgress, numMissionsCompleted = Garrison:GetMissionCount(playerData.info)
 
 				row = tooltip:AddLine(" ")
 				row = tooltip:AddLine()
@@ -651,7 +668,7 @@ end
 function Garrison:Update()	
 
 	-- LDB Text
-	local numMissionsTotal, numMissionsInProgress, numMissionsCompleted = Garrison:GetMissionCount(nil, nil)
+	local numMissionsTotal, numMissionsInProgress, numMissionsCompleted = Garrison:GetMissionCount(nil)
 
 	local conditionTable = {
 		completed = {
@@ -701,9 +718,11 @@ end
 function Garrison:EnteringWorld()
 	Garrison:UpdateConfig()
 
+	Garrison:Update()
+
 	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
 
-	Garrison:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")
+	Garrison:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")	
 end
 
 Garrison:RegisterEvent("GARRISON_MISSION_STARTED", "UpdateEvent")
