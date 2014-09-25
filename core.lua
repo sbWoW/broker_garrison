@@ -372,6 +372,31 @@ local options = {
 					name = L["Toast"],
 					cmdHidden = true,
 				},					
+				toastToggle = {
+					order = 310, 
+					type = "toggle", 
+					width = "full",
+					name = L["Enable Toast"],
+					desc = L["Enable Toast"],
+					get = function() return Broker_GarrisonConfig.notification.toastEnabled end,
+					set = function(_,v) Broker_GarrisonConfig.notification.toastEnabled = v 
+						Garrison:Update()
+					end,
+					disabled = function() return not Broker_GarrisonConfig.notification.enabled end,
+				},		
+				toastPersistent = {
+					order = 320, 
+					type = "toggle", 
+					width = "full",
+					name = L["Persistent Toast"],
+					desc = L["Persistent Toast"],
+					get = function() return Broker_GarrisonConfig.notification.toastPersistent end,
+					set = function(_,v) Broker_GarrisonConfig.notification.toastPersistent = v 
+						Garrison:Update()
+					end,
+					disabled = function() return not Broker_GarrisonConfig.notification.enabled 
+											or not Broker_GarrisonConfig.notification.toastEnabled end,
+				},		
 				aboutHeader = {
 					order = 400,
 					type = "header",
@@ -432,7 +457,7 @@ function Garrison:UpdateConfig()
 				enabled = true,
 				repeatOnLoad = false,
 				sink = {},
-				toast = true,
+				toastEnabled = true,
 				toastPersistent = true,
 			},			
 			tooltip = {
