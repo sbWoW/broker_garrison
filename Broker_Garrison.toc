@@ -2,7 +2,7 @@
 ## Title: Broker: Garrison
 ## Notes: Display Garrison missons for all Characters
 ## Author: smb
-## Version: 0.95
+## Version: 0.96
 ## X-Category: Miscellaneous
 ## SavedVariablesPerCharacter: Broker_GarrisonConfig
 ## SavedVariables: Broker_GarrisonDB
