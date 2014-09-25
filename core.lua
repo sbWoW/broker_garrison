@@ -1,5 +1,7 @@
 local ADDON_NAME, private = ...
 
+local LibStub = _G.LibStub
+
 local BrokerGarrison = LibStub('AceAddon-3.0'):NewAddon(ADDON_NAME, 'AceConsole-3.0', "AceHook-3.0", 'AceEvent-3.0', 'AceTimer-3.0', "LibSink-2.0", "LibToast-1.0")
 local Garrison = BrokerGarrison
 
@@ -8,6 +10,7 @@ local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale(ADDON_NAME)
 local LibQTip = LibStub('LibQTip-1.0')
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local Toast = LibStub("LibToast-1.0")
+local LSM = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 -- Local variables
 local _G = getfenv(0)
@@ -32,12 +35,19 @@ local UIParentLoadAddOn = _G.UIParentLoadAddOn
 local GarrisonLandingPage = _G.GarrisonLandingPage
 local ShowUIPanel = _G.ShowUIPanel
 local HideUIPanel = _G.HideUIPanel
+local CreateFont = _G.CreateFont
 local toolTipRef
+
+local garrisonDb
+local configDb
+local globalDb
+local DEFAULT_FONT
 
 -- Constants
 local addonInitialized = false
 local CONFIG_VERSION = 1
 local DEBUG = true
+local fonts = {}
 local timers = {}
 local colors = {
 	green = {r=0, g=1, b=0, a=1},
@@ -54,6 +64,30 @@ local ICON_PLUS_DOWN = [[|TInterface\MINIMAP\UI-Minimap-ZoomInButton-Down:16:16|
 local SECONDS_PER_DAY = 24 * 60 * 60
 local SECONDS_PER_HOUR = 60 * 60
 
+local DB_DEFAULTS = {
+	profile = {
+		ldbConfig = {
+			showCurrency = true,
+			showProgress = true,
+			showComplete = true,
+		},
+		notification = {
+			enabled = true,
+			repeatOnLoad = false,
+			sink = {},
+			toastEnabled = true,
+			toastPersistent = true,
+		},			
+		tooltip = {
+			scale = 1,
+			autoHideDelay = 0.25,
+		},		
+		configVersion = CONFIG_VERSION,
+	},
+	global = {
+		data = {}
+	}
+}
 
 -- Player info
 local charInfo = {
@@ -113,7 +147,7 @@ end
 local function returnchars()
 	local a = {}
 
-	for realmName,realmData in pairsByKeys(Broker_GarrisonDB.data) do
+	for realmName,realmData in pairsByKeys(globalDb.data) do
 		for playerName,value in pairsByKeys(realmData) do
 			table.insert(a,playerName..":"..realmName)
 		end
@@ -128,7 +162,17 @@ local function deletechar(realm_and_character)
 	if not realmName or realmName == nil or realmName == "" then return nil end
 	if not playerName or playerName == nil or playerName == "" then return nil end
 
-	Broker_GarrisonDB.data[realmName][playerName] = nil
+	globalDb.data[realmName][playerName] = nil
+
+	local lastPlayer = true
+	for realmName,realmData in pairs(globalDb.data[realmName]) do
+		lastPlayer = false
+	end
+
+	if lastPlayer then
+		globalDb.data[realmName] = nil
+	end
+
 	debugPrint(("%s deleted."):format(realm_and_character))
 end
 
@@ -192,6 +236,17 @@ local function FormatRealmPlayer(paramCharInfo, colored)
 	end
 end
 
+function Garrison:GetFonts()
+	for k in pairs(fonts) do fonts[k] = nil end
+
+	for _, name in pairs(LSM:List(LSM.MediaType.FONT)) do
+		fonts[name] = name
+	end
+	
+	return fonts
+end
+
+
 function Garrison:SendNotification(paramCharInfo, missionData)
 	local notificationText = (L["Mission complete (%s): %s"]):format(FormatRealmPlayer(paramCharInfo, false), missionData.name)
 	local toastText = ("%s\n\n%s"):format(FormatRealmPlayer(paramCharInfo, true), missionData.name)
@@ -199,7 +254,7 @@ function Garrison:SendNotification(paramCharInfo, missionData)
 	debugPrint(notificationText)
 	self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
 
-	if Broker_GarrisonConfig.notification.toastEnabled then
+	if configDb.notification.toastEnabled then
 		Toast:Spawn("BrokerGarrisonMissionCompleteToast", toastText)
 	end
 
@@ -208,8 +263,8 @@ end
 
 function Garrison:HandleMission(paramCharInfo, missionData, timeLeft) 
 	if timeLeft == 0 then
-		if Broker_GarrisonConfig.notification.enabled then
-			if (missionData.notification == 0 or (not addonInitialized and Broker_GarrisonConfig.notification.repeatOnLoad)) then
+		if configDb.notification.enabled then
+			if (missionData.notification == 0 or (not addonInitialized and configDb.notification.repeatOnLoad)) then
 				-- Show Notification
 
 				Garrison:SendNotification(paramCharInfo, missionData)				
@@ -247,9 +302,9 @@ function Garrison:GetMissionCount(paramCharInfo)
 	}
 
 	if paramCharInfo then		
-		Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, Broker_GarrisonDB.data[paramCharInfo.realmName][paramCharInfo.playerName].missions)
+		Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, globalDb.data[paramCharInfo.realmName][paramCharInfo.playerName].missions)
 	else 
-		for realmName, realmData in pairs(Broker_GarrisonDB.data) do		
+		for realmName, realmData in pairs(globalDb.data) do		
 			for playerName, playerData in pairs(realmData) do									
 				Garrison:GetPlayerMissionCount(playerData.info, missionCount, playerData.missions)
 			end
@@ -259,12 +314,6 @@ function Garrison:GetMissionCount(paramCharInfo)
 	return missionCount.total, missionCount.inProgress, missionCount.complete
 end
 
-
-
-local sorting = {
-	["Time left"] = L["Time left"],
-	["Name"] = L["Name"],
-}
 
 -- Options
 local options = {
@@ -277,7 +326,7 @@ local options = {
 			name = L["Garrison Mission display for LDB\n"],
 			cmdHidden = true,
 		},
-		ldbHeader = {
+		ldbGroup = {
 			order = 100,
 			type = "group",
 			name = "LDB",
@@ -289,8 +338,8 @@ local options = {
 					width = "full",
 					name = L["Show resources"],
 					desc = L["Show garrison resources in LDB"],
-					get = function() return Broker_GarrisonConfig.showCurrency end,
-					set = function(_,v) Broker_GarrisonConfig.showCurrency = v 
+					get = function() return configDb.ldbConfig.showCurrency end,
+					set = function(_,v) configDb.ldbConfig.showCurrency = v 
 						Garrison:Update()
 					end,
 				},
@@ -301,8 +350,8 @@ local options = {
 					width = "full",
 					name = L["Show active missions"],
 					desc = L["Show active missions in LDB"],
-					get = function() return Broker_GarrisonConfig.showProgress end,
-					set = function(_,v) Broker_GarrisonConfig.showProgress = v 
+					get = function() return configDb.ldbConfig.showProgress end,
+					set = function(_,v) configDb.ldbConfig.showProgress = v 
 						Garrison:Update()
 					end,
 				},		
@@ -312,8 +361,8 @@ local options = {
 					width = "full",
 					name = L["Show completed missions"],
 					desc = L["Show completed missions in LDB"],
-					get = function() return Broker_GarrisonConfig.showComplete end,
-					set = function(_,v) Broker_GarrisonConfig.showComplete = v 
+					get = function() return configDb.ldbConfig.showComplete end,
+					set = function(_,v) configDb.ldbConfig.showComplete = v 
 						Garrison:Update()
 					end,
 				},
@@ -331,7 +380,7 @@ local options = {
 					order = 201,
 					type = "select",
 					values = returnchars,
-					set = function(info, val) local t=returnchars(); deletechar(t[val]); Garrison:UpdateConfig() end,
+					set = function(info, val) local t=returnchars(); deletechar(t[val]) end,
 					get = function(info) return nil end,
 					width = "double",
 				},		
@@ -349,8 +398,8 @@ local options = {
 					width = "full",
 					name = L["Enable Notifications"],
 					desc = L["Enable Notifications"],
-					get = function() return Broker_GarrisonConfig.notification.enabled end,
-					set = function(_,v) Broker_GarrisonConfig.notification.enabled = v 
+					get = function() return configDb.notification.enabled end,
+					set = function(_,v) configDb.notification.enabled = v 
 						Garrison:Update()
 					end,
 				},				
@@ -360,11 +409,11 @@ local options = {
 					width = "full",
 					name = L["Repeat on Load"],
 					desc = L["Shows notification on each login/ui-reload"],
-					get = function() return Broker_GarrisonConfig.notification.repeatOnLoad end,
-					set = function(_,v) Broker_GarrisonConfig.notification.repeatOnLoad = v 
+					get = function() return configDb.notification.repeatOnLoad end,
+					set = function(_,v) configDb.notification.repeatOnLoad = v 
 						Garrison:Update()
 					end,
-					disabled = function() return not Broker_GarrisonConfig.notification.enabled end,
+					disabled = function() return not configDb.notification.enabled end,
 				},		
 				toastHeader = {
 					order = 300,
@@ -378,11 +427,11 @@ local options = {
 					width = "full",
 					name = L["Enable Toasts"],
 					desc = L["Enable Toasts"],
-					get = function() return Broker_GarrisonConfig.notification.toastEnabled end,
-					set = function(_,v) Broker_GarrisonConfig.notification.toastEnabled = v 
+					get = function() return configDb.notification.toastEnabled end,
+					set = function(_,v) configDb.notification.toastEnabled = v 
 						Garrison:Update()
 					end,
-					disabled = function() return not Broker_GarrisonConfig.notification.enabled end,
+					disabled = function() return not configDb.notification.enabled end,
 				},		
 				toastPersistent = {
 					order = 320, 
@@ -390,12 +439,12 @@ local options = {
 					width = "full",
 					name = L["Persistent Toasts"],
 					desc = L["Make Toasts persistent (no auto-hide)"],
-					get = function() return Broker_GarrisonConfig.notification.toastPersistent end,
-					set = function(_,v) Broker_GarrisonConfig.notification.toastPersistent = v 
+					get = function() return configDb.notification.toastPersistent end,
+					set = function(_,v) configDb.notification.toastPersistent = v 
 						Garrison:Update()
 					end,
-					disabled = function() return not Broker_GarrisonConfig.notification.enabled 
-											or not Broker_GarrisonConfig.notification.toastEnabled end,
+					disabled = function() return not configDb.notification.enabled 
+											or not configDb.notification.toastEnabled end,
 				},		
 				aboutHeader = {
 					order = 400,
@@ -404,6 +453,70 @@ local options = {
 					cmdHidden = true,
 				},		
 				notificationLibSink = Garrison:GetSinkAce3OptionsDataTable(),				
+			},
+		},
+		tooltipGroup = {
+			order = 100,
+			type = "group",
+			name = L["Tooltip"],
+			cmdHidden = true,
+			args = {
+				scale = {
+					order = 110,
+					type = "range",
+					width = "full",
+					name = L["Tooltip Scale"],
+					min = 0.5,
+					max = 2,
+					step = 0.01,
+					get = function()
+						return configDb.tooltip.scale or 1
+					end,
+					set = function(info, value)
+						configDb.tooltip.scale = value
+					end,
+				},
+				autoHideDelay = {
+					order = 120,
+					type = "range",
+					width = "full",
+					name = L["Auto-Hide delay"],
+					min = 0.1,
+					max = 3,
+					step = 0.01,
+					get = function()
+						return configDb.tooltip.autoHideDelay or 0.25
+					end,
+					set = function(info, value)
+						configDb.tooltip.autoHideDelay = value
+					end,
+				},
+				fontName = {
+					order = 130,
+					type = "select",
+					name = L["Font"],
+					desc = L["Font"],
+					dialogControl = "LSM30_Font",
+					values = Garrison:GetFonts(),
+					get = function() return configDb.tooltip.fontName or DEFAULT_FONT end,
+					set = function(_,v) 
+						configDb.tooltip.fontName = v
+					end,					
+				},
+				fontSize = {
+					order = 140, 
+					type = "range", 
+					min = 9,
+					max = 20,
+					step = 1,
+					width = "full",
+					name = L["Font Size"],
+					desc = L["Font Size"],
+					get = function() return configDb.tooltip.fontSize or 12 end,
+					set = function(_,v) 
+						configDb.tooltip.fontSize = v 
+					end,
+				},					
 			},
 		},
 		aboutGroup = {
@@ -426,81 +539,18 @@ local options = {
 				},
 			},
 		},
-	}
+	},
+	plugins = {},
 }	
    
--- Fix sink config options
-options.args.notificationGroup.args.notificationLibSink.order = 500
-options.args.notificationGroup.args.notificationLibSink.inline = true
-options.args.notificationGroup.args.notificationLibSink.name = ""
-options.args.notificationGroup.args.notificationLibSink.disabled = function() return not Broker_GarrisonConfig.notification.enabled end
-
--- Option and Notification init
-LibStub("AceConfig-3.0"):RegisterOptionsTable(ADDON_NAME, options)
-LibStub("AceConfigDialog-3.0"):AddToBlizOptions(ADDON_NAME)
-
-function BrokerGarrison:OnInitialize()
-	debugPrint("OnInitialize!!!!")
-end
-
-
-function Garrison:UpdateConfig() 
-
-	if (not Broker_GarrisonConfig or not Broker_GarrisonConfig.configVersion) then
-		Broker_GarrisonConfig = {
-			ldbConfig = {
-				showCurrency = true,
-				showProgress = true,
-				showComplete = true,
-			},
-			notification = {
-				enabled = true,
-				repeatOnLoad = false,
-				sink = {},
-				toastEnabled = true,
-				toastPersistent = true,
-			},			
-			tooltip = {
-
-			},		
-			configVersion = CONFIG_VERSION,
-		}
-	end
-
-	
-	if not Broker_GarrisonDB or not Broker_GarrisonDB.data then
-		Broker_GarrisonDB = {			
-			data = {},
-		}
-	end
-	if not Broker_GarrisonDB.data[charInfo.realmName] then
-		Broker_GarrisonDB.data[charInfo.realmName] = {}
-	end
-
-
-	if (not Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName]) then
-		Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName] = {
-			missions = {},
-			expanded = true,
-			info = charInfo,
-			currencyAmount = 0,
-		}
-	end
-
-	if (not Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName]["missions"]) then		
-		Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName]["missions"] = {}
-	end
-	
-
-	Garrison:SetSinkStorage(Broker_GarrisonConfig.notification.sink)
-	--Garrison:DefineSinkToast("BrokerGarrisonMissionsToast", nil)
+function Garrison:UpdateConfig() 		
+	Garrison:SetSinkStorage(configDb.notification.sink)
 
 	Toast:Register("BrokerGarrisonMissionCompleteToast", function(toast, ...)
-		if Broker_GarrisonConfig.notification.toastPersistent then
+		if configDb.notification.toastPersistent then
 			toast:MakePersistent()
 		end
 		toast:SetTitle(L["Garrison: Mission complete"])
-		--toast:SetFormattedText("%s%s|r", _G.GREEN_FONT_COLOR_CODE, ...)
 		toast:SetFormattedText(getColoredString(..., colors.green))
 		toast:SetIconTexture([[Interface\Icons\Inv_Garrison_Resource]])
 	end)	
@@ -516,7 +566,7 @@ do
 	local function ExpandButton_OnMouseUp(tooltip_cell, realm_and_character)
 		local realm, character_name = (":"):split(realm_and_character, 2)
 
-		Broker_GarrisonDB.data[realm][character_name].expanded = not Broker_GarrisonDB.data[realm][character_name].expanded
+		globalDb.data[realm][character_name].expanded = not globalDb.data[realm][character_name].expanded
 		DrawTooltip(LDB_anchor)
 	end
 
@@ -545,9 +595,17 @@ do
 			tooltip.OnRelease = Tooltip_OnRelease
 			tooltip:EnableMouse(true)
 			tooltip:SmartAnchorTo(anchor_frame)
-			tooltip:SetAutoHideDelay(0.25, anchor_frame)
-			tooltip:SetScale(1)
+			tooltip:SetAutoHideDelay(configDb.tooltip.autoHideDelay or 0.25, LDB_anchor)
+			tooltip:SetScale(configDb.tooltip.scale or 1)
+			local font = LSM:Fetch("font", configDb.tooltip.fontName or DEFAULT_FONT)
+			local fontSize = configDb.tooltip.fontSize or 12
+
+			local tmpFont = CreateFont("BrokerGarrisonTooltipFont")
+			tmpFont:SetFont(font, fontSize)
+			tooltip:SetFont(tmpFont)
 		end
+
+		toolTipRef = tooltip
 		
 		local now = time()
 		local name, row, realmName, realmData, playerName, playerData, missionID, missionData
@@ -556,7 +614,7 @@ do
 		tooltip:SetCellMarginH(0)
 		tooltip:SetCellMarginV(0)
 
-		for realmName, realmData in pairsByKeys(Broker_GarrisonDB.data) do
+		for realmName, realmData in pairsByKeys(globalDb.data) do
 			row = tooltip:AddLine()
 			tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 3)
 
@@ -677,7 +735,7 @@ function Garrison:UpdateEvent(...)
 					notification = 0,
 				}
 
-				Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
+				globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
 
 				debugPrint("Added Mission: "..missionID)
 			end
@@ -686,9 +744,9 @@ function Garrison:UpdateEvent(...)
 	end
 
 	if (event == "GARRISON_MISSION_COMPLETED") then
-		if (Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then				
+		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then				
 			debugPrint("Removed Mission: "..missionID)
-			Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
+			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
 		end
 	end
 
@@ -697,7 +755,7 @@ end
 
 function Garrison:UpdateCurrency()
 	local _, amount, _ = GetCurrencyInfo(GARRISON_CURRENCY);
-	Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
+	globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
 
 	Garrison:Update()
 end
@@ -724,14 +782,14 @@ function Garrison:Update()
 
 	local ldbText = ""
 
-	if Broker_GarrisonConfig.showCurrency then
-		local currencyAmount = Broker_GarrisonDB.data[charInfo.realmName][charInfo.playerName].currencyAmount
+	if configDb.ldbConfig.showCurrency then
+		local currencyAmount = globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount
 		ldbText = ldbText..("%s %s"):format(BreakUpLargeNumbers(currencyAmount), ICON_CURRENCY)
 	end
-	if Broker_GarrisonConfig.showProgress then
+	if configDb.ldbConfig.showProgress then
 		ldbText = ldbText.." "..(L["In Progress: %s"]):format(numMissionsInProgress)
 	end
-	if Broker_GarrisonConfig.showComplete then
+	if configDb.ldbConfig.showComplete then
 		ldbText = ldbText.." "..(L["Complete: %s"]):format(numMissionsCompleted)
 	end	
 
@@ -751,21 +809,69 @@ function Garrison:Update()
 	addonInitialized = true
 end
 
+function Garrison:OnInitialize()
+	DEFAULT_FONT = LSM:GetDefault("font")
 
-function Garrison:EnteringWorld()
+	garrisonDb = LibStub("AceDB-3.0"):New(ADDON_NAME .. "DB", DB_DEFAULTS, true)
+	globalDb = garrisonDb.global
+	configDb = garrisonDb.profile
+
+	-- Data migration
+	if _G.Broker_GarrisonDB.data then
+		globalDb.data = _G.Broker_GarrisonDB.data
+		_G.Broker_GarrisonDB.data = nil
+	end
+
+	-- DB
+	if not globalDb.data[charInfo.realmName] then
+		globalDb.data[charInfo.realmName] = {}
+	end
+
+	if (not globalDb.data[charInfo.realmName][charInfo.playerName]) then
+		globalDb.data[charInfo.realmName][charInfo.playerName] = {
+			missions = {},
+			expanded = true,
+			info = charInfo,
+			currencyAmount = 0,
+		}
+	end
+
+	if (not globalDb.data[charInfo.realmName][charInfo.playerName]["missions"]) then		
+		globalDb.data[charInfo.realmName][charInfo.playerName]["missions"] = {}
+	end
+
+	-- Fix sink config options
+	options.args.notificationGroup.args.notificationLibSink.order = 500
+	options.args.notificationGroup.args.notificationLibSink.inline = true
+	options.args.notificationGroup.args.notificationLibSink.name = ""
+	options.args.notificationGroup.args.notificationLibSink.disabled = function() return not configDb.notification.enabled end
+
+
+	options.plugins["profiles"] = {
+		profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(garrisonDb)
+	}
+	options.plugins.profiles.profiles.order = -1 -- last!
+
+
+	-- Option and Notification init
+	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(ADDON_NAME, options)
+	LibStub("AceConfigDialog-3.0"):AddToBlizOptions(ADDON_NAME)
+
 	Garrison:UpdateConfig()
 
+	Garrison:RegisterEvent("GARRISON_MISSION_STARTED", "UpdateEvent")
+	Garrison:RegisterEvent("GARRISON_MISSION_COMPLETED", "UpdateEvent")
+	Garrison:RegisterEvent("GARRISON_MISSION_FINISHED", "UpdateEvent")
+	Garrison:RegisterEvent("PLAYER_LOGIN", "EnteringWorld")
+
+end
+
+
+function Garrison:EnteringWorld()	
 	Garrison:Update()
 
 	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
 
 	Garrison:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")	
 end
-
-Garrison:RegisterEvent("GARRISON_MISSION_STARTED", "UpdateEvent")
-Garrison:RegisterEvent("GARRISON_MISSION_COMPLETED", "UpdateEvent")
-Garrison:RegisterEvent("GARRISON_MISSION_FINISHED", "UpdateEvent")
-Garrison:RegisterEvent("PLAYER_LOGIN", "EnteringWorld")
-
-Garrison:UpdateConfig()
 

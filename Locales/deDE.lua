@@ -20,7 +20,7 @@ L["Show active missions in LDB"] = "Aktive Missionen in LDB anzeigen"
 L["Show completed missions"] = "Abgeschlossene Missionen anzeigen"
 L["Show completed missions in LDB"] = "Abgeschlossene Missionen in LDB anzeigen"
 
-L["Missionen"] = true
+L["Missions"] = "Missionen"
 
 L["Notifications"] = "Benachrichtigungen"
 L["Enable Notifications"] = "Benachrichtigungen aktiv"
@@ -35,3 +35,9 @@ L["Toast Notifications"] = "Toast Benachrichtigungen"
 L["Enable Toasts"] = "Toasts aktiv"
 L["Persistent Toasts"] =  "Persistente Toasts"
 L["Make Toasts persistent (no auto-hide)"] = "Toasts nicht automatisch ausblenden"
+
+L["Tooltip"] = "Tooltip"
+L["Tooltip Scale"] = "Tooltip Skalierung"
+L["Font"] = "Schriftart"
+L["Font Size"] = "Schriftgröße"
+L["Auto-Hide delay"] = "Ausblend-Verzögerung"

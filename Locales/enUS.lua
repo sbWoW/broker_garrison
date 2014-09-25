@@ -35,3 +35,9 @@ L["Toast Notifications"] = true
 L["Enable Toasts"] = true
 L["Persistent Toasts"] =  true
 L["Make Toasts persistent (no auto-hide)"] = true
+
+L["Tooltip"] = true
+L["Tooltip Scale"] = true
+L["Font"] = true
+L["Font Size"] = true
+L["Auto-Hide delay"] = true
