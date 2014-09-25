@@ -20,6 +20,8 @@ L["Show active missions in LDB"] = "Aktive Missionen in LDB anzeigen"
 L["Show completed missions"] = "Abgeschlossene Missionen anzeigen"
 L["Show completed missions in LDB"] = "Abgeschlossene Missionen in LDB anzeigen"
 
+L["Missionen"] = true
+
 L["Notifications"] = "Benachrichtigungen"
 L["Enable Notifications"] = "Benachrichtigungen aktiv"
 L["Repeat on Load"] = "Wiederholung bei Login"

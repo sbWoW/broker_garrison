@@ -20,6 +20,8 @@ L["Show active missions in LDB"] = true
 L["Show completed missions"] = true
 L["Show completed missions in LDB"] = true
 
+L["Missions"] = true
+
 L["Notifications"] = true
 L["Enable Notifications"] = true
 L["Repeat on Load"] = true
