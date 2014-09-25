@@ -6,8 +6,7 @@
 ## X-Category: Miscellaneous
 ## SavedVariables: Broker_GarrisonDB
 ## X-Email: sb@sbuehl.com
-
-## OptionalDependencies: Ace3, LibQTip-1.0
+## OptionalDeps: Ace3, CallbackHandler-1.0, LibQTip-1.0, LibStub
 
 #@no-lib-strip@
 Libs\LibStub\LibStub.lua
@@ -33,3 +32,4 @@ Locales\enUS.lua
 Locales\deDE.lua
 
 core.lua
+config.lua

@@ -144,38 +144,6 @@ local function pairsByKeys(t,f)
 	return iter
 end
 
-local function returnchars()
-	local a = {}
-
-	for realmName,realmData in pairsByKeys(globalDb.data) do
-		for playerName,value in pairsByKeys(realmData) do
-			table.insert(a,playerName..":"..realmName)
-		end
-	end
-
-	table.sort(a)
-	return a
-end
-
-local function deletechar(realm_and_character)
-	local playerName, realmName = (":"):split(realm_and_character, 2)
-	if not realmName or realmName == nil or realmName == "" then return nil end
-	if not playerName or playerName == nil or playerName == "" then return nil end
-
-	globalDb.data[realmName][playerName] = nil
-
-	local lastPlayer = true
-	for realmName,realmData in pairs(globalDb.data[realmName]) do
-		lastPlayer = false
-	end
-
-	if lastPlayer then
-		globalDb.data[realmName] = nil
-	end
-
-	debugPrint(("%s deleted."):format(realm_and_character))
-end
-
 local function getColoredUnitName (name, class)
 	local colorUnitName
 	
@@ -314,234 +282,6 @@ function Garrison:GetMissionCount(paramCharInfo)
 	return missionCount.total, missionCount.inProgress, missionCount.complete
 end
 
-
--- Options
-local options = {
-	name = L["Broker Garrison"],
-	type = "group",
-	args = {
-		confdesc = {
-			order = 1,
-			type = "description",
-			name = L["Garrison Mission display for LDB\n"],
-			cmdHidden = true,
-		},
-		ldbGroup = {
-			order = 100,
-			type = "group",
-			name = "LDB",
-			cmdHidden = true,
-			args = {
-				showCurrency = {
-					order = 101, 
-					type = "toggle", 
-					width = "full",
-					name = L["Show resources"],
-					desc = L["Show garrison resources in LDB"],
-					get = function() return configDb.ldbConfig.showCurrency end,
-					set = function(_,v) configDb.ldbConfig.showCurrency = v 
-						Garrison:Update()
-					end,
-				},
-
-				showProgress = {
-					order = 102, 
-					type = "toggle", 
-					width = "full",
-					name = L["Show active missions"],
-					desc = L["Show active missions in LDB"],
-					get = function() return configDb.ldbConfig.showProgress end,
-					set = function(_,v) configDb.ldbConfig.showProgress = v 
-						Garrison:Update()
-					end,
-				},		
-				showComplete = {
-					order = 103, 
-					type = "toggle", 
-					width = "full",
-					name = L["Show completed missions"],
-					desc = L["Show completed missions in LDB"],
-					get = function() return configDb.ldbConfig.showComplete end,
-					set = function(_,v) configDb.ldbConfig.showComplete = v 
-						Garrison:Update()
-					end,
-				},
-			},
-		},		
-		dataGroup = {
-			order = 200,
-			type = "group",
-			name = "Data",
-			cmdHidden = true,
-			args = {
-				deletechar = {
-					name = L["Delete char"],
-					desc = L["Delete the selected char"],
-					order = 201,
-					type = "select",
-					values = returnchars,
-					set = function(info, val) local t=returnchars(); deletechar(t[val]) end,
-					get = function(info) return nil end,
-					width = "double",
-				},		
-			},
-		},
-		notificationGroup = {
-			order = 300,
-			type = "group",
-			name = L["Notifications"],
-			cmdHidden = true,
-			args = {		
-				notificationToggle = {
-					order = 100, 
-					type = "toggle", 
-					width = "full",
-					name = L["Enable Notifications"],
-					desc = L["Enable Notifications"],
-					get = function() return configDb.notification.enabled end,
-					set = function(_,v) configDb.notification.enabled = v 
-						Garrison:Update()
-					end,
-				},				
-				notificationRepeatOnLoad = {
-					order = 200,
-					type = "toggle", 
-					width = "full",
-					name = L["Repeat on Load"],
-					desc = L["Shows notification on each login/ui-reload"],
-					get = function() return configDb.notification.repeatOnLoad end,
-					set = function(_,v) configDb.notification.repeatOnLoad = v 
-						Garrison:Update()
-					end,
-					disabled = function() return not configDb.notification.enabled end,
-				},		
-				toastHeader = {
-					order = 300,
-					type = "header",
-					name = L["Toast Notifications"],
-					cmdHidden = true,
-				},					
-				toastToggle = {
-					order = 310, 
-					type = "toggle", 
-					width = "full",
-					name = L["Enable Toasts"],
-					desc = L["Enable Toasts"],
-					get = function() return configDb.notification.toastEnabled end,
-					set = function(_,v) configDb.notification.toastEnabled = v 
-						Garrison:Update()
-					end,
-					disabled = function() return not configDb.notification.enabled end,
-				},		
-				toastPersistent = {
-					order = 320, 
-					type = "toggle", 
-					width = "full",
-					name = L["Persistent Toasts"],
-					desc = L["Make Toasts persistent (no auto-hide)"],
-					get = function() return configDb.notification.toastPersistent end,
-					set = function(_,v) configDb.notification.toastPersistent = v 
-						Garrison:Update()
-					end,
-					disabled = function() return not configDb.notification.enabled 
-											or not configDb.notification.toastEnabled end,
-				},		
-				aboutHeader = {
-					order = 400,
-					type = "header",
-					name = L["Output"],
-					cmdHidden = true,
-				},		
-				notificationLibSink = Garrison:GetSinkAce3OptionsDataTable(),				
-			},
-		},
-		tooltipGroup = {
-			order = 100,
-			type = "group",
-			name = L["Tooltip"],
-			cmdHidden = true,
-			args = {
-				scale = {
-					order = 110,
-					type = "range",
-					width = "full",
-					name = L["Tooltip Scale"],
-					min = 0.5,
-					max = 2,
-					step = 0.01,
-					get = function()
-						return configDb.tooltip.scale or 1
-					end,
-					set = function(info, value)
-						configDb.tooltip.scale = value
-					end,
-				},
-				autoHideDelay = {
-					order = 120,
-					type = "range",
-					width = "full",
-					name = L["Auto-Hide delay"],
-					min = 0.1,
-					max = 3,
-					step = 0.01,
-					get = function()
-						return configDb.tooltip.autoHideDelay or 0.25
-					end,
-					set = function(info, value)
-						configDb.tooltip.autoHideDelay = value
-					end,
-				},
-				fontName = {
-					order = 130,
-					type = "select",
-					name = L["Font"],
-					desc = L["Font"],
-					dialogControl = "LSM30_Font",
-					values = Garrison:GetFonts(),
-					get = function() return configDb.tooltip.fontName or DEFAULT_FONT end,
-					set = function(_,v) 
-						configDb.tooltip.fontName = v
-					end,					
-				},
-				fontSize = {
-					order = 140, 
-					type = "range", 
-					min = 9,
-					max = 20,
-					step = 1,
-					width = "full",
-					name = L["Font Size"],
-					desc = L["Font Size"],
-					get = function() return configDb.tooltip.fontSize or 12 end,
-					set = function(_,v) 
-						configDb.tooltip.fontSize = v 
-					end,
-				},					
-			},
-		},
-		aboutGroup = {
-			order = 900,
-			type = "group",
-			name = "About",
-			cmdHidden = true,
-			args = {
-				about = {
-					order = 910,
-					type = "description",
-					name = ("Author: %s <EU-Khaz'Goroth>\nLayout: %s <EU-Khaz'Goroth>"):format(getColoredUnitName("Smb","PRIEST"), getColoredUnitName("Hotaruby","DRUID")),
-					cmdHidden = true,
-				},		
-				todoText = {
-					order = 920,
-					type = "description",
-					name = "TODO: MORE OPTIONS!!!11",
-					cmdHidden = true,
-				},
-			},
-		},
-	},
-	plugins = {},
-}	
    
 function Garrison:UpdateConfig() 		
 	Garrison:SetSinkStorage(configDb.notification.sink)
@@ -809,12 +549,12 @@ function Garrison:Update()
 	addonInitialized = true
 end
 
-function Garrison:OnInitialize()
-	DEFAULT_FONT = LSM:GetDefault("font")
-
+function Garrison:OnInitialize()	
 	garrisonDb = LibStub("AceDB-3.0"):New(ADDON_NAME .. "DB", DB_DEFAULTS, true)
 	globalDb = garrisonDb.global
 	configDb = garrisonDb.profile
+
+	self.DB = garrisonDb
 
 	-- Data migration
 	if _G.Broker_GarrisonDB.data then
@@ -840,22 +580,12 @@ function Garrison:OnInitialize()
 		globalDb.data[charInfo.realmName][charInfo.playerName]["missions"] = {}
 	end
 
-	-- Fix sink config options
-	options.args.notificationGroup.args.notificationLibSink.order = 500
-	options.args.notificationGroup.args.notificationLibSink.inline = true
-	options.args.notificationGroup.args.notificationLibSink.name = ""
-	options.args.notificationGroup.args.notificationLibSink.disabled = function() return not configDb.notification.enabled end
+	self.getColoredUnitName = getColoredUnitName
+	self.pairsByKeys = pairsByKeys
+	self.debugPrint = debugPrint
+	self.charInfo = charInfo
 
-
-	options.plugins["profiles"] = {
-		profiles = LibStub("AceDBOptions-3.0"):GetOptionsTable(garrisonDb)
-	}
-	options.plugins.profiles.profiles.order = -1 -- last!
-
-
-	-- Option and Notification init
-	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable(ADDON_NAME, options)
-	LibStub("AceConfigDialog-3.0"):AddToBlizOptions(ADDON_NAME)
+	self:SetupOptions()
 
 	Garrison:UpdateConfig()
 
