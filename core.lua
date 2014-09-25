@@ -194,7 +194,7 @@ end
 
 function Garrison:SendNotification(paramCharInfo, missionData)
 	local notificationText = (L["Mission complete (%s): %s"]):format(FormatRealmPlayer(paramCharInfo, false), missionData.name)
-	local toastText = (L["%s\n\n%s"]):format(FormatRealmPlayer(paramCharInfo, true), missionData.name)
+	local toastText = ("%s\n\n%s"):format(FormatRealmPlayer(paramCharInfo, true), missionData.name)
 
 	debugPrint(notificationText)
 	self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
@@ -366,18 +366,18 @@ local options = {
 					end,
 					disabled = function() return not Broker_GarrisonConfig.notification.enabled end,
 				},		
-				aboutHeader = {
+				toastHeader = {
 					order = 300,
 					type = "header",
-					name = L["Toast"],
+					name = L["Toast Notifications"],
 					cmdHidden = true,
 				},					
 				toastToggle = {
 					order = 310, 
 					type = "toggle", 
 					width = "full",
-					name = L["Enable Toast"],
-					desc = L["Enable Toast"],
+					name = L["Enable Toasts"],
+					desc = L["Enable Toasts"],
 					get = function() return Broker_GarrisonConfig.notification.toastEnabled end,
 					set = function(_,v) Broker_GarrisonConfig.notification.toastEnabled = v 
 						Garrison:Update()
@@ -388,8 +388,8 @@ local options = {
 					order = 320, 
 					type = "toggle", 
 					width = "full",
-					name = L["Persistent Toast"],
-					desc = L["Persistent Toast"],
+					name = L["Persistent Toasts"],
+					desc = L["Make Toasts persistent (no auto-hide)"],
 					get = function() return Broker_GarrisonConfig.notification.toastPersistent end,
 					set = function(_,v) Broker_GarrisonConfig.notification.toastPersistent = v 
 						Garrison:Update()

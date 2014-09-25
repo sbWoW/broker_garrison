@@ -28,3 +28,8 @@ L["Output"] = true
 L["Broker Garrison - Missions"] = true
 L["Mission complete (%s): %s"] = true
 L["Garrison: Mission complete"] = true
+
+L["Toast Notifications"] = true
+L["Enable Toasts"] = true
+L["Persistent Toasts"] =  true
+L["Make Toasts persistent (no auto-hide)"] = true

@@ -28,3 +28,8 @@ L["Output"] = "Ausgabe"
 L["Broker Garrison - Missions"] = "Broker Garrison - Missionen"
 L["Mission complete (%s): %s"] = "Mission Abgeschlossen (%s): %s"
 L["Garrison: Mission complete"] = "Garnision: Mission Abgeschlossen"
+
+L["Toast Notifications"] = "Toast Benachrichtigungen"
+L["Enable Toasts"] = "Toasts aktiv"
+L["Persistent Toasts"] =  "Persistente Toasts"
+L["Make Toasts persistent (no auto-hide)"] = "Toasts nicht automatisch ausblenden"
