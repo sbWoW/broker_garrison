@@ -2,7 +2,7 @@ local ADDON_NAME, private = ...
 
 local LibStub = _G.LibStub
 
-local BrokerGarrison = LibStub('AceAddon-3.0'):NewAddon(ADDON_NAME, 'AceConsole-3.0', "AceHook-3.0", 'AceEvent-3.0', 'AceTimer-3.0', "LibSink-2.0", "LibToast-1.0")
+local BrokerGarrison = LibStub('AceAddon-3.0'):NewAddon(ADDON_NAME, 'AceConsole-3.0', "AceHook-3.0", 'AceEvent-3.0', 'AceTimer-3.0', "LibSink-2.0")
 local Garrison = BrokerGarrison
 
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
@@ -63,6 +63,7 @@ local ICON_PLUS = [[|TInterface\MINIMAP\UI-Minimap-ZoomInButton-Up:16:16|t]]
 local ICON_PLUS_DOWN = [[|TInterface\MINIMAP\UI-Minimap-ZoomInButton-Down:16:16|t]]
 local SECONDS_PER_DAY = 24 * 60 * 60
 local SECONDS_PER_HOUR = 60 * 60
+local TOAST_MISSION_COMPLETE = "BrokerGarrisonMissionComplete"
 
 local DB_DEFAULTS = {
 	profile = {
@@ -223,7 +224,7 @@ function Garrison:SendNotification(paramCharInfo, missionData)
 	self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
 
 	if configDb.notification.toastEnabled then
-		Toast:Spawn("BrokerGarrisonMissionCompleteToast", toastText)
+		Toast:Spawn(TOAST_MISSION_COMPLETE, toastText)
 	end
 
 	missionData.notification = 1 
@@ -286,7 +287,7 @@ end
 function Garrison:UpdateConfig() 		
 	Garrison:SetSinkStorage(configDb.notification.sink)
 
-	Toast:Register("BrokerGarrisonMissionCompleteToast", function(toast, ...)
+	Toast:Register(TOAST_MISSION_COMPLETE, function(toast, ...)
 		if configDb.notification.toastPersistent then
 			toast:MakePersistent()
 		end
