@@ -59,10 +59,12 @@ local colors = {
 local COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
 local GARRISON_CURRENCY = 824;
 local ICON_CURRENCY = string.format("\124TInterface\\Icons\\Inv_Garrison_Resource:%d:%d:1:0\124t", 16, 16)
-local ICON_MINUS = [[|TInterface\MINIMAP\UI-Minimap-ZoomOutButton-Up:16:16|t]]
-local ICON_MINUS_DOWN = [[|TInterface\MINIMAP\UI-Minimap-ZoomOutButton-Down:16:16|t]]
-local ICON_PLUS = [[|TInterface\MINIMAP\UI-Minimap-ZoomInButton-Up:16:16|t]]
-local ICON_PLUS_DOWN = [[|TInterface\MINIMAP\UI-Minimap-ZoomInButton-Down:16:16|t]]
+
+local ICON_OPEN = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Open:%d:%d:1:0\124t", 16, 16)
+local ICON_CLOSE = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Close:%d:%d:1:0\124t", 16, 16)
+
+local ICON_OPEN_DOWN = ICON_OPEN
+local ICON_CLOSE_DOWN = ICON_CLOSE
 
 local SECONDS_PER_DAY = 24 * 60 * 60
 local SECONDS_PER_HOUR = 60 * 60
@@ -110,7 +112,7 @@ local unitColor = {}
 Garrison.dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME, 
   { type = "data source", 
    label = L["Broker Garrison"], 
-	icon = "Interface\\Icons\\Inv_Garrison_Resource",
+	icon = "Interface\\Icons\\Inv_Garrison_Resource",	
 	text = "Garrison: Missions",
    })
 
@@ -265,19 +267,16 @@ function Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, missions)
 		for missionID, missionData in pairs(missions) do
 			local timeLeft = missionData.duration - (now - missionData.start)
 
-			if missionData.start > 0 then
-				
-				-- Do mission handling while we are at it
-				Garrison:HandleMission(paramCharInfo, missionData, timeLeft) 
+			-- Do mission handling while we are at it
+			Garrison:HandleMission(paramCharInfo, missionData, timeLeft) 
 
-				if (timeLeft == 0) then
+			if missionData.start > 0 then
+				if (timeLeft <= 0) then
 					missionCount.complete = missionCount.complete + 1
 				else
 					missionCount.inProgress = missionCount.inProgress + 1
 				end	
 			else
-				Garrison:HandleMission(paramCharInfo, missionData, timeLeft) 
-
 				if missionData.start == 0 then
 					missionCount.complete = missionCount.complete + 1
 				else
@@ -339,7 +338,7 @@ do
 
 	local function ExpandButton_OnMouseDown(tooltip_cell, is_expanded)
 		local line, column = tooltip_cell:GetPosition()
-		tooltip:SetCell(line, column, is_expanded and ICON_MINUS_DOWN or ICON_PLUS_DOWN)
+		tooltip:SetCell(line, column, is_expanded and ICON_CLOSE_DOWN or ICON_OPEN_DOWN)
 	end
 
 	local function Tooltip_OnRelease(self)
@@ -395,7 +394,7 @@ do
 				row = tooltip:AddLine(" ")
 				row = tooltip:AddLine()
 
-				tooltip:SetCell(row, 1, playerData.expanded and ICON_MINUS or ICON_PLUS)
+				tooltip:SetCell(row, 1, playerData.expanded and ICON_CLOSE or ICON_OPEN)
 				tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
 				tooltip:SetCell(row, 3, ("%s %s"):format(ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
 				
@@ -422,17 +421,13 @@ do
 
 						tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
 						
-						if (timeLeft == 0) then
+						if (missionData.start == -1) then
+							tooltip:SetCell(row, 4, ("%s%s"):format(
+								getColoredString(("%s | "):format(FormattedSeconds(missionData.duration)), colors.lightGray),
+								getColoredString("~"..missionData.timeLeft, colors.white)
+							), nil, "RIGHT", 3)						
+						elseif (missionData.start == 0 or timeLeft < 0) then
 							tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
-						elseif (timeLeft < 0) then
-							if (missionData.start == 0) then
-								tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
-							else
-								tooltip:SetCell(row, 4, ("%s%s"):format(
-									getColoredString(("%s | "):format(FormattedSeconds(missionData.duration)), colors.lightGray),
-									getColoredString("~"..missionData.timeLeft, colors.white)
-								), nil, "RIGHT", 3)
-							end
 						else
 							tooltip:SetCell(row, 4, ("%s%s"):format(
 								getColoredString(("%s | "):format(FormattedSeconds(missionData.duration)), colors.lightGray),
@@ -517,13 +512,13 @@ function Garrison:UpdateUnknownMissions()
 	end
 
 	-- cleanup unknown missions
-	local missionID
-	for missionID, _ in pairs(globalDb.data[charInfo.realmName][charInfo.playerName].missions) do
-		if not activeMissions[missionID] then
-			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
-			debugPrint("Removed unknown Mission: "..missionID)
-		end
-	end
+	--local missionID
+	--for missionID, _ in pairs(globalDb.data[charInfo.realmName][charInfo.playerName].missions) do
+	--	if not activeMissions[missionID] then
+	--		globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
+	--		debugPrint("Removed unknown Mission: "..missionID)
+	--	end
+	--end
 
 end
 
