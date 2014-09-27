@@ -245,7 +245,7 @@ function Garrison:HandleMission(paramCharInfo, missionData, timeLeft)
 		end
 	end
 
-	if timeLeft == 0 or (timeLeft == -1 and missionData.start == 0) then
+	if timeLeft == 0 or (timeLeft < 0 and missionData.start == 0) then
 		if configDb.notification.enabled then
 			if (missionData.notification == 0 or (not addonInitialized and configDb.notification.repeatOnLoad)) then
 				-- Show Notification
@@ -509,7 +509,7 @@ function Garrison:UpdateUnknownMissions()
 			}
 			globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID] = mission
 
-			--debugPrint("Update untracked Mission: "..garrisonMission.missionID)
+			-- debugPrint("Update untracked Mission: "..garrisonMission.missionID)
 		end
 	end
 end
@@ -554,6 +554,9 @@ function Garrison:UpdateEvent(...)
 	if (event == "GARRISON_MISSION_FINISHED") then
 		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then
 			debugPrint("Finished Mission: "..missionID)
+			if globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start == -1 then
+				globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start = 0
+			end			
 		end
 	end
 
@@ -636,7 +639,6 @@ function Garrison:OnInitialize()
 		return
 	end
 
-
 	garrisonDb = LibStub("AceDB-3.0"):New(ADDON_NAME .. "DB", DB_DEFAULTS, true)
 	globalDb = garrisonDb.global
 	configDb = garrisonDb.profile
@@ -674,24 +676,20 @@ function Garrison:OnInitialize()
 
 	self:SetupOptions()
 
-	Garrison:UpdateConfig()
-	Garrison:UpdateCurrency()
-	Garrison:UpdateUnknownMissions()
+	Garrison:UpdateConfig()	
 
 	Garrison:RegisterEvent("GARRISON_MISSION_STARTED", "UpdateEvent")
 	Garrison:RegisterEvent("GARRISON_MISSION_COMPLETED", "UpdateEvent")
 	Garrison:RegisterEvent("GARRISON_MISSION_COMPLETE_RESPONSE", "UpdateEvent")
 	Garrison:RegisterEvent("GARRISON_MISSION_FINISHED", "UpdateEvent")
-	Garrison:RegisterEvent("PLAYER_LOGIN", "EnteringWorld")
+	Garrison:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")	
 
+	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
+	timers.icon_update = Garrison:ScheduleTimer("DelayedUpdate", 10)
 end
 
 
-function Garrison:EnteringWorld()	
-	Garrison:Update()
-
-	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
-
-	Garrison:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")	
+function Garrison:DelayedUpdate()	
+	Garrison:UpdateCurrency()
 end
 
