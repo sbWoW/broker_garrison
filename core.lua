@@ -300,7 +300,7 @@ function Garrison:GetMissionCount(paramCharInfo)
 		Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, globalDb.data[paramCharInfo.realmName][paramCharInfo.playerName].missions)
 	else 
 		for realmName, realmData in pairs(globalDb.data) do		
-			for playerName, playerData in pairs(realmData) do									
+			for playerName, playerData in pairs(realmData) do
 				Garrison:GetPlayerMissionCount(playerData.info, missionCount, playerData.missions)
 			end
 		end
@@ -494,7 +494,10 @@ end
 
 
 function Garrison:UpdateUnknownMissions()
+	local activeMissions = {}
+
 	for key,garrisonMission in pairs(C_Garrison.GetInProgressMissions()) do
+		activeMissions[garrisonMission.missionID] = true
 		-- Mission not found in Database
 		if not globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID] 
 			or globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID].start == -1 then
@@ -512,6 +515,16 @@ function Garrison:UpdateUnknownMissions()
 			-- debugPrint("Update untracked Mission: "..garrisonMission.missionID)
 		end
 	end
+
+	-- cleanup unknown missions
+	local missionID
+	for missionID, _ in pairs(globalDb.data[charInfo.realmName][charInfo.playerName].missions) do
+		if not activeMissions[missionID] then
+			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
+			debugPrint("Removed unknown Mission: "..missionID)
+		end
+	end
+
 end
 
 
