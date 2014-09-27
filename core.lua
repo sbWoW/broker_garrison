@@ -36,6 +36,7 @@ local GarrisonLandingPage = _G.GarrisonLandingPage
 local ShowUIPanel = _G.ShowUIPanel
 local HideUIPanel = _G.HideUIPanel
 local CreateFont = _G.CreateFont
+local GarrisonLandingPageMinimapButton = _G.GarrisonLandingPageMinimapButton
 local toolTipRef
 
 local garrisonDb
@@ -55,12 +56,14 @@ local colors = {
 	lightGray = {r=0.25, g=0.25, b=0.25, a=1},
 	darkGray = {r=0.1, g=0.1, b=0.1, a=1},
 }
+local COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
 local GARRISON_CURRENCY = 824;
 local ICON_CURRENCY = string.format("\124TInterface\\Icons\\Inv_Garrison_Resource:%d:%d:1:0\124t", 16, 16)
 local ICON_MINUS = [[|TInterface\MINIMAP\UI-Minimap-ZoomOutButton-Up:16:16|t]]
 local ICON_MINUS_DOWN = [[|TInterface\MINIMAP\UI-Minimap-ZoomOutButton-Down:16:16|t]]
 local ICON_PLUS = [[|TInterface\MINIMAP\UI-Minimap-ZoomInButton-Up:16:16|t]]
 local ICON_PLUS_DOWN = [[|TInterface\MINIMAP\UI-Minimap-ZoomInButton-Down:16:16|t]]
+
 local SECONDS_PER_DAY = 24 * 60 * 60
 local SECONDS_PER_HOUR = 60 * 60
 local TOAST_MISSION_COMPLETE = "BrokerGarrisonMissionComplete"
@@ -71,6 +74,7 @@ local DB_DEFAULTS = {
 			showCurrency = true,
 			showProgress = true,
 			showComplete = true,
+			hideGarrisonMinimapButton = false,
 		},
 		notification = {
 			enabled = true,
@@ -231,13 +235,23 @@ function Garrison:SendNotification(paramCharInfo, missionData)
 end 
 
 function Garrison:HandleMission(paramCharInfo, missionData, timeLeft) 
-	if timeLeft == 0 then
+	if  (timeLeft < 0 and missionData.start == -1) then
+		-- Detect completed mission
+		
+		local parsedTimeLeft = string.match(missionData.timeLeft, COMPLETED_PATTERN)
+		if (parsedTimeLeft == "0") then
+			-- 1 * 0 found in string -> assuming mission complete
+			missionData.start = 0
+		end
+	end
+
+	if timeLeft == 0 or (timeLeft == -1 and missionData.start == 0) then
 		if configDb.notification.enabled then
 			if (missionData.notification == 0 or (not addonInitialized and configDb.notification.repeatOnLoad)) then
 				-- Show Notification
 
 				Garrison:SendNotification(paramCharInfo, missionData)				
-			end
+			end			
 		end
 	end
 end
@@ -249,17 +263,29 @@ function Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, missions)
 
 	if numMissionsPlayer > 0 then
 		for missionID, missionData in pairs(missions) do
-			local timeLeft = math.max(0, missionData.duration - (now - missionData.start))
-			-- Do mission handling while we are at it
-			Garrison:HandleMission(paramCharInfo, missionData, timeLeft) 
+			local timeLeft = missionData.duration - (now - missionData.start)
 
-			if (timeLeft == 0) then
-				missionCount.complete = missionCount.complete + 1
+			if missionData.start > 0 then
+				
+				-- Do mission handling while we are at it
+				Garrison:HandleMission(paramCharInfo, missionData, timeLeft) 
+
+				if (timeLeft == 0) then
+					missionCount.complete = missionCount.complete + 1
+				else
+					missionCount.inProgress = missionCount.inProgress + 1
+				end	
 			else
-				missionCount.inProgress = missionCount.inProgress + 1
-			end	
+				Garrison:HandleMission(paramCharInfo, missionData, timeLeft) 
+
+				if missionData.start == 0 then
+					missionCount.complete = missionCount.complete + 1
+				else
+					missionCount.inProgress = missionCount.inProgress + 1
+				end
+			end			
+			missionCount.total = missionCount.total + numMissionsPlayer
 		end
-		missionCount.total = missionCount.total + numMissionsPlayer
 	end	
 end
 
@@ -388,7 +414,7 @@ do
 					tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
 
 					for missionID, missionData in pairs(playerData.missions) do
-						local timeLeft = math.max(0, missionData.duration - (now - missionData.start))
+						local timeLeft = missionData.duration - (now - missionData.start)
 
 						row = tooltip:AddLine(" ")
 						
@@ -398,7 +424,16 @@ do
 						
 						if (timeLeft == 0) then
 							tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
-						else							
+						elseif (timeLeft < 0) then
+							if (missionData.start == 0) then
+								tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
+							else
+								tooltip:SetCell(row, 4, ("%s%s"):format(
+									getColoredString(("%s | "):format(FormattedSeconds(missionData.duration)), colors.lightGray),
+									getColoredString("~"..missionData.timeLeft, colors.white)
+								), nil, "RIGHT", 3)
+							end
+						else
 							tooltip:SetCell(row, 4, ("%s%s"):format(
 								getColoredString(("%s | "):format(FormattedSeconds(missionData.duration)), colors.lightGray),
 								getColoredString(FormattedSeconds(timeLeft), colors.white)
@@ -458,6 +493,28 @@ do
 end
 
 
+function Garrison:UpdateUnknownMissions()
+	for key,garrisonMission in pairs(C_Garrison.GetInProgressMissions()) do
+		-- Mission not found in Database
+		if not globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID] 
+			or globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID].start == -1 then
+			local mission = {
+				id = garrisonMission.missionID,
+				name = garrisonMission.name,
+				start = -1,
+				duration = garrisonMission.durationSeconds,
+				notification = 0,
+				timeLeft = garrisonMission.timeLeft,
+				type = garrisonMission.type,
+			}
+			globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID] = mission
+
+			--debugPrint("Update untracked Mission: "..garrisonMission.missionID)
+		end
+	end
+end
+
+
 function Garrison:UpdateEvent(...)
 	local arg = {n=select('#',...),...}
 	local event = arg[1]
@@ -474,6 +531,8 @@ function Garrison:UpdateEvent(...)
 					start = time(),
 					duration = garrisonMission.durationSeconds,
 					notification = 0,
+					timeLeft = garrisonMission.timeLeft,
+					type = garrisonMission.type,
 				}
 
 				globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
@@ -484,10 +543,17 @@ function Garrison:UpdateEvent(...)
 		end
 	end
 
-	if (event == "GARRISON_MISSION_COMPLETED") then
+	if (event == "GARRISON_MISSION_COMPLETED") or 
+		(event == "GARRISON_MISSION_COMPLETE_RESPONSE") then
 		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then				
-			debugPrint("Removed Mission: "..missionID)
+			debugPrint("Removed Mission: "..missionID.." ("..event..")")
 			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
+		end
+	end
+
+	if (event == "GARRISON_MISSION_FINISHED") then
+		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then
+			debugPrint("Finished Mission: "..missionID)
 		end
 	end
 
@@ -502,6 +568,7 @@ function Garrison:UpdateCurrency()
 end
 
 function Garrison:Update()	
+	Garrison:UpdateUnknownMissions()
 
 	-- LDB Text
 	local numMissionsTotal, numMissionsInProgress, numMissionsCompleted = Garrison:GetMissionCount(nil)
@@ -546,11 +613,30 @@ function Garrison:Update()
 		end
 	end	
 
+	if GarrisonLandingPageMinimapButton then	
+		if GarrisonLandingPageMinimapButton:IsShown() then
+			if configDb.ldbConfig.hideGarrisonMinimapButton then
+				GarrisonLandingPageMinimapButton:Hide()
+			end
+		else
+			if not configDb.ldbConfig.hideGarrisonMinimapButton then
+				GarrisonLandingPageMinimapButton:Show()
+			end
+		end
+	end
+
 	-- First update 
 	addonInitialized = true
 end
 
 function Garrison:OnInitialize()	
+	local _, _, _, tocversion = _G.GetBuildInfo()
+	if (tocversion < 60000) then
+		print("BrokerGarrison requires WoW 6.0 / Warlords of Draenor")
+		return
+	end
+
+
 	garrisonDb = LibStub("AceDB-3.0"):New(ADDON_NAME .. "DB", DB_DEFAULTS, true)
 	globalDb = garrisonDb.global
 	configDb = garrisonDb.profile
@@ -589,9 +675,12 @@ function Garrison:OnInitialize()
 	self:SetupOptions()
 
 	Garrison:UpdateConfig()
+	Garrison:UpdateCurrency()
+	Garrison:UpdateUnknownMissions()
 
 	Garrison:RegisterEvent("GARRISON_MISSION_STARTED", "UpdateEvent")
 	Garrison:RegisterEvent("GARRISON_MISSION_COMPLETED", "UpdateEvent")
+	Garrison:RegisterEvent("GARRISON_MISSION_COMPLETE_RESPONSE", "UpdateEvent")
 	Garrison:RegisterEvent("GARRISON_MISSION_FINISHED", "UpdateEvent")
 	Garrison:RegisterEvent("PLAYER_LOGIN", "EnteringWorld")
 

@@ -70,8 +70,19 @@ function Garrison:GetOptions()
 				name = "LDB",
 				cmdHidden = true,
 				args = {
+					garrisonMinimapButton = {
+						order = 110, 
+						type = "toggle", 
+						width = "full",
+						name = L["Hide Garrison Minimap-Button"],
+						desc = L["Hide Garrison Minimap-Button"],
+						get = function() return configDb.ldbConfig.hideGarrisonMinimapButton end,
+						set = function(_,v) configDb.ldbConfig.hideGarrisonMinimapButton = v 
+							Garrison:Update()
+						end,
+					},				
 					showCurrency = {
-						order = 101, 
+						order = 120, 
 						type = "toggle", 
 						width = "full",
 						name = L["Show resources"],
@@ -83,7 +94,7 @@ function Garrison:GetOptions()
 					},
 
 					showProgress = {
-						order = 102, 
+						order = 130, 
 						type = "toggle", 
 						width = "full",
 						name = L["Show active missions"],
@@ -94,7 +105,7 @@ function Garrison:GetOptions()
 						end,
 					},		
 					showComplete = {
-						order = 103, 
+						order = 140, 
 						type = "toggle", 
 						width = "full",
 						name = L["Show completed missions"],

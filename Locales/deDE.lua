@@ -41,3 +41,5 @@ L["Tooltip Scale"] = "Tooltip Skalierung"
 L["Font"] = "Schriftart"
 L["Font Size"] = "Schriftgröße"
 L["Auto-Hide delay"] = "Ausblend-Verzögerung"
+
+L['Hide Garrison Minimap-Button'] = "Minimap-Button verstecken"

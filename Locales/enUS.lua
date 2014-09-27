@@ -41,3 +41,5 @@ L["Tooltip Scale"] = true
 L["Font"] = true
 L["Font Size"] = true
 L["Auto-Hide delay"] = true
+
+L['Hide Garrison Minimap-Button'] = true
