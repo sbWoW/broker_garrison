@@ -311,7 +311,6 @@ end
 
    
 function Garrison:UpdateConfig() 		
-
 	if GarrisonLandingPageMinimapButton then	
 		if GarrisonLandingPageMinimapButton:IsShown() then
 			if configDb.ldbConfig.hideGarrisonMinimapButton then
@@ -323,7 +322,6 @@ function Garrison:UpdateConfig()
 			end
 		end
 	end
-
 end
 
 local DrawTooltip
@@ -491,7 +489,7 @@ do
 end
 
 
-function Garrison:UpdateUnknownMissions()
+function Garrison:UpdateUnknownMissions(missionsLoaded)
 	local activeMissions = {}
 
 	for key,garrisonMission in pairs(C_Garrison.GetInProgressMissions()) do
@@ -514,14 +512,16 @@ function Garrison:UpdateUnknownMissions()
 		end
 	end
 
-	-- cleanup unknown missions
-	--local missionID
-	--for missionID, _ in pairs(globalDb.data[charInfo.realmName][charInfo.playerName].missions) do
-	--	if not activeMissions[missionID] then
-	--		globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
-	--		debugPrint("Removed unknown Mission: "..missionID)
-	--	end
-	--end
+	if missionsLoaded then
+		-- cleanup unknown missions
+		local missionID
+		for missionID, _ in pairs(globalDb.data[charInfo.realmName][charInfo.playerName].missions) do
+			if not activeMissions[missionID] then
+				globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
+				debugPrint("Removed unknown Mission: "..missionID)
+			end
+		end
+	end
 
 end
 
@@ -532,10 +532,6 @@ function Garrison:GARRISON_MISSION_COMPLETE_RESPONSE(event, missionID, canComple
 	else
 		debugPrint("Unknown Mission: "..missionID.." ("..event..")")
 	end
-
-	debugPrint("missionID: "..missionID)
-	debugPrint("canComplete: "..canComplete)
-	debugPrint("succeeded: "..succeeded)
 
 	Garrison:Update()
 end
@@ -574,9 +570,9 @@ function Garrison:GARRISON_MISSION_FINISHED(event, missionID)
 
 	-- Cleanup
 	for key,garrisonMission in pairs(C_Garrison.GetCompleteMissions()) do
-		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID]) then
-			debugPrint("Finished Mission (Loop): "..missionID)
+		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID]) then			
 			if globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start == -1 then
+				debugPrint("Finished Mission (Loop): "..missionID)
 				globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start = 0
 			end	
 		else
@@ -585,6 +581,18 @@ function Garrison:GARRISON_MISSION_FINISHED(event, missionID)
 	end
 
 	Garrison:Update()
+end
+
+function Garrison:GARRISON_SHOW_LANDING_PAGE(...)
+	Garrison:UpdateConfig()
+
+	Garrison:UpdateUnknownMissions(true)
+end
+
+function Garrison:GARRISON_MISSION_NPC_OPENED(...)
+	Garrison:UpdateConfig()
+
+	Garrison:UpdateUnknownMissions(true)
 end
 
 
@@ -596,7 +604,7 @@ function Garrison:UpdateCurrency()
 end
 
 function Garrison:Update()	
-	Garrison:UpdateUnknownMissions()
+	Garrison:UpdateUnknownMissions(false)
 
 	-- LDB Text
 	local numMissionsTotal, numMissionsInProgress, numMissionsCompleted = Garrison:GetMissionCount(nil)
@@ -707,7 +715,8 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("GARRISON_MISSION_FINISHED", "GARRISON_MISSION_FINISHED")
 	
 	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")	
-	self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE", "UpdateConfig")
+	self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE", "GARRISON_SHOW_LANDING_PAGE")
+	self:RegisterEvent("GARRISON_MISSION_NPC_OPENED", "GARRISON_MISSION_NPC_OPENED")
 
 	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
 	timers.icon_update = Garrison:ScheduleTimer("DelayedUpdate", 10)
@@ -717,4 +726,5 @@ end
 function Garrison:DelayedUpdate()	
 	Garrison:UpdateCurrency()
 end
+
 
