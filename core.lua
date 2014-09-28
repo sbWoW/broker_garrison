@@ -90,6 +90,7 @@ local DB_DEFAULTS = {
 			autoHideDelay = 0.25,
 		},		
 		configVersion = CONFIG_VERSION,
+		debugPrint = false,
 	},
 	global = {
 		data = {}
@@ -132,7 +133,7 @@ local function round(num, idp)
 end
 
 local function debugPrint(text) 
-	if(DEBUG) then
+	if(configDb.debugPrint) then
 		print(("%s: %s"):format(ADDON_NAME, text))
 	end
 end
@@ -247,7 +248,7 @@ function Garrison:HandleMission(paramCharInfo, missionData, timeLeft)
 		end
 	end
 
-	if timeLeft == 0 or (timeLeft < 0 and missionData.start == 0) then
+	if (timeLeft < 0 and missionData.start >= 0) then
 		if configDb.notification.enabled then
 			if (missionData.notification == 0 or (not addonInitialized and configDb.notification.repeatOnLoad)) then
 				-- Show Notification
@@ -310,16 +311,18 @@ end
 
    
 function Garrison:UpdateConfig() 		
-	Garrison:SetSinkStorage(configDb.notification.sink)
 
-	Toast:Register(TOAST_MISSION_COMPLETE, function(toast, ...)
-		if configDb.notification.toastPersistent then
-			toast:MakePersistent()
+	if GarrisonLandingPageMinimapButton then	
+		if GarrisonLandingPageMinimapButton:IsShown() then
+			if configDb.ldbConfig.hideGarrisonMinimapButton then
+				GarrisonLandingPageMinimapButton:Hide()
+			end
+		else
+			if not configDb.ldbConfig.hideGarrisonMinimapButton then
+				GarrisonLandingPageMinimapButton:Show()
+			end
 		end
-		toast:SetTitle(L["Garrison: Mission complete"])
-		toast:SetFormattedText(getColoredString(..., colors.green))
-		toast:SetIconTexture([[Interface\Icons\Inv_Garrison_Resource]])
-	end)	
+	end
 
 end
 
@@ -522,54 +525,68 @@ function Garrison:UpdateUnknownMissions()
 
 end
 
-
-function Garrison:UpdateEvent(...)
-	local arg = {n=select('#',...),...}
-	local event = arg[1]
-	local missionID = arg[2]
-
-	if (event == "GARRISON_MISSION_STARTED") then
-
-		for key,garrisonMission in pairs(C_Garrison.GetInProgressMissions()) do
-
-			if (garrisonMission.missionID == missionID) then
-				local mission = {
-					id = garrisonMission.missionID,
-					name = garrisonMission.name,
-					start = time(),
-					duration = garrisonMission.durationSeconds,
-					notification = 0,
-					timeLeft = garrisonMission.timeLeft,
-					type = garrisonMission.type,
-				}
-
-				globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
-
-				debugPrint("Added Mission: "..missionID)
-			end
-
-		end
+function Garrison:GARRISON_MISSION_COMPLETE_RESPONSE(event, missionID, canComplete, succeeded)
+	if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then				
+		debugPrint("Removed Mission: "..missionID.." ("..event..")")
+		globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
+	else
+		debugPrint("Unknown Mission: "..missionID.." ("..event..")")
 	end
 
-	if (event == "GARRISON_MISSION_COMPLETED") or 
-		(event == "GARRISON_MISSION_COMPLETE_RESPONSE") then
-		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then				
-			debugPrint("Removed Mission: "..missionID.." ("..event..")")
-			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
-		end
-	end
+	debugPrint("missionID: "..missionID)
+	debugPrint("canComplete: "..canComplete)
+	debugPrint("succeeded: "..succeeded)
 
-	if (event == "GARRISON_MISSION_FINISHED") then
-		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then
-			debugPrint("Finished Mission: "..missionID)
-			if globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start == -1 then
-				globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start = 0
-			end			
+	Garrison:Update()
+end
+
+function Garrison:GARRISON_MISSION_STARTED(event, missionID)
+
+	for key,garrisonMission in pairs(C_Garrison.GetInProgressMissions()) do
+		if (garrisonMission.missionID == missionID) then
+			local mission = {
+				id = garrisonMission.missionID,
+				name = garrisonMission.name,
+				start = time(),
+				duration = garrisonMission.durationSeconds,
+				notification = 0,
+				timeLeft = garrisonMission.timeLeft,
+				type = garrisonMission.type,
+			}
+			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
+			debugPrint("Added Mission: "..missionID)
 		end
 	end
 
 	Garrison:Update()
 end
+
+function Garrison:GARRISON_MISSION_FINISHED(event, missionID)
+	if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then
+		debugPrint("Finished Mission: "..missionID)
+		if globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start == -1 then
+			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start = 0
+		end	
+	else
+		debugPrint("Unknown Mission: "..missionID)
+	end
+
+
+	-- Cleanup
+	for key,garrisonMission in pairs(C_Garrison.GetCompleteMissions()) do
+		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID]) then
+			debugPrint("Finished Mission (Loop): "..missionID)
+			if globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start == -1 then
+				globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start = 0
+			end	
+		else
+			debugPrint("Unknown Mission (Loop): "..missionID)
+		end		
+	end
+
+	Garrison:Update()
+end
+
 
 function Garrison:UpdateCurrency()
 	local _, amount, _ = GetCurrencyInfo(GARRISON_CURRENCY);
@@ -624,18 +641,6 @@ function Garrison:Update()
 		end
 	end	
 
-	if GarrisonLandingPageMinimapButton then	
-		if GarrisonLandingPageMinimapButton:IsShown() then
-			if configDb.ldbConfig.hideGarrisonMinimapButton then
-				GarrisonLandingPageMinimapButton:Hide()
-			end
-		else
-			if not configDb.ldbConfig.hideGarrisonMinimapButton then
-				GarrisonLandingPageMinimapButton:Show()
-			end
-		end
-	end
-
 	-- First update 
 	addonInitialized = true
 end
@@ -684,13 +689,25 @@ function Garrison:OnInitialize()
 
 	self:SetupOptions()
 
+	Garrison:SetSinkStorage(configDb.notification.sink)
+
+	Toast:Register(TOAST_MISSION_COMPLETE, function(toast, ...)
+		if configDb.notification.toastPersistent then
+			toast:MakePersistent()
+		end
+		toast:SetTitle(L["Garrison: Mission complete"])
+		toast:SetFormattedText(getColoredString(..., colors.green))
+		toast:SetIconTexture([[Interface\Icons\Inv_Garrison_Resource]])
+	end)
+
 	Garrison:UpdateConfig()	
 
-	Garrison:RegisterEvent("GARRISON_MISSION_STARTED", "UpdateEvent")
-	Garrison:RegisterEvent("GARRISON_MISSION_COMPLETED", "UpdateEvent")
-	Garrison:RegisterEvent("GARRISON_MISSION_COMPLETE_RESPONSE", "UpdateEvent")
-	Garrison:RegisterEvent("GARRISON_MISSION_FINISHED", "UpdateEvent")
-	Garrison:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")	
+	self:RegisterEvent("GARRISON_MISSION_STARTED", "GARRISON_MISSION_STARTED")
+	self:RegisterEvent("GARRISON_MISSION_COMPLETE_RESPONSE", "GARRISON_MISSION_COMPLETE_RESPONSE")
+	self:RegisterEvent("GARRISON_MISSION_FINISHED", "GARRISON_MISSION_FINISHED")
+	
+	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")	
+	self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE", "UpdateConfig")
 
 	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
 	timers.icon_update = Garrison:ScheduleTimer("DelayedUpdate", 10)
