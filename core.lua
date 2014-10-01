@@ -32,6 +32,7 @@ local InterfaceOptionsFrameAddOns = _G.InterfaceOptionsFrameAddOns
 local OptionsListButtonToggle_OnClick = _G.OptionsListButtonToggle_OnClick
 local UIParentLoadAddOn = _G.UIParentLoadAddOn
 local GarrisonLandingPage = _G.GarrisonLandingPage
+local GarrisonMissionFrame = _G.GarrisonMissionFrame
 local ShowUIPanel = _G.ShowUIPanel
 local HideUIPanel = _G.HideUIPanel
 local CreateFont = _G.CreateFont
@@ -46,6 +47,7 @@ local DEFAULT_FONT
 
 -- Constants
 local addonInitialized = false
+local delayedInit = false
 local CONFIG_VERSION = 1
 local DEBUG = true
 local timers = {}
@@ -212,6 +214,19 @@ local function FormatRealmPlayer(paramCharInfo, colored)
 	end
 end
 
+function Garrison:ApplyDependencies()
+	GarrisonLandingPage = _G.GarrisonLandingPage
+	GarrisonMissionFrame = _G.GarrisonMissionFrame
+end
+
+function Garrison:LoadDependencies()
+	if not GarrisonMissionFrame or not GarrisonLandingPage then
+		debugPrint("Loading Blizzard_GarrisonUI...");
+		if UIParentLoadAddOn("Blizzard_GarrisonUI") then					
+			Garrison:ApplyDependencies()
+		end
+	end
+end
 
 function Garrison:SendNotification(paramCharInfo, missionData)
 	local notificationText = (L["Mission complete (%s): %s"]):format(FormatRealmPlayer(paramCharInfo, false), missionData.name)
@@ -248,7 +263,9 @@ function Garrison:HandleMission(paramCharInfo, missionData, timeLeft)
 			if (missionData.notification == 0 or (not addonInitialized and configDb.notification.repeatOnLoad)) then
 				-- Show Notification
 
-				Garrison:SendNotification(paramCharInfo, missionData)				
+				if delayedInit then
+					Garrison:SendNotification(paramCharInfo, missionData)	
+				end
 			end			
 		end
 	end
@@ -640,7 +657,18 @@ function Garrison:Update()
 	end	
 
 	-- First update 
-	addonInitialized = true
+	if delayedInit then
+		addonInitialized = true
+	end
+end
+
+function Garrison:CheckAddonLoaded(event, addon)	
+	if addon == "Blizzard_GarrisonUI" then
+		-- Addon Loaded: Garrison UI - Hook AlertFrame
+		debugPrint("Event: Blizzard_GarrisonUI loaded")
+		Garrison:ApplyDependencies()		
+		self:UnregisterEvent("ADDON_LOADED")
+	end		
 end
 
 function Garrison:GarrisonMissionAlertFrame_ShowAlert(missionID)
@@ -717,29 +745,19 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE", "GARRISON_SHOW_LANDING_PAGE")
 	self:RegisterEvent("GARRISON_MISSION_NPC_OPENED", "GARRISON_MISSION_NPC_OPENED")
 
+	self:RegisterEvent("ADDON_LOADED", "CheckAddonLoaded")
+
+	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
+
 	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
 	timers.icon_update = Garrison:ScheduleTimer("DelayedUpdate", 5)
 	
 end
 
-local GarrisonMissionFrame
-
-
-function Garrison:LoadDependencies()
-	if not GarrisonMissionFrame or not GarrisonLandingPage then
-		debugPrint("Loading Blizzard_GarrisonUI...");
-		if UIParentLoadAddOn("Blizzard_GarrisonUI") then					
-			GarrisonLandingPage = _G.GarrisonLandingPage
-			GarrisonMissionFrame = _G.GarrisonMissionFrame
-		end
-	end
-end
 
 function Garrison:DelayedUpdate()	
-	Garrison:UpdateCurrency()
-
-	Garrison:LoadDependencies()
-	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
+	delayedInit = true
+	Garrison:UpdateCurrency()	
 end
 
 
