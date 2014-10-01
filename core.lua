@@ -718,9 +718,8 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("GARRISON_MISSION_NPC_OPENED", "GARRISON_MISSION_NPC_OPENED")
 
 	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
-	timers.icon_update = Garrison:ScheduleTimer("DelayedUpdate", 10)
+	timers.icon_update = Garrison:ScheduleTimer("DelayedUpdate", 5)
 	
-	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
 end
 
 local GarrisonMissionFrame
@@ -740,6 +739,7 @@ function Garrison:DelayedUpdate()
 	Garrison:UpdateCurrency()
 
 	Garrison:LoadDependencies()
+	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
 end
 
 
