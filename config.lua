@@ -4,8 +4,9 @@ local Garrison = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 
 local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-
 local AceDBOptions = LibStub("AceDBOptions-3.0")
+local LSM = LibStub:GetLibrary("LibSharedMedia-3.0")
+
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
 local table = _G.table
@@ -15,6 +16,9 @@ local pairs = _G.pairs
 local garrisonDb
 local globalDb
 local configDb
+
+local fonts = {}
+local sounds = {}
 
 function Garrison:returnchars()
 	local a = {}
@@ -31,6 +35,27 @@ function Garrison:returnchars()
 	table.sort(a)
 	return a
 end
+
+function Garrison:GetFonts()
+	for k in pairs(fonts) do fonts[k] = nil end
+
+	for _, name in pairs(LSM:List(LSM.MediaType.FONT)) do
+		fonts[name] = name
+	end
+	
+	return fonts
+end
+
+function Garrison:GetSounds()
+	for k in pairs(sounds) do sounds[k] = nil end
+
+	for _, name in pairs(LSM:List(LSM.MediaType.SOUND)) do
+		sounds[name] = name
+	end
+	
+	return sounds
+end
+
 
 function Garrison:deletechar(realm_and_character)
 	local playerName, realmName = (":"):split(realm_and_character, 2)
@@ -195,8 +220,50 @@ function Garrison:GetOptions()
 						disabled = function() return not configDb.notification.enabled 
 												or not configDb.notification.toastEnabled end,
 					},		
-					aboutHeader = {
+					miscHeader = {
 						order = 400,
+						type = "header",
+						name = L["Misc"],
+						cmdHidden = true,
+					},								
+					hideBlizzardNotification = {
+						order = 410, 
+						type = "toggle", 
+						width = "full",
+						name = L["Hide Blizzard notifications"],
+						desc = L["Don't show the built-in notifications"],
+						get = function() return configDb.notification.hideBlizzardNotification end,
+						set = function(_,v) configDb.notification.hideBlizzardNotification = v 							
+						end,
+						disabled = function() return not configDb.notification.enabled end,
+					},
+					playSound = {
+						order = 420,
+						type = "toggle",
+						name = L["Play Sound"],
+						desc = L["Play Sound"],
+						get = function() return configDb.notification.playSound end,
+						set = function(_,v) 
+							configDb.notification.playSound = v
+						end,					
+						disabled = function() return not configDb.notification.enabled end,
+					},					
+					playSoundOnMissionCompleteName = {
+						order = 430,
+						type = "select",
+						name = L["Sound"],
+						desc = L["Sound"],
+						dialogControl = "LSM30_Sound",
+						values = LSM:HashTable("sound"),
+						get = function() return configDb.notification.soundName end,
+						set = function(_,v) 
+							configDb.notification.soundName = v
+						end,					
+						disabled = function() return not configDb.notification.enabled or not configDb.notification.playSound end,
+
+					},
+					outputHeader = {
+						order = 500,
 						type = "header",
 						name = L["Output"],
 						cmdHidden = true,
@@ -246,7 +313,7 @@ function Garrison:GetOptions()
 						name = L["Font"],
 						desc = L["Font"],
 						dialogControl = "LSM30_Font",
-						values = Garrison:GetFonts(),
+						values = LSM:HashTable("font"),
 						get = function() return configDb.tooltip.fontName end,
 						set = function(_,v) 
 							configDb.tooltip.fontName = v
@@ -306,7 +373,7 @@ function Garrison:SetupOptions()
 	Garrison.optionsFrame = AceConfigDialog:AddToBlizOptions(ADDON_NAME)
 
 	-- Fix sink config options
-	options.args.notificationGroup.args.notificationLibSink.order = 500
+	options.args.notificationGroup.args.notificationLibSink.order = 600
 	options.args.notificationGroup.args.notificationLibSink.inline = true
 	options.args.notificationGroup.args.notificationLibSink.name = ""
 	options.args.notificationGroup.args.notificationLibSink.disabled = function() return not configDb.notification.enabled end

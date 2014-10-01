@@ -30,7 +30,6 @@ local time = _G.time
 local COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
 local InterfaceOptionsFrameAddOns = _G.InterfaceOptionsFrameAddOns
 local OptionsListButtonToggle_OnClick = _G.OptionsListButtonToggle_OnClick
-local IsAddOnLoaded = _G.IsAddOnLoaded 
 local UIParentLoadAddOn = _G.UIParentLoadAddOn
 local GarrisonLandingPage = _G.GarrisonLandingPage
 local ShowUIPanel = _G.ShowUIPanel
@@ -38,6 +37,7 @@ local HideUIPanel = _G.HideUIPanel
 local CreateFont = _G.CreateFont
 local GarrisonLandingPageMinimapButton = _G.GarrisonLandingPageMinimapButton
 local toolTipRef
+local PlaySoundFile = _G.PlaySoundFile
 
 local garrisonDb
 local configDb
@@ -48,7 +48,6 @@ local DEFAULT_FONT
 local addonInitialized = false
 local CONFIG_VERSION = 1
 local DEBUG = true
-local fonts = {}
 local timers = {}
 local colors = {
 	green = {r=0, g=1, b=0, a=1},
@@ -84,6 +83,7 @@ local DB_DEFAULTS = {
 			sink = {},
 			toastEnabled = true,
 			toastPersistent = true,
+			hideBlizzardNotification = false,
 		},			
 		tooltip = {
 			scale = 1,
@@ -212,16 +212,6 @@ local function FormatRealmPlayer(paramCharInfo, colored)
 	end
 end
 
-function Garrison:GetFonts()
-	for k in pairs(fonts) do fonts[k] = nil end
-
-	for _, name in pairs(LSM:List(LSM.MediaType.FONT)) do
-		fonts[name] = name
-	end
-	
-	return fonts
-end
-
 
 function Garrison:SendNotification(paramCharInfo, missionData)
 	local notificationText = (L["Mission complete (%s): %s"]):format(FormatRealmPlayer(paramCharInfo, false), missionData.name)
@@ -234,6 +224,10 @@ function Garrison:SendNotification(paramCharInfo, missionData)
 		Toast:Spawn(TOAST_MISSION_COMPLETE, toastText)
 	end
 
+	if configDb.notification.playSound then
+		PlaySoundFile(LSM:Fetch("sound", configDb.notification.soundName or "None"))
+	end
+
 	missionData.notification = 1 
 end 
 
@@ -241,6 +235,7 @@ function Garrison:HandleMission(paramCharInfo, missionData, timeLeft)
 	if  (timeLeft < 0 and missionData.start == -1) then
 		-- Detect completed mission
 		
+		-- Deprecated - should be detected on finished event
 		local parsedTimeLeft = string.match(missionData.timeLeft, COMPLETED_PATTERN)
 		if (parsedTimeLeft == "0") then
 			-- 1 * 0 found in string -> assuming mission complete
@@ -457,12 +452,7 @@ do
 
 	function ldb_object:OnClick(button)
 		if button == "LeftButton" then
-			if not GarrisonLandingPage then
-				debugPrint("Loading Blizzard_GarrisonUI...");
-				if UIParentLoadAddOn("Blizzard_GarrisonUI") then					
-					GarrisonLandingPage = _G.GarrisonLandingPage
-				end
-			end
+			Garrison:LoadDependencies()
 
 			if GarrisonLandingPage then
 				if (not GarrisonLandingPage:IsShown()) then
@@ -653,6 +643,15 @@ function Garrison:Update()
 	addonInitialized = true
 end
 
+function Garrison:GarrisonMissionAlertFrame_ShowAlert(missionID)
+	if configDb.notification.hideBlizzardNotification then
+		debugPrint("Blizzard notification hidden: "..missionID)
+	else
+		debugPrint("Show blizzard notification"..missionID)
+		self.hooks.GarrisonMissionAlertFrame_ShowAlert(missionID)
+	end
+end
+
 function Garrison:OnInitialize()	
 	local _, _, _, tocversion = _G.GetBuildInfo()
 	if (tocversion < 60000) then
@@ -720,11 +719,27 @@ function Garrison:OnInitialize()
 
 	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
 	timers.icon_update = Garrison:ScheduleTimer("DelayedUpdate", 10)
+	
+	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
 end
 
+local GarrisonMissionFrame
+
+
+function Garrison:LoadDependencies()
+	if not GarrisonMissionFrame or not GarrisonLandingPage then
+		debugPrint("Loading Blizzard_GarrisonUI...");
+		if UIParentLoadAddOn("Blizzard_GarrisonUI") then					
+			GarrisonLandingPage = _G.GarrisonLandingPage
+			GarrisonMissionFrame = _G.GarrisonMissionFrame
+		end
+	end
+end
 
 function Garrison:DelayedUpdate()	
 	Garrison:UpdateCurrency()
+
+	Garrison:LoadDependencies()
 end
 
 

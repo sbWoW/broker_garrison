@@ -42,4 +42,11 @@ L["Font"] = true
 L["Font Size"] = true
 L["Auto-Hide delay"] = true
 
-L['Hide Garrison Minimap-Button'] = true
+L["Hide Garrison Minimap-Button"] = true
+
+-- v0.101
+L["Hide Blizzard notifications"] = true
+L["Don't show the built-in notifications"] = true
+L["Play Sound"] = true
+L["Sound"] = true
+L["Misc"] = true
