@@ -277,6 +277,7 @@ function Garrison:HandleMission(paramCharInfo, missionData, timeLeft)
 	if  (timeLeft < 0 and missionData.start == -1) then
 		-- Detect completed mission
 		
+
 		-- Deprecated - should be detected on finished event
 		local parsedTimeLeft = string.match(missionData.timeLeft, COMPLETED_PATTERN)
 		if (parsedTimeLeft == "0") then
@@ -559,6 +560,17 @@ function Garrison:UpdateUnknownMissions(missionsLoaded)
 		end
 	end
 
+	for key,garrisonMission in pairs(C_Garrison.GetCompleteMissions()) do
+		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID]) then			
+			if globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID].start == -1 then
+				debugPrint("Finished Mission (Loop): "..garrisonMission.missionID)
+				globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID].start = 0
+			end	
+		else
+			debugPrint("Unknown Mission (Loop): "..garrisonMission.missionID)
+		end		
+	end
+
 end
 
 function Garrison:GARRISON_MISSION_COMPLETE_RESPONSE(event, missionID, canComplete, succeeded)
@@ -601,19 +613,6 @@ function Garrison:GARRISON_MISSION_FINISHED(event, missionID)
 		end	
 	else
 		debugPrint("Unknown Mission: "..missionID)
-	end
-
-
-	-- Cleanup
-	for key,garrisonMission in pairs(C_Garrison.GetCompleteMissions()) do
-		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID]) then			
-			if globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start == -1 then
-				debugPrint("Finished Mission (Loop): "..missionID)
-				globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start = 0
-			end	
-		else
-			debugPrint("Unknown Mission (Loop): "..missionID)
-		end		
 	end
 
 	Garrison:Update()
