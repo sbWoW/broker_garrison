@@ -50,3 +50,8 @@ L["Don't show the built-in notifications"] = true
 L["Play Sound"] = true
 L["Sound"] = true
 L["Misc"] = true
+
+-- v0.102
+L["Dismiss"] = true
+L["Advanced Toast controls"] = true
+L["Adds OK/Dismiss Button to Toasts (Requires 'Repeat on Load')"] = true

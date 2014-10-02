@@ -219,6 +219,20 @@ function Garrison:GetOptions()
 						end,
 						disabled = function() return not configDb.notification.enabled 
 												or not configDb.notification.toastEnabled end,
+					},
+					notificationExtendedToast = {
+						order = 330,
+						type = "toggle", 
+						width = "full",
+						name = L["Advanced Toast controls"],
+						desc = L["Adds OK/Dismiss Button to Toasts (Requires 'Repeat on Load')"],
+						get = function() return configDb.notification.extendedToast end,
+						set = function(_,v) configDb.notification.extendedToast = v 
+						end,
+						disabled = function() return not configDb.notification.enabled 
+												or not configDb.notification.toastEnabled
+												or not configDb.notification.repeatOnLoad
+												 end,
 					},		
 					miscHeader = {
 						order = 400,

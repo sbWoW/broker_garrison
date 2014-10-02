@@ -42,10 +42,14 @@ L["Font"] = "Schriftart"
 L["Font Size"] = "Schriftgröße"
 L["Auto-Hide delay"] = "Ausblend-Verzögerung"
 
-L['Hide Garrison Minimap-Button'] = "Minimap-Button verstecken"
+L["Hide Garrison Minimap-Button"] = "Minimap-Button verstecken"
 
 L["Hide Blizzard notifications"] = "Blizzard Benachrichtigungen verstecken"
 L["Don't show the built-in notifications"] = "Eingebaute Benachrichtigungen nicht anzeigen"
 L["Play Sound"] = "Sound abspielen"
 L["Sound"] = "Sound"
 L["Misc"] = "Verschiedenes"
+
+L["Dismiss"] = "Ausblenden"
+L["Advanced Toast controls"] = "Erweiterte Toast Schaltflaechen"
+L["Adds OK/Dismiss Button to Toasts (Requires 'Repeat on Load')"] = "Erweitert Toast um OK/Ausblenden Button (Benoetigt 'Wiederholung bei Login')"

@@ -214,7 +214,34 @@ local function FormatRealmPlayer(paramCharInfo, colored)
 	end
 end
 
-function Garrison:ApplyDependencies()
+local function toastCallback (callbackType, mouseButton, buttonDown, payload)
+
+	local missionData = payload[1]
+
+	if callbackType == "primary" then
+		debugPrint("OK: "..payload[1].id.." ("..payload[1].name..")")
+	end
+	if callbackType == "secondary" then	
+		debugPrint("Dismiss: "..payload[1].id.." ("..payload[1].name..")")
+		missionData.notification = 2 -- Mission dismissed, never show again
+	end
+end
+
+local function toastMissionComplete (toast, text, missionData)
+	if configDb.notification.toastPersistent then
+		toast:MakePersistent()
+	end
+	toast:SetTitle(L["Garrison: Mission complete"])
+	toast:SetFormattedText(getColoredString(text, colors.green))
+	toast:SetIconTexture([[Interface\Icons\Inv_Garrison_Resource]])
+	if configDb.notification.extendedToast then
+		toast:SetPrimaryCallback(_G.OKAY, toastCallback)
+		toast:SetSecondaryCallback(L["Dismiss"], toastCallback)		
+		toast:SetPayload(missionData)
+	end
+end
+
+function Garrison:OnDependencyLoaded()
 	GarrisonLandingPage = _G.GarrisonLandingPage
 	GarrisonMissionFrame = _G.GarrisonMissionFrame
 end
@@ -223,7 +250,7 @@ function Garrison:LoadDependencies()
 	if not GarrisonMissionFrame or not GarrisonLandingPage then
 		debugPrint("Loading Blizzard_GarrisonUI...");
 		if UIParentLoadAddOn("Blizzard_GarrisonUI") then					
-			Garrison:ApplyDependencies()
+			Garrison:OnDependencyLoaded()
 		end
 	end
 end
@@ -236,7 +263,7 @@ function Garrison:SendNotification(paramCharInfo, missionData)
 	self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
 
 	if configDb.notification.toastEnabled then
-		Toast:Spawn(TOAST_MISSION_COMPLETE, toastText)
+		Toast:Spawn(TOAST_MISSION_COMPLETE, toastText, missionData)
 	end
 
 	if configDb.notification.playSound then
@@ -260,7 +287,9 @@ function Garrison:HandleMission(paramCharInfo, missionData, timeLeft)
 
 	if (timeLeft < 0 and missionData.start >= 0) then
 		if configDb.notification.enabled then
-			if (missionData.notification == 0 or (not addonInitialized and configDb.notification.repeatOnLoad)) then
+			if  (missionData.notification == 0 or 
+				(not addonInitialized and configDb.notification.repeatOnLoad and missionData.notification ~= 2)
+				) then
 				-- Show Notification
 
 				if delayedInit then
@@ -666,7 +695,7 @@ function Garrison:CheckAddonLoaded(event, addon)
 	if addon == "Blizzard_GarrisonUI" then
 		-- Addon Loaded: Garrison UI - Hook AlertFrame
 		debugPrint("Event: Blizzard_GarrisonUI loaded")
-		Garrison:ApplyDependencies()		
+		Garrison:OnDependencyLoaded()		
 		self:UnregisterEvent("ADDON_LOADED")
 	end		
 end
@@ -726,14 +755,7 @@ function Garrison:OnInitialize()
 
 	Garrison:SetSinkStorage(configDb.notification.sink)
 
-	Toast:Register(TOAST_MISSION_COMPLETE, function(toast, ...)
-		if configDb.notification.toastPersistent then
-			toast:MakePersistent()
-		end
-		toast:SetTitle(L["Garrison: Mission complete"])
-		toast:SetFormattedText(getColoredString(..., colors.green))
-		toast:SetIconTexture([[Interface\Icons\Inv_Garrison_Resource]])
-	end)
+	Toast:Register(TOAST_MISSION_COMPLETE, toastMissionComplete)
 
 	Garrison:UpdateConfig()	
 
