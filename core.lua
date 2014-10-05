@@ -101,8 +101,8 @@ local DB_DEFAULTS = {
 
 -- Player info
 local charInfo = {
-	playerName = UnitName("player"),
-	playerClass = UnitClass("player"),	
+	playerName = UnitName("player"),	
+	playerClass = select(2, UnitClass("player")),
 	playerFaction = UnitFactionGroup("player"),
 	realmName = GetRealmName(),
 }	
@@ -158,7 +158,12 @@ local function getColoredUnitName (name, class)
 	local colorUnitName
 	
 	if(not unitColor[name]) then
-		local classColor = COLOR_TABLE[strupper(string.gsub(class, " ", ""))]	
+		local classColor = COLOR_TABLE[class]
+
+		if not classColor then
+			classColor = colors.white
+		end
+
 		colorUnitName = string.format("|cff%02x%02x%02x%s|r",classColor.r*255,classColor.g*255,classColor.b*255,name)	
 	
 		unitColor[name] = colorUnitName
