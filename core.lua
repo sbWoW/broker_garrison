@@ -46,6 +46,9 @@ local globalDb
 local DEFAULT_FONT
 
 -- Constants
+local TOOLTIP_BUILDING = 1
+local TOOLTIP_MISSION = 2
+
 local addonInitialized = false
 local delayedInit = false
 local CONFIG_VERSION = 1
@@ -112,14 +115,19 @@ local charInfo = {
 local unitColor = {}
 
 -- LDB init
-Garrison.dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME, 
+local ldb_object_mission = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME.."Mission", 
   { type = "data source", 
-   label = L["Broker Garrison"], 
+   label = L["Garrison-Missions"], 
 	icon = "Interface\\Icons\\Inv_Garrison_Resource",	
 	text = "Garrison: Missions",
    })
 
-local ldb_object = Garrison.dataobj
+local ldb_object_building = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME.."Building", 
+  { type = "data source", 
+   label = L["Garrison-Buildings"], 
+	icon = "Interface\\Icons\\Inv_Garrison_Resource",	
+	text = "Garrison: Buildings",
+   })
 
 -- Helper Functions
 local function tableSize(T) 
@@ -376,6 +384,7 @@ do
 	local NUM_TOOLTIP_COLUMNS = 7
 	local tooltip
 	local LDB_anchor
+	local tooltipType
 
 	local function ExpandButton_OnMouseUp(tooltip_cell, realm_and_character)
 		local realm, character_name = (":"):split(realm_and_character, 2)
@@ -392,17 +401,19 @@ do
 	local function Tooltip_OnRelease(self)
 		tooltip = nil
 		LDB_anchor = nil
+		tooltipType = nil
 	end	
 
 	local function AddSeparator(tooltip)
 		tooltip:AddSeparator(1, colors.lightGray.r, colors.lightGray.g, colors.lightGray.b, colors.lightGray.a)
 	end
 
-	function DrawTooltip(anchor_frame)
+	function DrawTooltip(anchor_frame, paramTooltipType)
 		if not anchor_frame then
 			return
 		end
 		LDB_anchor = anchor_frame
+		tooltipType = paramTooltipType
 	
 		if not tooltip then
 			tooltip = LibQTip:Acquire("BrokerGarrisonTooltip", NUM_TOOLTIP_COLUMNS, "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT")
@@ -428,81 +439,115 @@ do
 		tooltip:SetCellMarginH(0)
 		tooltip:SetCellMarginV(0)
 
-		for realmName, realmData in pairsByKeys(globalDb.data) do
-			row = tooltip:AddLine()
-			tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 3)
-
-			row = tooltip:AddLine(" ")
-			AddSeparator(tooltip)
-
-			for playerName, playerData in pairsByKeys(realmData) do				
-				
-				local numMissionsTotal, numMissionsInProgress, numMissionsCompleted = Garrison:GetMissionCount(playerData.info)
+		if tooltipType == TOOLTIP_MISSION then
+			for realmName, realmData in pairsByKeys(globalDb.data) do
+				row = tooltip:AddLine()
+				tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 3)
 
 				row = tooltip:AddLine(" ")
-				row = tooltip:AddLine()
+				AddSeparator(tooltip)
 
-				tooltip:SetCell(row, 1, playerData.expanded and ICON_CLOSE or ICON_OPEN)
-				tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
-				tooltip:SetCell(row, 3, ("%s %s"):format(ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
-				
-				tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(numMissionsTotal), colors.lightGray))
-				tooltip:SetCell(row, 5, getColoredString((L["In Progress: %s"]):format(numMissionsInProgress), colors.lightGray))
-				tooltip:SetCell(row, 6, getColoredString((L["Complete: %s"]):format(numMissionsCompleted), colors.lightGray))
-						
-				tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, ("%s:%s"):format(realmName, playerName))
-				tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, playerData.expanded)
-
-				if playerData.expanded and numMissionsTotal > 0 then
-					row = tooltip:AddLine(" ")
-					AddSeparator(tooltip)
+				for playerName, playerData in pairsByKeys(realmData) do				
+					
+					local numMissionsTotal, numMissionsInProgress, numMissionsCompleted = Garrison:GetMissionCount(playerData.info)
 
 					row = tooltip:AddLine(" ")
-					tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
+					row = tooltip:AddLine()
 
-					for missionID, missionData in pairs(playerData.missions) do
-						local timeLeft = missionData.duration - (now - missionData.start)
+					tooltip:SetCell(row, 1, playerData.expanded and ICON_CLOSE or ICON_OPEN)
+					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
+					tooltip:SetCell(row, 3, ("%s %s"):format(ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
+					
+					tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(numMissionsTotal), colors.lightGray))
+					tooltip:SetCell(row, 5, getColoredString((L["In Progress: %s"]):format(numMissionsInProgress), colors.lightGray))
+					tooltip:SetCell(row, 6, getColoredString((L["Complete: %s"]):format(numMissionsCompleted), colors.lightGray))
+							
+					tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, ("%s:%s"):format(realmName, playerName))
+					tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, playerData.expanded)
+
+					if playerData.expanded and numMissionsTotal > 0 then
+						row = tooltip:AddLine(" ")
+						AddSeparator(tooltip)
 
 						row = tooltip:AddLine(" ")
-						
-						tooltip:SetCell(row, 2, missionData.name, nil, "LEFT", 2)
-
 						tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
-						
-						if (missionData.start == -1) then
-							tooltip:SetCell(row, 4, ("%s%s"):format(
-								getColoredString(("%s | "):format(FormattedSeconds(missionData.duration)), colors.lightGray),
-								getColoredString("~"..missionData.timeLeft, colors.white)
-							), nil, "RIGHT", 3)						
-						elseif (missionData.start == 0 or timeLeft < 0) then
-							tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
-						else
-							tooltip:SetCell(row, 4, ("%s%s"):format(
-								getColoredString(("%s | "):format(FormattedSeconds(missionData.duration)), colors.lightGray),
-								getColoredString(FormattedSeconds(timeLeft), colors.white)
-							), nil, "RIGHT", 3)
+
+						for missionID, missionData in pairs(playerData.missions) do
+							local timeLeft = missionData.duration - (now - missionData.start)
+
+							row = tooltip:AddLine(" ")
+							
+							tooltip:SetCell(row, 2, missionData.name, nil, "LEFT", 2)
+
+							tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
+							
+							if (missionData.start == -1) then
+								tooltip:SetCell(row, 4, ("%s%s"):format(
+									getColoredString(("%s | "):format(FormattedSeconds(missionData.duration)), colors.lightGray),
+									getColoredString("~"..missionData.timeLeft, colors.white)
+								), nil, "RIGHT", 3)						
+							elseif (missionData.start == 0 or timeLeft < 0) then
+								tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
+							else
+								tooltip:SetCell(row, 4, ("%s%s"):format(
+									getColoredString(("%s | "):format(FormattedSeconds(missionData.duration)), colors.lightGray),
+									getColoredString(FormattedSeconds(timeLeft), colors.white)
+								), nil, "RIGHT", 3)
+							end
 						end
+
+						row = tooltip:AddLine(" ")
+						tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)					
+
+						AddSeparator(tooltip)
 					end
+				end
+				row = tooltip:AddLine(" ")
+			end
+		elseif tooltipType == TOOLTIP_BUILDING then
+			for realmName, realmData in pairsByKeys(globalDb.data) do
+				row = tooltip:AddLine()
+				tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 3)
+
+				row = tooltip:AddLine(" ")
+				AddSeparator(tooltip)
+
+				for playerName, playerData in pairsByKeys(realmData) do		
+					local numBuildings, numWorkordersInProgress, numWorkordersAvailable
 
 					row = tooltip:AddLine(" ")
-					tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)					
+					row = tooltip:AddLine()
 
-					AddSeparator(tooltip)
+					tooltip:SetCell(row, 1, playerData.expandedBuildings and ICON_CLOSE or ICON_OPEN)
+					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
+					tooltip:SetCell(row, 3, ("%s %s"):format(ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
+
+					for buildingID, buildingData in pairs(playerData.buildings) do
+						-- Display building and Workorder data
+					end
+
 				end
-			end
-			row = tooltip:AddLine(" ")
-		end	   
-	   tooltip:Show()		
+			row = tooltip:AddLine(" ")	
+		end
+
+	  	tooltip:Show()		
 	end
 
-	function ldb_object:OnEnter()
-		DrawTooltip(self)
+	function ldb_object_building:OnEnter()
+		DrawTooltip(self, TOOLTIP_BUILDING)
 	end
 
-	function ldb_object:OnLeave()
+	function ldb_object_building:OnLeave()
+	end	
+
+	function ldb_object_mission:OnEnter()
+		DrawTooltip(self, TOOLTIP_MISSION)
 	end
 
-	function ldb_object:OnClick(button)
+	function ldb_object_mission:OnLeave()
+	end
+
+	function ldb_object_mission:OnClick(button)
 		if button == "LeftButton" then
 			Garrison:LoadDependencies()
 
@@ -682,10 +727,10 @@ function Garrison:Update()
 		ldbText = L["Missions"]
 	end
 
-	ldb_object.text = getColoredTooltipString(ldbText, conditionTable)
+	ldb_object_mission.text = getColoredTooltipString(ldbText, conditionTable)
 	for name, val in pairs(conditionTable) do
 		if (val.condition) then		
-			ldb_object.iconR, ldb_object.iconG, ldb_object.iconB = val.color.r, val.color.g, val.color.b
+			ldb_object_mission.iconR, ldb_object_mission.iconG, ldb_object_mission.iconB = val.color.r, val.color.g, val.color.b
 		end
 	end	
 
@@ -740,6 +785,7 @@ function Garrison:OnInitialize()
 	if (not globalDb.data[charInfo.realmName][charInfo.playerName]) then
 		globalDb.data[charInfo.realmName][charInfo.playerName] = {
 			missions = {},
+			buildings = {},
 			expanded = true,
 			info = charInfo,
 			currencyAmount = 0,
@@ -749,6 +795,9 @@ function Garrison:OnInitialize()
 	if (not globalDb.data[charInfo.realmName][charInfo.playerName]["missions"]) then		
 		globalDb.data[charInfo.realmName][charInfo.playerName]["missions"] = {}
 	end
+	if (not globalDb.data[charInfo.realmName][charInfo.playerName]["buildings"]) then		
+		globalDb.data[charInfo.realmName][charInfo.playerName]["buildings"] = {}
+	end	
 
 	self.getColoredUnitName = getColoredUnitName
 	self.pairsByKeys = pairsByKeys
