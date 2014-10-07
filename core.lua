@@ -88,7 +88,8 @@ local DB_DEFAULTS = {
 			sink = {},
 			toastEnabled = true,
 			toastPersistent = true,
-			hideBlizzardNotification = false,
+			hideBlizzardNotificationBuilding = false,
+			hideBlizzardNotificationMission = false,
 		},			
 		tooltip = {
 			scale = 1,
@@ -437,6 +438,7 @@ do
 
 		tooltip:Clear()
 		tooltip:SetCellMarginH(0)
+
 		tooltip:SetCellMarginV(0)
 
 		if tooltipType == TOOLTIP_MISSION then
@@ -522,12 +524,63 @@ do
 					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
 					tooltip:SetCell(row, 3, ("%s %s"):format(ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
 
-					for buildingID, buildingData in pairs(playerData.buildings) do
-						-- Display building and Workorder data
+					if #playerData.buildings > 0 then
+						row = tooltip:AddLine(" ")
+						AddSeparator(tooltip)
+
+						row = tooltip:AddLine(" ")
+						tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
+
+
+						for buildingID, buildingData in pairs(playerData.buildings) do
+							-- Display building and Workorder data
+							row = tooltip:AddLine(" ")					
+							tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
+
+							tooltip:SetCell(row, 2, buildingData.name, nil, "LEFT", 2)
+
+							if buildingData.isBuilding then
+								local timeLeft = buildingData.duration - (now - buildingData.buildTime)
+
+								tooltip:SetCell(row, 4, ("%s%s"):format(
+									getColoredString(("%s | "):format(FormattedSeconds(buildingData.buildTime)), colors.lightGray),
+									getColoredString(FormattedSeconds(timeLeft), colors.white)
+								), nil, "RIGHT", 3)
+							else
+								if buildingData.shipment.shipmentsReady and buildingData.shipment.shipmentsTotal and buildingData.shipment.shipmentsReady < buildingData.shipment.shipmentsTotal then
+									-- Unfinished shipments! - display remaining time till next/last shipment
+									local openShipments = buildingData.shipment.shipmentsTotal - buildingData.shipment.shipmentsReady
+
+									local timeLeft = buildingData.shipment.duration - (now - buildingData.creationTime)									
+									
+									print(("openShipments: %s"):format(openShipments))
+									print(("timeLeft: %s"):format(FormattedSeconds(timeLeft)))							
+
+									if (openShipments == 1) then
+
+									else
+										local timeLeftTotal = timeLeft * openShipments
+
+										print(("timeLeftTotal: %s"):format(FormattedSeconds(timeLeftTotal)))							
+									end
+									
+
+											
+								end
+							end
+							tooltip:SetCell(row, 4, buildingData.name, nil, "LEFT", 1)
+							tooltip:SetCell(row, 5, buildingData.name, nil, "LEFT", 1)
+							tooltip:SetCell(row, 6, buildingData.name, nil, "LEFT", 1)
+							tooltip:SetCell(row, 7, buildingData.name, nil, "LEFT", 1)
+
+						end
+
 					end
 
-				end
+				end			
+			end
 			row = tooltip:AddLine(" ")	
+
 		end
 
 	  	tooltip:Show()		
@@ -543,7 +596,7 @@ do
 	function ldb_object_mission:OnEnter()
 		DrawTooltip(self, TOOLTIP_MISSION)
 	end
-
+ 
 	function ldb_object_mission:OnLeave()
 	end
 
@@ -557,8 +610,6 @@ do
 				else
 					HideUIPanel(GarrisonLandingPage);
 				end
-			else
-				
 			end
 		else	
 			for i, button in ipairs(InterfaceOptionsFrameAddOns.buttons) do
@@ -621,6 +672,54 @@ function Garrison:UpdateUnknownMissions(missionsLoaded)
 		end		
 	end
 
+end
+
+function Garrison:UpdateBuildingInfo()
+
+	local buildings = C_Garrison.GetBuildings();
+
+	-- Clear old datag
+	globalDb.data[charInfo.realmName][charInfo.playerName].buildings = {}
+
+	for i = 1, #buildings do
+
+		local buildingID = buildings[i].buildingID;
+		local plotID = buildings[i].plotID		
+		
+		if plotID then			 
+			local id, name, texPrefix, icon, rank, isBuilding, timeStart, buildTime, canActivate, canUpgrade, isPrebuilt = C_Garrison.GetOwnedBuildingInfoAbbrev(plotID);			      
+
+			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[i] = {
+				id = id,
+				name = name,
+				texPrefix = texPrefix,
+				icon = icon,
+				rank = rank,
+				isBuilding = isBuilding,
+				timeStart = timeStart,
+				buildTime = buildTime,				
+				shipment = {}
+			}			
+		end
+
+		if ( buildingID) then
+			local name, texture, shipmentCapacity, shipmentsReady, shipmentsTotal, creationTime, duration, timeleftString, itemName, itemIcon, itemQuality, itemID = C_Garrison.GetLandingPageShipmentInfo(buildingID);
+
+			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[i].shipment = {
+				name = name,
+				texture = texture,
+				shipmentCapacity = shipmentCapacity,
+				shipmentsReady = shipmentsReady,
+				shipmentsTotal = shipmentsTotal,
+				creationTime = creationTime,
+				duration = duration,
+				timeleftString = timeleftString,
+				itemName = itemName,
+				itemQuality = itemQuality,
+				itemID = itemID
+			}
+		end
+	end	
 end
 
 function Garrison:GARRISON_MISSION_COMPLETE_RESPONSE(event, missionID, canComplete, succeeded)
@@ -750,13 +849,24 @@ function Garrison:CheckAddonLoaded(event, addon)
 end
 
 function Garrison:GarrisonMissionAlertFrame_ShowAlert(missionID)
-	if configDb.notification.hideBlizzardNotification then
+	if configDb.notification.hideBlizzardNotificationMission then
 		debugPrint("Blizzard notification hidden: "..missionID)
 	else
 		debugPrint("Show blizzard notification"..missionID)
 		self.hooks.GarrisonMissionAlertFrame_ShowAlert(missionID)
 	end
 end
+
+function Garrison:GarrisonBuildingAlertFrame_ShowAlert(name)
+	if configDb.notification.hideBlizzardNotificationBuilding then
+		debugPrint("Blizzard notification hidden: "..name)
+	else
+		debugPrint("Show blizzard notification"..name)
+		self.hooks.GarrisonBuildingAlertFrame_ShowAlert(name)
+	end
+end
+
+
 
 function Garrison:OnInitialize()	
 	local _, _, _, tocversion = _G.GetBuildInfo()
@@ -823,6 +933,7 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("ADDON_LOADED", "CheckAddonLoaded")
 
 	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
+	self:RawHook("GarrisonBuildingAlertFrame_ShowAlert", true)
 
 	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
 	timers.icon_update = Garrison:ScheduleTimer("DelayedUpdate", 5)
@@ -833,6 +944,8 @@ end
 function Garrison:DelayedUpdate()	
 	delayedInit = true
 	Garrison:UpdateCurrency()	
+
+	Garrison:UpdateBuildingInfo()
 end
 
 

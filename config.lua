@@ -240,17 +240,28 @@ function Garrison:GetOptions()
 						name = L["Misc"],
 						cmdHidden = true,
 					},								
-					hideBlizzardNotification = {
+					hideBlizzardNotificationMission = {
 						order = 410, 
 						type = "toggle", 
 						width = "full",
 						name = L["Hide Blizzard notifications"],
 						desc = L["Don't show the built-in notifications"],
-						get = function() return configDb.notification.hideBlizzardNotification end,
-						set = function(_,v) configDb.notification.hideBlizzardNotification = v 							
+						get = function() return configDb.notification.hideBlizzardNotificationMission end,
+						set = function(_,v) configDb.notification.hideBlizzardNotificationMission = v 							
 						end,
 						disabled = function() return not configDb.notification.enabled end,
 					},
+					hideBlizzardNotificationBuilding = {
+						order = 420, 
+						type = "toggle", 
+						width = "full",
+						name = L["Hide Blizzard notifications"],
+						desc = L["Don't show the built-in notifications"],
+						get = function() return configDb.notification.hideBlizzardNotificationBuilding end,
+						set = function(_,v) configDb.notification.hideBlizzardNotificationBuilding = v 							
+						end,
+						disabled = function() return not configDb.notification.enabled end,
+					},					
 					playSound = {
 						order = 420,
 						type = "toggle",
