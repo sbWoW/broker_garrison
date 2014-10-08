@@ -164,6 +164,18 @@ local function pairsByKeys(t,f)
 	return iter
 end
 
+local function getIconString(name, size) 
+	local icon
+
+	if name and size then
+		icon = string.format("\124T%s:%d:%d:1:0\124t", name, size, size)
+	else
+		icon = string.format("\124T%s:%d:%d:1:0\124t", "Interface\\Icons\\INV_Misc_QuestionMark", size, size)
+	end
+
+	return icon
+end
+
 local function getColoredUnitName (name, class)
 	local colorUnitName
 	
@@ -354,7 +366,7 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 
 			if buildingData.isBuilding then
 				-- Check for building complete
-				local timeLeft = buildingData.duration - (now - buildingData.buildTime)
+				local timeLeft = buildingData.buildTime - (now - buildingData.timeStart)
 
 				if timeLeft < 0 then
 					Garrison:SendNotification(paramCharInfo, buildingData, TYPE_BUILDING)
@@ -366,9 +378,9 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 				buildingCount.active = buildingCount.active + 1
 
 				-- Check for work orders
-				if buildingData.shipment.shipmentsTotal and buildingData.shipment.shipmentsReady then
+				if buildingData.shipment and buildingData.shipment.name and buildingData.shipment.shipmentsTotal and buildingData.shipment.shipmentsReady then
 					local openShipments = buildingData.shipment.shipmentsTotal - buildingData.shipment.shipmentsReady
-					local timeLeft = buildingData.shipment.duration - (now - buildingData.creationTime)
+					local timeLeft = buildingData.shipment.duration - (now - buildingData.shipment.creationTime)
 
 					-- TODO: Count/Guess completed shipments from count / duration
 
@@ -431,7 +443,7 @@ function Garrison:GetBuildingCount(paramCharInfo)
 end
 
    
-function Garrison:UpdateConfig() 		
+function Garrison:UpdateConfig()
 	if GarrisonLandingPageMinimapButton then	
 		if GarrisonLandingPageMinimapButton:IsShown() then
 			if configDb.ldbConfig.hideGarrisonMinimapButton then
@@ -447,7 +459,7 @@ end
 
 local DrawTooltip
 do
-	local NUM_TOOLTIP_COLUMNS = 7
+	local NUM_TOOLTIP_COLUMNS = 9
 	local tooltip
 	local LDB_anchor
 	local tooltipType
@@ -482,7 +494,7 @@ do
 		tooltipType = paramTooltipType
 	
 		if not tooltip then
-			tooltip = LibQTip:Acquire("BrokerGarrisonTooltip", NUM_TOOLTIP_COLUMNS, "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT")
+			tooltip = LibQTip:Acquire("BrokerGarrisonTooltip", NUM_TOOLTIP_COLUMNS, "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT")
 			tooltip.OnRelease = Tooltip_OnRelease
 			tooltip:EnableMouse(true)
 			tooltip:SmartAnchorTo(anchor_frame)
@@ -604,41 +616,59 @@ do
 							row = tooltip:AddLine(" ")					
 							tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
 
-							tooltip:SetCell(row, 2, buildingData.name, nil, "LEFT", 2)
+							
+							tooltip:SetCell(row, 1, getIconString(buildingData.icon, 16), nil, "LEFT", 1)
+							tooltip:SetCell(row, 2, buildingData.name, nil, "LEFT", 1)
+							tooltip:SetCell(row, 3, buildingData.rank, nil, "LEFT", 1) -- TODO: Icon
 
-							if buildingData.isBuilding then
-								local timeLeft = buildingData.duration - (now - buildingData.buildTime)
-
+							local timeLeft = buildingData.buildTime - (now - buildingData.timeStart)
+							
+							if buildingData.isBuilding and (buildingData.canActivate or timeLeft <= 0) then
+								tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
+							elseif buildingData.isBuilding then
 								tooltip:SetCell(row, 4, ("%s%s"):format(
 									getColoredString(("%s | "):format(FormattedSeconds(buildingData.buildTime)), colors.lightGray),
 									getColoredString(FormattedSeconds(timeLeft), colors.white)
-								), nil, "RIGHT", 3)
-							else
+								), nil, "RIGHT", 1)							
+							elseif buildingData.shipment and buildingData.shipment.name then
+								local shipmentsAvailable = buildingData.shipment.shipmentCapacity
+
+								--print(("shipmentsAvailable: %s"):format(shipmentsAvailable))
+
 								if buildingData.shipment.shipmentsReady and buildingData.shipment.shipmentsTotal and buildingData.shipment.shipmentsReady < buildingData.shipment.shipmentsTotal then
+
+									shipmentsAvailable = buildingData.shipment.shipmentCapacity - buildingData.shipment.shipmentsTotal
 									-- Unfinished shipments! - display remaining time till next/last shipment
 									local openShipments = buildingData.shipment.shipmentsTotal - buildingData.shipment.shipmentsReady
 
-									local timeLeft = buildingData.shipment.duration - (now - buildingData.creationTime)
+									local timeLeft = buildingData.shipment.duration - (now - buildingData.shipment.creationTime)
 									
-									print(("openShipments: %s"):format(openShipments))
-									print(("timeLeft: %s"):format(FormattedSeconds(timeLeft)))							
+									--print(("openShipments: %s"):format(openShipments))
+									--print(("timeLeft: %s"):format(FormattedSeconds(timeLeft)))							
+
+									tooltip:SetCell(row, 4, openShipments, nil, "LEFT", 1)
+									tooltip:SetCell(row, 5, buildingData.shipment.shipmentsReady, nil, "LEFT", 1)
 
 									if (openShipments == 1) then
-
+										tooltip:SetCell(row, 6, FormattedSeconds(timeLeft), nil, "LEFT", 1)
 									else
 										local timeLeftTotal = timeLeft * openShipments
 
-										print(("timeLeftTotal: %s"):format(FormattedSeconds(timeLeftTotal)))							
-									end
-									
-
-											
+										--print(("timeLeftTotal: %s"):format(FormattedSeconds(timeLeftTotal)))							
+										
+										tooltip:SetCell(row, 6, FormattedSeconds(timeLeft), nil, "LEFT", 1)
+										tooltip:SetCell(row, 7, FormattedSeconds(timeLeftTotal), nil, "LEFT", 1)
+									end							
 								end
+
+								tooltip:SetCell(row, 9, shipmentsAvailable, nil, "LEFT", 1)
+							else
+								--tooltip:SetCell(row, 4, shipmentsAvailable, nil, "LEFT", 3)
 							end
-							tooltip:SetCell(row, 4, buildingData.name, nil, "LEFT", 1)
-							tooltip:SetCell(row, 5, buildingData.name, nil, "LEFT", 1)
-							tooltip:SetCell(row, 6, buildingData.name, nil, "LEFT", 1)
-							tooltip:SetCell(row, 7, buildingData.name, nil, "LEFT", 1)
+							-- tooltip:SetCell(row, 4, buildingData.name, nil, "LEFT", 1)
+							--tooltip:SetCell(row, 5, buildingData.name, nil, "LEFT", 1)
+							--tooltip:SetCell(row, 6, buildingData.name, nil, "LEFT", 1)
+							--tooltip:SetCell(row, 7, buildingData.name, nil, "LEFT", 1)
 
 						end
 
@@ -742,8 +772,11 @@ function Garrison:UpdateUnknownMissions(missionsLoaded)
 end
 
 function Garrison:UpdateBuildingInfo()
+	debugPrint("UpdateBuildingInfo")
 
 	local buildings = C_Garrison.GetBuildings();
+
+	local tmpBuildings = {}
 
 	-- Clear old datag
 	globalDb.data[charInfo.realmName][charInfo.playerName].buildings = {}
@@ -753,26 +786,29 @@ function Garrison:UpdateBuildingInfo()
 		local buildingID = buildings[i].buildingID;
 		local plotID = buildings[i].plotID		
 		
-		if plotID then			 
+		if plotID then
 			local id, name, texPrefix, icon, rank, isBuilding, timeStart, buildTime, canActivate, canUpgrade, isPrebuilt = C_Garrison.GetOwnedBuildingInfoAbbrev(plotID);			      
 
-			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[i] = {
+			tmpBuildings[i] = {
 				id = id,
 				name = name,
 				texPrefix = texPrefix,
 				icon = icon,
 				rank = rank,
 				isBuilding = isBuilding,
+				canActivate = canActivate,
 				timeStart = timeStart,
-				buildTime = buildTime,				
+				buildTime = buildTime,
 				shipment = {}
-			}			
+			}
+
+			print(("building update (%s)"):format(name))
 		end
 
-		if ( buildingID) then
+		if plotID and buildingID then	
 			local name, texture, shipmentCapacity, shipmentsReady, shipmentsTotal, creationTime, duration, timeleftString, itemName, itemIcon, itemQuality, itemID = C_Garrison.GetLandingPageShipmentInfo(buildingID);
 
-			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[i].shipment = {
+			tmpBuildings[i].shipment = {
 				name = name,
 				texture = texture,
 				shipmentCapacity = shipmentCapacity,
@@ -785,8 +821,13 @@ function Garrison:UpdateBuildingInfo()
 				itemQuality = itemQuality,
 				itemID = itemID
 			}
+
+			print(("   - shipment (%s): %s"):format(name or "-", shipmentsTotal or 0))
 		end
-	end	
+
+	end
+
+	globalDb.data[charInfo.realmName][charInfo.playerName].buildings = tmpBuildings
 end
 
 function Garrison:GARRISON_MISSION_COMPLETE_RESPONSE(event, missionID, canComplete, succeeded)
@@ -846,6 +887,16 @@ function Garrison:GARRISON_MISSION_NPC_OPENED(...)
 	Garrison:UpdateUnknownMissions(true)
 end
 
+function Garrison:BuildingUpdate(...)
+	debugPrint("BuildingUpdate")
+	Garrison:UpdateBuildingInfo()
+end
+
+function Garrison:ShipmentUpdate(...)
+	debugPrint("ShipmentUpdate")
+	C_Garrison.RequestLandingPageShipmentInfo()
+	Garrison:UpdateBuildingInfo()
+end
 
 function Garrison:UpdateCurrency()
 	local _, amount, _ = GetCurrencyInfo(GARRISON_CURRENCY);
@@ -997,6 +1048,10 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")	
 	self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE", "GARRISON_SHOW_LANDING_PAGE")
 	self:RegisterEvent("GARRISON_MISSION_NPC_OPENED", "GARRISON_MISSION_NPC_OPENED")
+
+	self:RegisterEvent("GARRISON_BUILDING_PLACED", "BuildingUpdate")
+	self:RegisterEvent("GARRISON_BUILDING_REMOVED", "BuildingUpdate")
+	self:RegisterEvent("SHIPMENT_CRAFTER_CLOSED", "ShipmentUpdate")
 
 	self:RegisterEvent("ADDON_LOADED", "CheckAddonLoaded")
 
