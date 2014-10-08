@@ -46,9 +46,9 @@ local globalDb
 local DEFAULT_FONT
 
 -- Constants
-local TYPE_BUILDING = 1
-local TYPE_MISSION = 2
-local TYPE_SHIPMENT = 3
+local TYPE_BUILDING = "building"
+local TYPE_MISSION = "mission"
+local TYPE_SHIPMENT = "shipment"
 
 local addonInitialized = false
 local delayedInit = false
@@ -74,23 +74,31 @@ local ICON_CLOSE_DOWN = ICON_CLOSE
 local SECONDS_PER_DAY = 24 * 60 * 60
 local SECONDS_PER_HOUR = 60 * 60
 local TOAST_MISSION_COMPLETE = "BrokerGarrisonMissionComplete"
+local TOAST_BUILDING_COMPLETE = "BrokerGarrisonBuildingComplete"
+local TOAST_SHIPMENT_COMPLETE = "BrokerGarrisonShipmentComplete"
 
 local DB_DEFAULTS = {
 	profile = {
 		ldbConfig = {
-			showCurrency = true,
-			showProgress = true,
-			showComplete = true,
+			mission = {
+				showCurrency = true,
+				showProgress = true,
+				showComplete = true,
+			},
+			building = {
+
+			},
 			hideGarrisonMinimapButton = false,
 		},
 		notification = {
-			enabled = true,
-			repeatOnLoad = false,
 			sink = {},
-			toastEnabled = true,
-			toastPersistent = true,
-			hideBlizzardNotificationBuilding = false,
-			hideBlizzardNotificationMission = false,
+			['*'] = {
+				enabled = true,
+				repeatOnLoad = false,
+				toastEnabled = true,
+				toastPersistent = true,
+				hideBlizzardNotification = false,
+			}
 		},			
 		tooltip = {
 			scale = 1,
@@ -211,6 +219,10 @@ local function getColoredString(text, color)
 	return string.format("|cff%02x%02x%02x%s|r",color.r*255,color.g*255,color.b*255, text)	
 end
 
+local function isCurrentChar(paramCharInfo)
+	return paramCharInfo and charInfo and paramCharInfo.playerName == charInfo.playerName and paramCharInfo.realmName == charInfo.realmName
+end
+
 local function FormattedSeconds(seconds)
 	local negative = ""
 
@@ -251,20 +263,49 @@ local function toastCallback (callbackType, mouseButton, buttonDown, payload)
 	if callbackType == "secondary" then	
 		debugPrint("Dismiss: "..payload[1].id.." ("..payload[1].name..")")
 		missionData.notification = 2 -- Mission dismissed, never show again
+		missionData.notificationDismissed = true
 	end
 end
 
 local function toastMissionComplete (toast, text, missionData)
-	if configDb.notification.toastPersistent then
+	if configDb.notification.mission.toastPersistent then
 		toast:MakePersistent()
 	end
 	toast:SetTitle(L["Garrison: Mission complete"])
 	toast:SetFormattedText(getColoredString(text, colors.green))
 	toast:SetIconTexture([[Interface\Icons\Inv_Garrison_Resource]])
-	if configDb.notification.extendedToast then
+	if configDb.notification.mission.extendedToast then
 		toast:SetPrimaryCallback(_G.OKAY, toastCallback)
 		toast:SetSecondaryCallback(L["Dismiss"], toastCallback)		
 		toast:SetPayload(missionData)
+	end
+end
+
+local function toastBuildingComplete (toast, text, buildingData)
+	if configDb.notification.building.toastPersistent then
+		toast:MakePersistent()
+	end
+	toast:SetTitle(L["Garrison: Building complete"])
+	toast:SetFormattedText(getColoredString(text, colors.green))
+	toast:SetIconTexture(buildingData.icon)
+	if configDb.notification.building.extendedToast then
+		toast:SetPrimaryCallback(_G.OKAY, toastCallback)
+		toast:SetSecondaryCallback(L["Dismiss"], toastCallback)		
+		toast:SetPayload(buildingData)
+	end
+end
+
+local function toastShipmentComplete (toast, text, shipmentData)
+	if configDb.notification.shipment.toastPersistent then
+		toast:MakePersistent()
+	end
+	toast:SetTitle(L["Garrison: Shipment complete"])
+	toast:SetFormattedText(getColoredString(text, colors.green))
+	toast:SetIconTexture(shipmentData.texture)
+	if configDb.notification.shipment.extendedToast then
+		toast:SetPrimaryCallback(_G.OKAY, toastCallback)
+		toast:SetSecondaryCallback(L["Dismiss"], toastCallback)		
+		toast:SetPayload(shipmentData)
 	end
 end
 
@@ -284,30 +325,54 @@ end
 
 function Garrison:SendNotification(paramCharInfo, data, notificationType)
 
+	local retVal = false
+
 	if delayedInit then
-		if configDb.notification.enabled then
+		if configDb.notification[notificationType].enabled then
 			if  (data.notification == 0 or 
-				(not addonInitialized and configDb.notification.repeatOnLoad and data.notification ~= 2)
+				(not addonInitialized and configDb.notification[notificationType].repeatOnLoad and data.notification ~= 2)
 			) then
 
-				local notificationText = (L["Mission complete (%s): %s"]):format(FormatRealmPlayer(paramCharInfo, false), data.name)
-				local toastText = ("%s\n\n%s"):format(FormatRealmPlayer(paramCharInfo, true), data.name)
+				local notificationText, toastName, toastText, soundName, toastEnabled, playSound
 
-				debugPrint(notificationText)
-				self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
+				toastText = ("%s\n\n%s"):format(FormatRealmPlayer(paramCharInfo, true), data.name)
+				toastEnabled = configDb.notification[notificationType].toastEnabled
+				playSound = configDb.notification[notificationType].PlaySound
+				soundName = configDb.notification[notificationType].SoundName or "None"
 
-				if configDb.notification.toastEnabled then
-					Toast:Spawn(TOAST_MISSION_COMPLETE, toastText, data)
+				if (notificationType == TYPE_MISSION) then
+					notificationText = (L["Mission complete (%s): %s"]):format(FormatRealmPlayer(paramCharInfo, false), data.name)
+					toastName = TOAST_MISSION_COMPLETE
+				elseif (notificationType == TYPE_BUILDING) then
+					notificationText = (L["Building complete (%s): %s"]):format(FormatRealmPlayer(paramCharInfo, false), data.name)
+					toastName = TOAST_BUILDING_COMPLETE
+				elseif (notificationType == TYPE_SHIPMENT) then
+					notificationText = (L["Shipment complete (%s): %s"]):format(FormatRealmPlayer(paramCharInfo, false), data.name)
+					toastName = TOAST_SHIPMENT_COMPLETE
+
+					data.notificationValue = data.shipmentsReadyEstimate
 				end
 
-				if configDb.notification.playSound then
-					PlaySoundFile(LSM:Fetch("sound", configDb.notification.soundName or "None"))
+				debugPrint(notificationText)
+
+				self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
+
+				if toastEnabled then
+					Toast:Spawn(toastName, toastText, data)
+				end
+
+				if playSound then
+					PlaySoundFile(LSM:Fetch("sound", soundName))
 				end
 
 				data.notification = 1 
+
+				retVal = true
 			end
 		end
 	end
+
+	return retVal
 end 
 
 function Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, missions)
@@ -369,27 +434,51 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 				local timeLeft = buildingData.buildTime - (now - buildingData.timeStart)
 
 				if timeLeft < 0 then
+					debugPrint("Building Complete")
+
 					Garrison:SendNotification(paramCharInfo, buildingData, TYPE_BUILDING)
 					buildingCount.complete = buildingCount.complete + 1
+
 				else					
 					buildingCount.building = buildingCount.building + 1
 				end
 			else				
 				buildingCount.active = buildingCount.active + 1
 
-				-- Check for work orders
-				if buildingData.shipment and buildingData.shipment.name and buildingData.shipment.shipmentsTotal and buildingData.shipment.shipmentsReady then
-					local openShipments = buildingData.shipment.shipmentsTotal - buildingData.shipment.shipmentsReady
-					local timeLeft = buildingData.shipment.duration - (now - buildingData.shipment.creationTime)
+				local shipmentData = buildingData.shipment
 
+				-- Check for work orders
+				if shipmentData and shipmentData.name and shipmentData.shipmentsTotal and shipmentData.shipmentsReady then
+
+					local openShipments = shipmentData.shipmentsTotal - shipmentData.shipmentsReady
+					--local timeLeft = buildingData.shipment.duration - 
+					local timeDiff = (now - buildingData.shipment.creationTime)
+					local shipmentsReadyByTime = math.floor(timeDiff / shipmentData.duration)
 					-- TODO: Count/Guess completed shipments from count / duration
 
-					if timeLeft < 0 then
-
+					if isCurrentChar(paramCharInfo) then
+						buildingCount.shipmentsReady = buildingCount.shipmentsReady
+					else 
+						-- Only for other chars
+						buildingCount.shipmentsReady = buildingCount.shipmentsReady + shipmentsReadyByTime
 					end
-				end
-			end
+					buildingCount.shipmentsInProgress = shipmentData.shipmentsTotal - buildingCount.shipmentsReady
+					buildingCount.shipmentsAvailable = shipmentData.shipmentCapacity - shipmentData.shipmentsTotal
 
+					shipmentData.shipmentsReadyEstimate = buildingCount.shipmentsReady
+
+					if shipmentData.shipmentsReadyEstimate < shipmentData.notificationValue then
+						Garrison:SendNotification(paramCharInfo, shipmentData, TYPE_SHIPMENT)
+					else
+						if shipmentData.shipmentsReadyEstimate > shipmentData.notificationValue then
+							shipmentData.notificationValue = shipmentData.shipmentsReadyEstimate
+						end
+					end
+				elseif shipmentData and shipmentData.name then
+					shipmentData.shipmentsAvailable = shipmentData.shipmentsTotal
+				end
+
+			end
 			
 		end
 
@@ -415,7 +504,8 @@ function Garrison:GetMissionCount(paramCharInfo)
 		end
 	end
 
-	return missionCount.total, missionCount.inProgress, missionCount.complete
+	--return missionCount.total, missionCount.inProgress, missionCount.complete
+	return missionCount
 end
 
 function Garrison:GetBuildingCount(paramCharInfo)
@@ -424,9 +514,10 @@ function Garrison:GetBuildingCount(paramCharInfo)
 		building = 0,
 		complete = 0,
 		active = 0,
-		shipmentInProgress = 0,
-		shipmentReady = 0,
-		shipmentTotal = 0,
+		shipmentsInProgress = 0,
+		shipmentsReady = 0,
+		shipmentsTotal = 0,
+		shipmentsAvailable = 0,
 	}
 
 	if paramCharInfo then		
@@ -439,7 +530,8 @@ function Garrison:GetBuildingCount(paramCharInfo)
 		end
 	end
 
-	return buildingCount.total, buildingCount.building, buildingCount.active, buildingCount.shipmentInProgress, buildingCount.shipmentReady, buildingCount.shipmentTotal
+	--return buildingCount.total, buildingCount.building, buildingCount.active, buildingCount.shipmentInProgress, buildingCount.shipmentReady, buildingCount.shipmentTotal
+	return buildingCount
 end
 
    
@@ -592,7 +684,7 @@ do
 				AddSeparator(tooltip)
 
 				for playerName, playerData in pairsByKeys(realmData) do		
-					local numBuildingsTotal, numBuildingsBuilding, numBuildingsActive, numShipmentsInProgress, numShipmentsReady, numShipmentsTotal = Garrison:GetBuildingCount(playerData.info)
+					local buildingCount = Garrison:GetBuildingCount(playerData.info)
 
 					row = tooltip:AddLine(" ")
 					row = tooltip:AddLine()
@@ -601,9 +693,9 @@ do
 					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
 					tooltip:SetCell(row, 3, ("%s %s"):format(ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
 
-					tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(numBuildingsTotal), colors.lightGray))
+					tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(buildingCount.total), colors.lightGray))
 
-					if playerData.expanded and numBuildingsTotal > 0 then
+					if playerData.expanded and buildingCount.total > 0 then
 						row = tooltip:AddLine(" ")
 						AddSeparator(tooltip)
 
@@ -631,28 +723,30 @@ do
 									getColoredString(FormattedSeconds(timeLeft), colors.white)
 								), nil, "RIGHT", 1)							
 							elseif buildingData.shipment and buildingData.shipment.name then
-								local shipmentsAvailable = buildingData.shipment.shipmentCapacity
+								local shipmentData = buildingData.shipment
 
+								--local shipmentsAvailable = shipmentData.shipmentCapacity
 								--print(("shipmentsAvailable: %s"):format(shipmentsAvailable))
 
-								if buildingData.shipment.shipmentsReady and buildingData.shipment.shipmentsTotal and buildingData.shipment.shipmentsReady < buildingData.shipment.shipmentsTotal then
 
-									shipmentsAvailable = buildingData.shipment.shipmentCapacity - buildingData.shipment.shipmentsTotal
+								if buildingCount.shipmentsReady and buildingCount.shipmentsTotal then
+
+									--shipmentsAvailable = shipmentData.shipmentCapacity - shipmentData.shipmentsTotal
 									-- Unfinished shipments! - display remaining time till next/last shipment
-									local openShipments = buildingData.shipment.shipmentsTotal - buildingData.shipment.shipmentsReady
+									--local openShipments = shipmentData.shipmentsTotal - shipmentData.shipmentsReady
 
-									local timeLeft = buildingData.shipment.duration - (now - buildingData.shipment.creationTime)
+									local timeLeft = shipmentData.duration - (now - shipmentData.creationTime)
 									
 									--print(("openShipments: %s"):format(openShipments))
-									--print(("timeLeft: %s"):format(FormattedSeconds(timeLeft)))							
+									--print(("timeLeft: %s"):format(FormattedSeconds(timeLeft)))
 
-									tooltip:SetCell(row, 4, openShipments, nil, "LEFT", 1)
-									tooltip:SetCell(row, 5, buildingData.shipment.shipmentsReady, nil, "LEFT", 1)
+									tooltip:SetCell(row, 4, buildingCount.shipmentsInProgress, nil, "LEFT", 1)
+									tooltip:SetCell(row, 5, buildingCount.shipmentsReady, nil, "LEFT", 1)
 
-									if (openShipments == 1) then
+									if (buildingCount.shipmentsInProgress == 1) then
 										tooltip:SetCell(row, 6, FormattedSeconds(timeLeft), nil, "LEFT", 1)
 									else
-										local timeLeftTotal = timeLeft * openShipments
+										local timeLeftTotal = timeLeft * buildingCount.shipmentsInProgress
 
 										--print(("timeLeftTotal: %s"):format(FormattedSeconds(timeLeftTotal)))							
 										
@@ -661,19 +755,12 @@ do
 									end							
 								end
 
-								tooltip:SetCell(row, 9, shipmentsAvailable, nil, "LEFT", 1)
+								tooltip:SetCell(row, 9, buildingCount.shipmentsAvailable, nil, "LEFT", 1)
 							else
 								--tooltip:SetCell(row, 4, shipmentsAvailable, nil, "LEFT", 3)
 							end
-							-- tooltip:SetCell(row, 4, buildingData.name, nil, "LEFT", 1)
-							--tooltip:SetCell(row, 5, buildingData.name, nil, "LEFT", 1)
-							--tooltip:SetCell(row, 6, buildingData.name, nil, "LEFT", 1)
-							--tooltip:SetCell(row, 7, buildingData.name, nil, "LEFT", 1)
-
 						end
-
 					end
-
 				end			
 			end
 			row = tooltip:AddLine(" ")	
@@ -789,7 +876,7 @@ function Garrison:UpdateBuildingInfo()
 		if plotID then
 			local id, name, texPrefix, icon, rank, isBuilding, timeStart, buildTime, canActivate, canUpgrade, isPrebuilt = C_Garrison.GetOwnedBuildingInfoAbbrev(plotID);			      
 
-			tmpBuildings[i] = {
+			tmpBuildings[buildingID] = {
 				id = id,
 				name = name,
 				texPrefix = texPrefix,
@@ -802,13 +889,13 @@ function Garrison:UpdateBuildingInfo()
 				shipment = {}
 			}
 
-			print(("building update (%s)"):format(name))
+			-- print(("building update (%s)"):format(name))
 		end
 
 		if plotID and buildingID then	
 			local name, texture, shipmentCapacity, shipmentsReady, shipmentsTotal, creationTime, duration, timeleftString, itemName, itemIcon, itemQuality, itemID = C_Garrison.GetLandingPageShipmentInfo(buildingID);
 
-			tmpBuildings[i].shipment = {
+			tmpBuildings[buildingID].shipment = {
 				name = name,
 				texture = texture,
 				shipmentCapacity = shipmentCapacity,
@@ -822,7 +909,17 @@ function Garrison:UpdateBuildingInfo()
 				itemID = itemID
 			}
 
-			print(("   - shipment (%s): %s"):format(name or "-", shipmentsTotal or 0))
+			-- print(("   - shipment (%s): %s"):format(name or "-", shipmentsTotal or 0))
+		end		
+
+		if globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID] and
+			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment and
+			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.shipmentsTotal and
+			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.shipmentsTotal > 0
+		then
+			debugPrint(("%s: preserve notificationValue: %s"):format(tmpBuildings[buildingID].shipment.name, globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.notificationValue))
+			tmpBuildings[buildingID].shipment.notificationValue = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.notificationValue
+			tmpBuildings[buildingID].shipment.notification = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.notification
 		end
 
 	end
@@ -928,14 +1025,14 @@ function Garrison:Update()
 
 	local ldbText = ""
 
-	if configDb.ldbConfig.showCurrency then
+	if configDb.ldbConfig.mission.showCurrency then
 		local currencyAmount = globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount
 		ldbText = ldbText..("%s %s"):format(BreakUpLargeNumbers(currencyAmount), ICON_CURRENCY)
 	end
-	if configDb.ldbConfig.showProgress then
+	if configDb.ldbConfig.mission.showProgress then
 		ldbText = ldbText.." "..(L["In Progress: %s"]):format(numMissionsInProgress)
 	end
-	if configDb.ldbConfig.showComplete then
+	if configDb.ldbConfig.mission.showComplete then
 		ldbText = ldbText.." "..(L["Complete: %s"]):format(numMissionsCompleted)
 	end	
 
@@ -967,7 +1064,7 @@ function Garrison:CheckAddonLoaded(event, addon)
 end
 
 function Garrison:GarrisonMissionAlertFrame_ShowAlert(missionID)
-	if configDb.notification.hideBlizzardNotificationMission then
+	if configDb.notification.mission.hideBlizzardNotification then
 		debugPrint("Blizzard notification hidden: "..missionID)
 	else
 		debugPrint("Show blizzard notification"..missionID)
@@ -976,7 +1073,7 @@ function Garrison:GarrisonMissionAlertFrame_ShowAlert(missionID)
 end
 
 function Garrison:GarrisonBuildingAlertFrame_ShowAlert(name)
-	if configDb.notification.hideBlizzardNotificationBuilding then
+	if configDb.notification.building.hideBlizzardNotification then
 		debugPrint("Blizzard notification hidden: "..name)
 	else
 		debugPrint("Show blizzard notification"..name)
@@ -1038,6 +1135,8 @@ function Garrison:OnInitialize()
 	Garrison:SetSinkStorage(configDb.notification.sink)
 
 	Toast:Register(TOAST_MISSION_COMPLETE, toastMissionComplete)
+	Toast:Register(TOAST_BUILDING_COMPLETE, toastBuildingComplete)
+	Toast:Register(TOAST_SHIPMENT_COMPLETE, toastShipmentComplete)
 
 	Garrison:UpdateConfig()	
 
