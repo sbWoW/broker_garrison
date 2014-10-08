@@ -247,7 +247,9 @@ function Garrison:GetOptions()
 						name = L["Hide Blizzard notifications"],
 						desc = L["Don't show the built-in notifications"],
 						get = function() return configDb.notification.hideBlizzardNotificationMission end,
-						set = function(_,v) configDb.notification.hideBlizzardNotificationMission = v 							
+						set = function(_,v) 
+							configDb.notification.hideBlizzardNotificationMission = v 
+							Garrison:UpdateConfig()
 						end,
 						disabled = function() return not configDb.notification.enabled end,
 					},
@@ -258,7 +260,9 @@ function Garrison:GetOptions()
 						name = L["Hide Blizzard notifications"],
 						desc = L["Don't show the built-in notifications"],
 						get = function() return configDb.notification.hideBlizzardNotificationBuilding end,
-						set = function(_,v) configDb.notification.hideBlizzardNotificationBuilding = v 							
+						set = function(_,v) 
+							configDb.notification.hideBlizzardNotificationBuilding = v 
+							Garrison:UpdateConfig()
 						end,
 						disabled = function() return not configDb.notification.enabled end,
 					},					
