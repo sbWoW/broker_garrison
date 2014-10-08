@@ -323,13 +323,14 @@ function Garrison:LoadDependencies()
 	end
 end
 
-function Garrison:SendNotification(paramCharInfo, data, notificationType)
+function Garrison:SendNotification(paramCharInfo, data, countData, notificationType)
 
 	local retVal = false
 
 	if delayedInit then
 		if configDb.notification[notificationType].enabled then
-			if  (data.notification == 0 or 
+			if  (not data.notification or
+				(data.notification == 0) or 
 				(not addonInitialized and configDb.notification[notificationType].repeatOnLoad and data.notification ~= 2)
 			) then
 
@@ -347,10 +348,11 @@ function Garrison:SendNotification(paramCharInfo, data, notificationType)
 					notificationText = (L["Building complete (%s): %s"]):format(FormatRealmPlayer(paramCharInfo, false), data.name)
 					toastName = TOAST_BUILDING_COMPLETE
 				elseif (notificationType == TYPE_SHIPMENT) then
-					notificationText = (L["Shipment complete (%s): %s"]):format(FormatRealmPlayer(paramCharInfo, false), data.name)
+					toastText = ("%s\n\n%s (%s / %s)"):format(FormatRealmPlayer(paramCharInfo, true), data.name, countData.shipmentsReady, countData.shipmentsTotal)
+					notificationText = (L["Shipment complete (%s): %s (%s / %s)"]):format(FormatRealmPlayer(paramCharInfo, false), data.name, countData.shipmentsReady, countData.shipmentsTotal)
 					toastName = TOAST_SHIPMENT_COMPLETE
 
-					data.notificationValue = data.shipmentsReadyEstimate
+					data.notificationValue = data.shipmentsReady
 				end
 
 				debugPrint(notificationText)
@@ -381,6 +383,8 @@ function Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, missions)
 	local numMissionsPlayer = tableSize(missions)
 
 	if numMissionsPlayer > 0 then
+		missionCount.total = missionCount.total + numMissionsPlayer
+
 		for missionID, missionData in pairs(missions) do
 			local timeLeft = missionData.duration - (now - missionData.start)
 
@@ -397,10 +401,6 @@ function Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, missions)
 				end
 			end
 
-			if (timeLeft < 0 and missionData.start >= 0) then
-				Garrison:SendNotification(paramCharInfo, missionData, TYPE_MISSION)	
-			end
-
 			-- Count
 			if missionData.start > 0 then
 				if (timeLeft <= 0) then
@@ -414,10 +414,13 @@ function Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, missions)
 				else
 					missionCount.inProgress = missionCount.inProgress + 1
 				end
-			end						
+			end	
+
+			if (timeLeft < 0 and missionData.start >= 0) then
+				Garrison:SendNotification(paramCharInfo, missionData, missionCount, TYPE_MISSION)	
+			end
 		end
-		--
-		missionCount.total = missionCount.total + numMissionsPlayer
+		
 	end	
 end
 
@@ -427,6 +430,8 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 	local numBuildingsPlayer = tableSize(buildings)
 
 	if numBuildingsPlayer > 0 then
+		buildingCount.total = buildingCount.total + numBuildingsPlayer
+
 		for buildingID, buildingData in pairs(buildings) do			
 
 			if buildingData.isBuilding then
@@ -436,7 +441,7 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 				if timeLeft < 0 then
 					debugPrint("Building Complete")
 
-					Garrison:SendNotification(paramCharInfo, buildingData, TYPE_BUILDING)
+					Garrison:SendNotification(paramCharInfo, buildingData, buildingCount, TYPE_BUILDING)
 					buildingCount.complete = buildingCount.complete + 1
 
 				else					
@@ -468,7 +473,7 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 					shipmentData.shipmentsReadyEstimate = buildingCount.shipmentsReady
 
 					if shipmentData.shipmentsReadyEstimate < shipmentData.notificationValue then
-						Garrison:SendNotification(paramCharInfo, shipmentData, TYPE_SHIPMENT)
+						Garrison:SendNotification(paramCharInfo, shipmentData, buildingCount, TYPE_SHIPMENT)
 					else
 						if shipmentData.shipmentsReadyEstimate > shipmentData.notificationValue then
 							shipmentData.notificationValue = shipmentData.shipmentsReadyEstimate
@@ -482,7 +487,7 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 			
 		end
 
-		buildingCount.total = buildingCount.total + numBuildingsPlayer
+		
 	end
 end
 
