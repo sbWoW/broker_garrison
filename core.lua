@@ -780,7 +780,7 @@ do
 										tooltip:SetCell(row, 6, FormattedSeconds(timeLeft), nil, "LEFT", 1)
 									else
 										if timeLeft < 0 then
-											timeLeft = timeLeft + shipmentData.duration
+											timeLeft = timeLeft + (shipmentData.duration * (shipmentsReady - shipmentData.shipmentsReady))
 										end
 										local timeLeftTotal = timeLeft + (shipmentData.duration * (shipmentsInProgress - 1))
 
