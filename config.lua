@@ -165,75 +165,111 @@ function Garrison:GetOptions()
 				type = "group",
 				name = L["Notifications"],
 				cmdHidden = true,
-				args = {		
-					notificationToggle = {
-						order = 100, 
-						type = "toggle", 
-						width = "full",
-						name = L["Enable Notifications"],
-						desc = L["Enable Notifications"],
-						get = function() return configDb.notification.enabled end,
-						set = function(_,v) configDb.notification.enabled = v 
-							Garrison:Update()
-						end,
-					},				
-					notificationRepeatOnLoad = {
-						order = 200,
-						type = "toggle", 
-						width = "full",
-						name = L["Repeat on Load"],
-						desc = L["Shows notification on each login/ui-reload"],
-						get = function() return configDb.notification.repeatOnLoad end,
-						set = function(_,v) configDb.notification.repeatOnLoad = v 
-							Garrison:Update()
-						end,
-						disabled = function() return not configDb.notification.enabled end,
-					},		
-					toastHeader = {
-						order = 300,
-						type = "header",
-						name = L["Toast Notifications"],
+				args = {
+					notificationMissionGroup = {
+						order = 100,
+						type = "group",
+						name = L["Mission"],
 						cmdHidden = true,
-					},					
-					toastToggle = {
-						order = 310, 
-						type = "toggle", 
-						width = "full",
-						name = L["Enable Toasts"],
-						desc = L["Enable Toasts"],
-						get = function() return configDb.notification.toastEnabled end,
-						set = function(_,v) configDb.notification.toastEnabled = v 
-							Garrison:Update()
-						end,
-						disabled = function() return not configDb.notification.enabled end,
-					},		
-					toastPersistent = {
-						order = 320, 
-						type = "toggle", 
-						width = "full",
-						name = L["Persistent Toasts"],
-						desc = L["Make Toasts persistent (no auto-hide)"],
-						get = function() return configDb.notification.toastPersistent end,
-						set = function(_,v) configDb.notification.toastPersistent = v 
-							Garrison:Update()
-						end,
-						disabled = function() return not configDb.notification.enabled 
-												or not configDb.notification.toastEnabled end,
+						args = {
+							notificationToggle = {
+								order = 100, 
+								type = "toggle", 
+								width = "full",
+								name = L["Enable Notifications"],
+								desc = L["Enable Notifications"],
+								get = function() return configDb.notification.mission.enabled end,
+								set = function(_,v) configDb.notification.mission.enabled = v 
+								end,
+							},
+							notificationRepeatOnLoad = {
+								order = 200,
+								type = "toggle", 
+								width = "full",
+								name = L["Repeat on Load"],
+								desc = L["Shows notification on each login/ui-reload"],
+								get = function() return configDb.notification.mission.repeatOnLoad end,
+								set = function(_,v) configDb.notification.mission.repeatOnLoad = v 
+								end,
+								disabled = function() return not configDb.notification.mission.enabled end,
+							},		
+							toastHeader = {
+								order = 300,
+								type = "header",
+								name = L["Toast Notifications"],
+								cmdHidden = true,
+							},					
+							toastToggle = {
+								order = 310, 
+								type = "toggle", 
+								width = "full",
+								name = L["Enable Toasts"],
+								desc = L["Enable Toasts"],
+								get = function() return configDb.notification.mission.toastEnabled end,
+								set = function(_,v) configDb.notification.mission.toastEnabled = v 
+								end,
+								disabled = function() return not configDb.notification.mission.enabled end,
+							},		
+							toastPersistent = {
+								order = 320, 
+								type = "toggle", 
+								width = "full",
+								name = L["Persistent Toasts"],
+								desc = L["Make Toasts persistent (no auto-hide)"],
+								get = function() return configDb.notification.mission.toastPersistent end,
+								set = function(_,v) configDb.notification.mission.toastPersistent = v 
+								end,
+								disabled = function() return not configDb.notification.mission.enabled 
+														or not configDb.notification.mission.toastEnabled end,
+							},
+							notificationExtendedToast = {
+								order = 330,
+								type = "toggle", 
+								width = "full",
+								name = L["Advanced Toast controls"],
+								desc = L["Adds OK/Dismiss Button to Toasts (Requires 'Repeat on Load')"],
+								get = function() return configDb.notification.mission.extendedToast end,
+								set = function(_,v) configDb.notification.mission.extendedToast = v 
+								end,
+								disabled = function() return not configDb.notification.mission.enabled 
+														or not configDb.notification.mission.toastEnabled
+														or not configDb.notification.mission.repeatOnLoad
+														 end,
+							},	
+						},
 					},
-					notificationExtendedToast = {
-						order = 330,
-						type = "toggle", 
-						width = "full",
-						name = L["Advanced Toast controls"],
-						desc = L["Adds OK/Dismiss Button to Toasts (Requires 'Repeat on Load')"],
-						get = function() return configDb.notification.extendedToast end,
-						set = function(_,v) configDb.notification.extendedToast = v 
-						end,
-						disabled = function() return not configDb.notification.enabled 
-												or not configDb.notification.toastEnabled
-												or not configDb.notification.repeatOnLoad
-												 end,
-					},		
+					notificationShipmentGroup = {
+						order = 100,
+						type = "group",
+						name = L["Shipment"],
+						cmdHidden = true,
+						args = {
+							notificationToggle = {
+								order = 100, 
+								type = "toggle", 
+								width = "full",
+								name = L["Enable Notifications"],
+								desc = L["Enable Notifications"],
+								get = function() return configDb.notification.shipment.enabled end,
+								set = function(_,v) configDb.notification.shipment.enabled = v 
+									Garrison:Update()
+								end,
+							},
+							notificationRepeatOnLoad = {
+								order = 200,
+								type = "toggle", 
+								width = "full",
+								name = L["Repeat on Load"],
+								desc = L["Shows notification on each login/ui-reload"],
+								get = function() return configDb.notification.shipment.repeatOnLoad end,
+								set = function(_,v) configDb.notification.shipment.repeatOnLoad = v 
+									Garrison:Update()
+								end,
+								disabled = function() return not configDb.notification.shipment.enabled end,
+							},		
+						},
+					},
+
 					miscHeader = {
 						order = 400,
 						type = "header",
