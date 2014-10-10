@@ -27,9 +27,6 @@ L["Enable Notifications"] = "Benachrichtigungen aktiv"
 L["Repeat on Load"] = "Wiederholung bei Login"
 L["Shows notification on each login/ui-reload"] = "Benachrichtigungen bei jedem Login/UI-Reload anzeigen"
 L["Output"] = "Ausgabe"
-L["Broker Garrison - Missions"] = "Broker Garrison - Missionen"
-L["Mission complete (%s): %s"] = "Mission Abgeschlossen (%s): %s"
-L["Garrison: Mission complete"] = "Garnision: Mission Abgeschlossen"
 
 L["Toast Notifications"] = "Toast Benachrichtigungen"
 L["Enable Toasts"] = "Toasts aktiv"
@@ -53,3 +50,18 @@ L["Misc"] = "Verschiedenes"
 L["Dismiss"] = "Ausblenden"
 L["Advanced Toast controls"] = "Erweiterte Toast Schaltflaechen"
 L["Adds OK/Dismiss Button to Toasts (Requires 'Repeat on Load')"] = "Erweitert Toast um OK/Ausblenden Button (Benoetigt 'Wiederholung bei Login')"
+
+-- v1.0.0
+L["Garrison: Missions"] = "Garnision: Missionen"
+L["Garrison: Buildings"] = "Garnision: Gebaeude"
+L["Mission"] = "Missionen"
+L["Building"] = "Gebaeude"
+L["Shipment"] = "Lieferung"
+
+L["Garrison: Mission complete"] = "Garnision: Mission abgeschlossen"
+L["Garrison: Building complete"] = "Garnision: Gebaeude abgeschlossen"
+L["Garrison: Shipment complete"] = "Garnision: Lieferung abgeschlossen"
+
+L["Mission complete (%s): %s"] = "Mission abgeschlossen (%s): %s"
+L["Building complete (%s): %s"] = "Gebaeude abgeschlossen (%s): %s"
+L["Shipment complete (%s): %s (%s / %s)"] = "Lieferung abgeschlossen (%s): %s (%s / %s)"

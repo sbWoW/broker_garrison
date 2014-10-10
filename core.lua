@@ -115,16 +115,16 @@ Garrison.charInfo = charInfo
 -- LDB init
 local ldb_object_mission = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME.."Mission",
   { type = "data source",
-   label = L["Garrison-Missions"],
+   label = L["Garrison: Missions"],
 	icon = "Interface\\Icons\\Inv_Garrison_Resource",
-	text = "Garrison: Missions",
+	text = L["Garrison: Missions"],
    })
 
 local ldb_object_building = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME.."Building",
   { type = "data source",
-   label = L["Garrison-Buildings"],
+   label = L["Garrison: Buildings"],
 	icon = "Interface\\Icons\\Inv_Garrison_Resource",
-	text = "Garrison: Buildings",
+	text = L["Garrison: Buildings"],
    })
 
 
