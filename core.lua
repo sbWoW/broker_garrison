@@ -310,9 +310,9 @@ function Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
 	local shipmentsReady, shipmentsInProgress, shipmentsAvailable
 	local timeLeftNext = 0
 	local timeLeftTotal = 0
+	local shipmentsAvailable = shipmentData.shipmentCapacity
 
 	if shipmentData and shipmentData.shipmentsTotal then
-
 		local openShipments = shipmentData.shipmentsTotal - shipmentData.shipmentsReady
 		
 		local timeDiff = (now - shipmentData.creationTime)
@@ -345,9 +345,9 @@ function Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
 			timeLeftTotal = timeLeftNext + (shipmentData.duration * (shipmentsInProgress - 1))
 		end
 
-		return shipmentsReady, shipmentsInProgress, timeLeftNext, timeLeftTotal
+		return shipmentsReady, shipmentsInProgress, shipmentsAvailable, timeLeftNext, timeLeftTotal
 	else
-		return 0, 0, 0, 0
+		return 0, 0, shipmentsAvailable, 0, 0
 	end
 end
 
@@ -643,59 +643,30 @@ do
 							tooltip:SetCell(row, 2, buildingData.name, nil, "LEFT", 1)
 							tooltip:SetCell(row, 3, buildingData.rank, nil, "LEFT", 1) -- TODO: Icon
 
-							local timeLeft = buildingData.buildTime - (now - buildingData.timeStart)
+							local timeLeftBuilding = buildingData.buildTime - (now - buildingData.timeStart)
 							
-							if buildingData.isBuilding and (buildingData.canActivate or timeLeft <= 0) then
+							if buildingData.isBuilding and (buildingData.canActivate or timeLeftBuilding <= 0) then
 								tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
 							elseif buildingData.isBuilding then
 								tooltip:SetCell(row, 4, ("%s%s"):format(
 									getColoredString(("%s | "):format(formattedSeconds(buildingData.buildTime)), colors.lightGray),
-									getColoredString(formattedSeconds(timeLeft), colors.white)
+									getColoredString(formattedSeconds(timeLeftBuilding), colors.white)
 								), nil, "RIGHT", 1)							
 							elseif buildingData.shipment and buildingData.shipment.name then
 								local shipmentData = buildingData.shipment
 
-								--local shipmentsAvailable = shipmentData.shipmentCapacity
-								--print(("shipmentsAvailable: %s"):format(shipmentsAvailable))
-
-
-
-								local shipmentsReady, shipmentsInProgress, timeLeft, timeLeftLocal = Garrison:DoShipmentMagic(shipmentData, playerData.info)
-								local shipmentsAvailable = shipmentData.shipmentCapacity
-								
-								if shipmentData.shipmentsTotal then
-									shipmentsAvailable = shipmentData.shipmentCapacity - shipmentData.shipmentsTotal
-								end
+								local shipmentsReady, shipmentsInProgress, shipmentsAvailable, timeLeftNext, timeLeftTotal = Garrison:DoShipmentMagic(shipmentData, playerData.info)
 
 								tooltip:SetCell(row, 4, shipmentsInProgress, nil, "LEFT", 1)
 								tooltip:SetCell(row, 5, shipmentsReady, nil, "LEFT", 1)
 
-								if timeLeft > 0 then
-									
-									-- Unfinished shipments! - display remaining time till next/last shipment
-									--local openShipments = shipmentData.shipmentsTotal - shipmentData.shipmentsReady
+								if timeLeftNext > 0 then
+									tooltip:SetCell(row, 6, formattedSeconds(timeLeftNext), nil, "LEFT", 1)
 
-									local timeLeft = shipmentData.duration - (now - shipmentData.creationTime)
-									
-									--print(("openShipments: %s"):format(openShipments))
-									--print(("timeLeft: %s"):format(formattedSeconds(timeLeft)))
-
-									if (shipmentsInProgress == 1) then
-										tooltip:SetCell(row, 6, formattedSeconds(timeLeft), nil, "LEFT", 1)
-									else
-										if timeLeft < 0 then
-											timeLeft = timeLeft + (shipmentData.duration * (shipmentsReady - shipmentData.shipmentsReady))
-										end
-										local timeLeftTotal = timeLeft + (shipmentData.duration * (shipmentsInProgress - 1))
-
-
-										--print(("timeLeftTotal: %s"):format(formattedSeconds(timeLeftTotal)))							
-										
-										tooltip:SetCell(row, 6, formattedSeconds(timeLeft), nil, "LEFT", 1)
+									if timeLeftTotal > 0 then
 										tooltip:SetCell(row, 7, formattedSeconds(timeLeftTotal), nil, "LEFT", 1)
-									end							
+									end
 								end
-
 
 								tooltip:SetCell(row, 9, shipmentsAvailable, nil, "LEFT", 1)
 															

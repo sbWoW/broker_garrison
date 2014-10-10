@@ -7,6 +7,7 @@ local SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
 
 local _G = getfenv(0)
 local pairs, tonumber, string, print, table, math, assert, loadstring, tostring = _G.pairs, _G.tonumber, _G.string, _G.print, _G.table, _G.math, _G.assert, _G.loadstring, _G.tostring
+local sort, select, format = table.sort, _G.select, string.format
 
 local garrisonDb, globalDb, configDb
 local charInfo = Garrison.charInfo
@@ -44,66 +45,58 @@ function Garrison.pairsByKeys(t,f)
 	return iter
 end
 
-local function sortByValue(t,f)
-	local a = {}
-		for k,v in pairs(t) do table.insert(a, { key = k, value = v }) 
-		end
-		table.sort(a, f)
-		local i = 0      -- iterator variable
-		local iter = function ()   -- iterator function
-			i = i + 1
-			if a[i] == nil then return nil
-			else return a[i].key, a[i].value
-			end
-		end
-	return iter
-end
-
-
-
 local unitColor = {}
 local lexcmps = {}
 local lexsort
 do
- local concat, sort, select, format = table.concat, table.sort, select, string.format
- local function lexcmp(...)
-  local code = {"local lhs, rhs = ..."}
-  local cnt = select('#', ...)
-  for i = 1, cnt do
-   local k = select(i, ...)
-   local key,v = string.match(k, '([%a.]*),?([ad]?)')
-   code[#code+1] = format("local lv, rv, key, desc, lname, rname = lhs.value.%s, rhs.value.%s, '%s', %s, lhs.value.name, rhs.value.name", key, key, key, tostring(v == '' or v == 'd'))
-   --de[#code+1] = "print(('%s/%s - %s: %s <> %s = %s'):format(lname, rname, key, lv or '-', rv or '-', 'ret'))"
-   code[#code+1] = "if lv == nil and rv ~= nil then return false end"
-   code[#code+1] = "if lv ~= nil and rv == nil then return true end"
-   code[#code+1] = "if lv ~= nil and rv ~= nil then"
-   code[#code+1] = "  if desc and (lv > rv) then return true end"
-   code[#code+1] = "  if desc and (lv < rv) then return false end"
-   code[#code+1] = "  if not desc and (lv < rv) then return true end"
-   code[#code+1] = "  if not desc and (lv > rv) then return false end"
-   code[#code+1] = "end"
-   if i == cnt then
-    code[#code+1] = "return false"
-   end
-  end
-  local retCode = table.concat(code, "\n")
-  --print(retCode)
-  return assert(loadstring(retCode)) 
- end
- function lexsort(t, ...)
-  if select('#', ...) == 0 then
-   sort(t)
-   return t
-  else
-   local key = concat({n=select('#',...),...}, "\0")
-   local cmp = lexcmps[key]
-   if not cmp then
-    cmp = lexcmp(...)
-    lexcmps[key] = cmp
-   end
-   return sortByValue(t, cmp)
-  end  
- end
+	local function sortByValue(t,f)
+		local a = {}
+			for k,v in pairs(t) do table.insert(a, { key = k, value = v }) 
+			end
+			table.sort(a, f)
+			local i = 0      -- iterator variable
+			local iter = function ()   -- iterator function
+				i = i + 1
+				if a[i] == nil then return nil
+				else return a[i].key, a[i].value
+				end
+			end
+		return iter
+	end
+
+ 	local function lexcmp(...)
+		local code = {"local lhs, rhs = ..."}
+		local cnt = select('#', ...)
+	 	for i = 1, cnt do
+	  		local k = select(i, ...)
+	 		local key,v = string.match(k, '([%a.]*),?([ad]?)')
+	 		code[#code+1] = format("local lv, rv, key, desc = lhs.value.%s, rhs.value.%s, '%s', %s", key, key, key, tostring(v == '' or v == 'd'))
+			--de[#code+1] = "print(('%s/%s - %s: %s <> %s = %s'):format(lname, rname, key, lv or '-', rv or '-', 'ret'))"
+			code[#code+1] = "if lv == nil and rv ~= nil then return false end"
+			code[#code+1] = "if lv ~= nil and rv == nil then return true end"
+			code[#code+1] = "if lv ~= nil and rv ~= nil then"
+			code[#code+1] = "  if desc and (lv > rv) then return true end"
+			code[#code+1] = "  if desc and (lv < rv) then return false end"
+			code[#code+1] = "  if not desc and (lv < rv) then return true end"
+			code[#code+1] = "  if not desc and (lv > rv) then return false end"
+			code[#code+1] = "end"
+			if i == cnt then
+	 			code[#code+1] = "return false"
+			end
+		end
+		local retCode = table.concat(code, "\n")
+		--print(retCode)
+		return assert(loadstring(retCode)) 
+	end
+	function lexsort(t, ...)
+		local key = table.concat({n=select('#',...),...}, "\0")
+		local cmp = lexcmps[key]
+		if not cmp then
+ 			cmp = lexcmp(...)
+			lexcmps[key] = cmp
+		end
+		return sortByValue(t, cmp)
+	end  
 end
 
 function Garrison.getIconString(name, size) 
