@@ -20,7 +20,7 @@ local tonumber, strupper, select, time = _G.tonumber, _G.strupper, _G.select, _G
 local BreakUpLargeNumbers, C_Garrison, GetCurrencyInfo = _G.BreakUpLargeNumbers, _G.C_Garrison, _G.GetCurrencyInfo
 -- UI Elements
 local InterfaceOptionsFrameAddOns, UIParentLoadAddOn, GarrisonLandingPage = _G.InterfaceOptionsFrameAddOns, _G.UIParentLoadAddOn, _G.GarrisonLandingPage
-local GarrisonMissionFrame, GarrisonLandingPageMinimapButton = _G.GarrisonLandingPageMinimapButton
+local GarrisonMissionFrame, GarrisonLandingPageMinimapButton = _G.GarrisonMissionFrame ,_G.GarrisonLandingPageMinimapButton
 -- UI Functions
 local ShowUIPanel, HideUIPanel, CreateFont, PlaySoundFile = _G.ShowUIPanel, _G.HideUIPanel, _G.CreateFont, _G.PlaySoundFile
 -- UI Hooks
@@ -162,7 +162,7 @@ local function toastMissionComplete (toast, text, missionData)
 		toast:MakePersistent()
 	end
 	toast:SetTitle(L["Garrison: Mission complete"])
-	toast:SetFormattedText(Garrison:getColoredString(text, colors.green))
+	toast:SetFormattedText(getColoredString(text, colors.green))
 	toast:SetIconTexture([[Interface\Icons\Inv_Garrison_Resource]])
 	if configDb.notification.mission.extendedToast then
 		toast:SetPrimaryCallback(_G.OKAY, toastCallback)
@@ -176,7 +176,7 @@ local function toastBuildingComplete (toast, text, buildingData)
 		toast:MakePersistent()
 	end
 	toast:SetTitle(L["Garrison: Building complete"])
-	toast:SetFormattedText(Garrison:getColoredString(text, colors.green))
+	toast:SetFormattedText(getColoredString(text, colors.green))
 	toast:SetIconTexture(buildingData.icon)
 	if configDb.notification.building.extendedToast then
 		toast:SetPrimaryCallback(_G.OKAY, toastCallback)
@@ -190,7 +190,7 @@ local function toastShipmentComplete (toast, text, shipmentData)
 		toast:MakePersistent()
 	end
 	toast:SetTitle(L["Garrison: Shipment complete"])
-	toast:SetFormattedText(Garrison:getColoredString(text, colors.green))
+	toast:SetFormattedText(getColoredString(text, colors.green))
 	toast:SetIconTexture(shipmentData.texture)
 	if configDb.notification.shipment.extendedToast then
 		toast:SetPrimaryCallback(_G.OKAY, toastCallback)
@@ -630,7 +630,7 @@ do
 						tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
 
 
-						local sortedBuildingTable = Garrison.sort(playerData.buildings, "shipment.shipmentsTotal,d", "shipment.shipmentCapacity,d", "name,a")
+						local sortedBuildingTable = Garrison.sort(playerData.buildings, "isBuilding,a", "shipment.shipmentsTotal,d", "shipment.shipmentCapacity,d", "name,a")
 						--local sortedBuildingTable = Garrison.sort(playerData.buildings, "name,a")
 
 						for buildingID, buildingData in sortedBuildingTable do
@@ -639,16 +639,23 @@ do
 							tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
 
 							
+							local rank
+							if buildingData.isBuilding then
+								rank = string.format("%s->%s", (buildingData.rank - 1), buildingData.rank)
+							else 
+								rank = buildingData.rank
+							end
+
 							tooltip:SetCell(row, 1, getIconString(buildingData.icon, 16), nil, "LEFT", 1)
 							tooltip:SetCell(row, 2, buildingData.name, nil, "LEFT", 1)
-							tooltip:SetCell(row, 3, buildingData.rank, nil, "LEFT", 1) -- TODO: Icon
+							tooltip:SetCell(row, 3, rank, nil, "LEFT", 1) -- TODO: Icon
 
 							local timeLeftBuilding = buildingData.buildTime - (now - buildingData.timeStart)
 							
 							if buildingData.isBuilding and (buildingData.canActivate or timeLeftBuilding <= 0) then
 								tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
 							elseif buildingData.isBuilding then
-								tooltip:SetCell(row, 4, ("%s%s"):format(
+								tooltip:SetCell(row, 6, ("%s%s"):format(
 									getColoredString(("%s | "):format(formattedSeconds(buildingData.buildTime)), colors.lightGray),
 									getColoredString(formattedSeconds(timeLeftBuilding), colors.white)
 								), nil, "RIGHT", 1)							

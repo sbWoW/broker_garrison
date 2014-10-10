@@ -71,10 +71,13 @@ do
 	  		local k = select(i, ...)
 	 		local key,v = string.match(k, '([%a.]*),?([ad]?)')
 	 		code[#code+1] = format("local lv, rv, key, desc = lhs.value.%s, rhs.value.%s, '%s', %s", key, key, key, tostring(v == '' or v == 'd'))
-			--de[#code+1] = "print(('%s/%s - %s: %s <> %s = %s'):format(lname, rname, key, lv or '-', rv or '-', 'ret'))"
+			--de[#code+1] = "print(('%s/%s - %s: %s <> %s = %s'):format(lname, rname, key, lv or '-', rv or '-', 'ret'))"			
 			code[#code+1] = "if lv == nil and rv ~= nil then return false end"
 			code[#code+1] = "if lv ~= nil and rv == nil then return true end"
 			code[#code+1] = "if lv ~= nil and rv ~= nil then"
+			code[#code+1] = "  if type(lv) == 'boolean' and type(rv) == 'boolean' then"
+			code[#code+1] = "		lv, rv = (lv == true and 1 or 0), (rv == true and 1 or 0)"
+			code[#code+1] = "  end"
 			code[#code+1] = "  if desc and (lv > rv) then return true end"
 			code[#code+1] = "  if desc and (lv < rv) then return false end"
 			code[#code+1] = "  if not desc and (lv < rv) then return true end"
