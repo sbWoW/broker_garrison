@@ -210,7 +210,7 @@ function Garrison:SendNotification(paramCharInfo, data, notificationType)
 			if  (not data.notification or
 				(data.notification == 0) or 
 				(not addonInitialized and configDb.notification[notificationType].repeatOnLoad and not data.notificationDismissed) or
-				(notificationType == TYPE_SHIPMENT and data.shipmentsReadyEstimate > data.notificationValue)
+				(notificationType == TYPE_SHIPMENT and (not data.notificationValue or data.shipmentsReadyEstimate > data.notificationValue))
 			) then
 
 				local notificationText, toastName, toastText, soundName, toastEnabled, playSound
@@ -330,19 +330,19 @@ function Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
 		shipmentsInProgress = shipmentData.shipmentsTotal - shipmentsReady
 		shipmentsAvailable = shipmentData.shipmentCapacity - shipmentData.shipmentsTotal
 
-		local timeLeft = shipmentData.duration - timeDiff
+		timeLeftNext = shipmentData.duration - timeDiff
 
 		if shipmentsInProgress == 0 then
-			timeLeft = 0			
+			timeLeftNext = 0			
 		elseif shipmentsInProgress == 1 then
-			if timeLeft < 0 then
-				timeLeft = 0
+			if timeLeftNext < 0 then
+				timeLeftNext = 0
 			end			
 		else
-			if timeLeft < 0 then
-				timeLeft = timeLeft + (shipmentData.duration * (shipmentsReady - shipmentData.shipmentsReady))
+			if timeLeftNext < 0 then
+				timeLeftNext = timeLeftNext + (shipmentData.duration * (shipmentsReady - shipmentData.shipmentsReady))
 			end
-			timeLeftTotal = timeLeft + (shipmentData.duration * (shipmentsInProgress - 1))
+			timeLeftTotal = timeLeftNext + (shipmentData.duration * (shipmentsInProgress - 1))
 		end
 
 		return shipmentsReady, shipmentsInProgress, timeLeftNext, timeLeftTotal
@@ -384,7 +384,7 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 
 					shipmentData.shipmentsReadyEstimate = shipmentsReady
 
-					if not shipmentData.notificationValue or shipmentData.shipmentsReadyEstimate > 0 then
+					if shipmentData.shipmentsReadyEstimate > 0 then
 						debugPrint("shipments complete: "..shipmentData.shipmentsReadyEstimate)
 						Garrison:SendNotification(paramCharInfo, shipmentData, TYPE_SHIPMENT)
 					end
@@ -1012,7 +1012,8 @@ function Garrison:DelayedUpdate()
 	self:RegisterEvent("GARRISON_BUILDING_UPDATE", "BuildingUpdate")
 	self:RegisterEvent("GARRISON_BUILDING_ACTIVATED", "BuildingUpdate")
 	self:RegisterEvent("GARRISON_BUILDING_LIST_UPDATE", "BuildingUpdate")
+	self:RegisterEvent("SHIPMENT_UPDATE", "ShipmentStatusUpdate")
 	
-	self:RegisterEvent("SHIPMENT_CRAFTER_CLOSED", "ShipmentUpdate")	
+	--self:RegisterEvent("SHIPMENT_CRAFTER_CLOSED", "ShipmentUpdate")	
 	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")	
 end

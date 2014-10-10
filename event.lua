@@ -71,10 +71,13 @@ function Garrison:BuildingUpdate(...)
 	Garrison:UpdateBuildingInfo()
 end
 
-function Garrison:ShipmentUpdate(...)
-	debugPrint("ShipmentUpdate")
-	C_Garrison.RequestLandingPageShipmentInfo()
-	timers.shipment_update = Garrison:ScheduleTimer("UpdateBuildingInfo", 5)
+
+function Garrison:ShipmentStatusUpdate(event, shipmentStarted)	
+	if shipmentStarted then
+		debugPrint("ShipmentStatusUpdate")
+		C_Garrison.RequestLandingPageShipmentInfo()
+		timers.shipment_update = Garrison:ScheduleTimer("UpdateBuildingInfo", 5)
+	end
 end
 
 function Garrison:UpdateCurrency()
@@ -83,7 +86,6 @@ function Garrison:UpdateCurrency()
 
 	Garrison:Update()
 end
-
 
 function Garrison:CheckAddonLoaded(event, addon)	
 	if addon == "Blizzard_GarrisonUI" then
