@@ -9,13 +9,11 @@ local LSM = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
-local table = _G.table
-local print = _G.print
-local pairs = _G.pairs
+local table, print, pairs = _G.table, _G.print, _G.pairs
 
-local garrisonDb
-local globalDb
-local configDb
+local garrisonDb, globalDb, configDb
+
+local debugPrint = Garrison.debugPrint
 
 local fonts = {}
 local sounds = {}
@@ -23,10 +21,10 @@ local sounds = {}
 function Garrison:returnchars()
 	local a = {}
 
-	for realmName,realmData in self.pairsByKeys(globalDb.data) do
-		for playerName,value in self.pairsByKeys(realmData) do
+	for realmName,realmData in Garrison.pairsByKeys(globalDb.data) do
+		for playerName,value in Garrison.pairsByKeys(realmData) do
 
-			if (not (self.charInfo.playerName == playerName and self.charInfo.realmName == realmName)) then
+			if (not (Garrison.charInfo.playerName == playerName and Garrison.charInfo.realmName == realmName)) then
 				table.insert(a,playerName..":"..realmName)
 			end
 		end
@@ -73,7 +71,7 @@ function Garrison:deletechar(realm_and_character)
 		globalDb.data[realmName] = nil
 	end
 
-	self.debugPrint(("%s deleted."):format(realm_and_character))
+	debugPrint(("%s deleted."):format(realm_and_character))
 end
 
 
@@ -409,7 +407,7 @@ function Garrison:GetOptions()
 					about = {
 						order = 910,
 						type = "description",
-						name = ("Author: %s <EU-Khaz'Goroth>\nLayout: %s <EU-Khaz'Goroth>"):format(self.getColoredUnitName("Smb","PRIEST"), self.getColoredUnitName("Hotaruby","DRUID")),
+						name = ("Author: %s <EU-Khaz'Goroth>\nLayout: %s <EU-Khaz'Goroth>"):format(Garrison.getColoredUnitName("Smb","PRIEST"), Garrison.getColoredUnitName("Hotaruby","DRUID")),
 						cmdHidden = true,
 					},		
 					todoText = {
