@@ -477,8 +477,13 @@ do
 	local function ExpandButton_OnMouseUp(tooltip_cell, realm_and_character)
 		local realm, character_name = (":"):split(realm_and_character, 2)
 
-		globalDb.data[realm][character_name].expanded = not globalDb.data[realm][character_name].expanded
-		DrawTooltip(LDB_anchor)
+		if tooltipType == TYPE_MISSION then
+			globalDb.data[realm][character_name].missionsExpanded = not globalDb.data[realm][character_name].missionsExpanded
+		else
+			globalDb.data[realm][character_name].buildingsExpanded = not globalDb.data[realm][character_name].buildingsExpanded
+		end
+
+		DrawTooltip(LDB_anchor, tooltipType)
 	end
 
 	local function ExpandButton_OnMouseDown(tooltip_cell, is_expanded)
@@ -500,7 +505,7 @@ do
 		if not anchor_frame then
 			return
 		end
-		LDB_anchor = anchor_frame
+		LDB_anchor = anchor_frame		
 		tooltipType = paramTooltipType
 	
 		if not tooltip then
@@ -543,7 +548,8 @@ do
 					row = tooltip:AddLine(" ")
 					row = tooltip:AddLine()
 
-					tooltip:SetCell(row, 1, playerData.expanded and ICON_CLOSE or ICON_OPEN)
+
+					tooltip:SetCell(row, 1, playerData.missionsExpanded and ICON_CLOSE or ICON_OPEN)
 					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
 					tooltip:SetCell(row, 3, ("%s %s"):format(ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
 					
@@ -552,9 +558,9 @@ do
 					tooltip:SetCell(row, 6, getColoredString((L["Complete: %s"]):format(missionCount.complete), colors.lightGray))
 							
 					tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, ("%s:%s"):format(realmName, playerName))
-					tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, playerData.expanded)
+					tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, playerData.missionsExpanded)
 
-					if playerData.expanded and missionCount.total > 0 then
+					if playerData.missionsExpanded and missionCount.total > 0 then
 						row = tooltip:AddLine(" ")
 						AddSeparator(tooltip)
 
@@ -607,13 +613,16 @@ do
 					row = tooltip:AddLine(" ")
 					row = tooltip:AddLine()
 
-					tooltip:SetCell(row, 1, playerData.expandedBuildings and ICON_CLOSE or ICON_OPEN)
+					tooltip:SetCell(row, 1, playerData.buildingsExpanded and ICON_CLOSE or ICON_OPEN)
 					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
 					tooltip:SetCell(row, 3, ("%s %s"):format(ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
 
 					tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(buildingCount.total), colors.lightGray))
 
-					if playerData.expanded and buildingCount.total > 0 then
+					tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, ("%s:%s"):format(realmName, playerName))
+					tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, playerData.buildingsExpanded)					
+
+					if playerData.buildingsExpanded and buildingCount.total > 0 then
 						row = tooltip:AddLine(" ")
 						AddSeparator(tooltip)
 
@@ -720,7 +729,7 @@ do
 	function ldb_object_mission:OnLeave()
 	end
 
-	function ldb_object_mission:OnClick(button)
+	local function onclick(button) 
 		if button == "LeftButton" then
 			Garrison:LoadDependencies()
 
@@ -743,6 +752,14 @@ do
 				AceConfigDialog:Open(ADDON_NAME)
 			end	
 		end		
+	end
+
+	function ldb_object_mission:OnClick(button)
+		onclick(button)
+	end
+
+	function ldb_object_building:OnClick(button)
+		onclick(button)
 	end
 end
 
