@@ -40,7 +40,7 @@ function Garrison:GetFonts()
 	for _, name in pairs(LSM:List(LSM.MediaType.FONT)) do
 		fonts[name] = name
 	end
-	
+
 	return fonts
 end
 
@@ -50,7 +50,7 @@ function Garrison:GetSounds()
 	for _, name in pairs(LSM:List(LSM.MediaType.SOUND)) do
 		sounds[name] = name
 	end
-	
+
 	return sounds
 end
 
@@ -94,52 +94,51 @@ function Garrison:GetOptions()
 				cmdHidden = true,
 				args = {
 					garrisonMinimapButton = {
-						order = 110, 
-						type = "toggle", 
+						order = 110,
+						type = "toggle",
 						width = "full",
 						name = L["Hide Garrison Minimap-Button"],
 						desc = L["Hide Garrison Minimap-Button"],
 						get = function() return configDb.ldbConfig.hideGarrisonMinimapButton end,
-						set = function(_,v) configDb.ldbConfig.hideGarrisonMinimapButton = v 
-							Garrison:Update()
+						set = function(_,v) configDb.ldbConfig.hideGarrisonMinimapButton = v
+							Garrison:UpdateConfig()
 						end,
-					},				
+					},
 					showCurrency = {
-						order = 120, 
-						type = "toggle", 
+						order = 120,
+						type = "toggle",
 						width = "full",
 						name = L["Show resources"],
 						desc = L["Show garrison resources in LDB"],
 						get = function() return configDb.ldbConfig.showCurrency end,
-						set = function(_,v) configDb.ldbConfig.showCurrency = v 
+						set = function(_,v) configDb.ldbConfig.showCurrency = v
 							Garrison:Update()
 						end,
 					},
-
 					showProgress = {
-						order = 130, 
-						type = "toggle", 
+						order = 130,
+						type = "toggle",
 						width = "full",
 						name = L["Show active missions"],
 						desc = L["Show active missions in LDB"],
-						get = function() return configDb.ldbConfig.showProgress end,
-						set = function(_,v) configDb.ldbConfig.showProgress = v 
+						get = function() return configDb.ldbConfig.mission.showProgress end,
+						set = function(_,v) configDb.ldbConfig.mission.showProgress = v
 							Garrison:Update()
 						end,
-					},		
+					},
 					showComplete = {
-						order = 140, 
-						type = "toggle", 
+						order = 140,
+						type = "toggle",
 						width = "full",
 						name = L["Show completed missions"],
 						desc = L["Show completed missions in LDB"],
-						get = function() return configDb.ldbConfig.showComplete end,
-						set = function(_,v) configDb.ldbConfig.showComplete = v 
+						get = function() return configDb.ldbConfig.mission.showComplete end,
+						set = function(_,v) configDb.ldbConfig.mission.showComplete = v
 							Garrison:Update()
 						end,
 					},
 				},
-			},		
+			},
 			dataGroup = {
 				order = 200,
 				type = "group",
@@ -155,7 +154,7 @@ function Garrison:GetOptions()
 						set = function(info, val) local t=Garrison:returnchars(); Garrison:deletechar(t[val]) end,
 						get = function(info) return nil end,
 						width = "double",
-					},		
+					},
 				},
 			},
 			notificationGroup = {
@@ -171,167 +170,355 @@ function Garrison:GetOptions()
 						cmdHidden = true,
 						args = {
 							notificationToggle = {
-								order = 100, 
-								type = "toggle", 
+								order = 100,
+								type = "toggle",
 								width = "full",
 								name = L["Enable Notifications"],
 								desc = L["Enable Notifications"],
 								get = function() return configDb.notification.mission.enabled end,
-								set = function(_,v) configDb.notification.mission.enabled = v 
+								set = function(_,v) configDb.notification.mission.enabled = v
 								end,
 							},
 							notificationRepeatOnLoad = {
 								order = 200,
-								type = "toggle", 
+								type = "toggle",
 								width = "full",
 								name = L["Repeat on Load"],
 								desc = L["Shows notification on each login/ui-reload"],
 								get = function() return configDb.notification.mission.repeatOnLoad end,
-								set = function(_,v) configDb.notification.mission.repeatOnLoad = v 
+								set = function(_,v) configDb.notification.mission.repeatOnLoad = v
 								end,
 								disabled = function() return not configDb.notification.mission.enabled end,
-							},		
+							},
 							toastHeader = {
 								order = 300,
 								type = "header",
 								name = L["Toast Notifications"],
 								cmdHidden = true,
-							},					
+							},
 							toastToggle = {
-								order = 310, 
-								type = "toggle", 
+								order = 310,
+								type = "toggle",
 								width = "full",
 								name = L["Enable Toasts"],
 								desc = L["Enable Toasts"],
 								get = function() return configDb.notification.mission.toastEnabled end,
-								set = function(_,v) configDb.notification.mission.toastEnabled = v 
+								set = function(_,v) configDb.notification.mission.toastEnabled = v
 								end,
 								disabled = function() return not configDb.notification.mission.enabled end,
-							},		
+							},
 							toastPersistent = {
-								order = 320, 
-								type = "toggle", 
+								order = 320,
+								type = "toggle",
 								width = "full",
 								name = L["Persistent Toasts"],
 								desc = L["Make Toasts persistent (no auto-hide)"],
 								get = function() return configDb.notification.mission.toastPersistent end,
-								set = function(_,v) configDb.notification.mission.toastPersistent = v 
+								set = function(_,v) configDb.notification.mission.toastPersistent = v
 								end,
-								disabled = function() return not configDb.notification.mission.enabled 
+								disabled = function() return not configDb.notification.mission.enabled
 														or not configDb.notification.mission.toastEnabled end,
 							},
 							notificationExtendedToast = {
 								order = 330,
-								type = "toggle", 
+								type = "toggle",
 								width = "full",
 								name = L["Advanced Toast controls"],
 								desc = L["Adds OK/Dismiss Button to Toasts (Requires 'Repeat on Load')"],
 								get = function() return configDb.notification.mission.extendedToast end,
-								set = function(_,v) configDb.notification.mission.extendedToast = v 
+								set = function(_,v) configDb.notification.mission.extendedToast = v
 								end,
-								disabled = function() return not configDb.notification.mission.enabled 
+								disabled = function() return not configDb.notification.mission.enabled
 														or not configDb.notification.mission.toastEnabled
 														or not configDb.notification.mission.repeatOnLoad
 														 end,
-							},	
+							},
+							miscHeader = {
+								order = 400,
+								type = "header",
+								name = L["Misc"],
+								cmdHidden = true,
+							},
+							hideBlizzardNotification = {
+								order = 410,
+								type = "toggle",
+								width = "full",
+								name = L["Hide Blizzard notifications"],
+								desc = L["Don't show the built-in notifications"],
+								get = function() return configDb.notification.mission.hideBlizzardNotification end,
+								set = function(_,v)
+									configDb.notification.mission.hideBlizzardNotification = v
+									Garrison:UpdateConfig()
+								end,
+								disabled = function() return not configDb.notification.mission.enabled end,
+							},
+							playSound = {
+								order = 420,
+								type = "toggle",
+								name = L["Play Sound"],
+								desc = L["Play Sound"],
+								get = function() return configDb.notification.mission.playSound end,
+								set = function(_,v)
+									configDb.notification.mission.playSound = v
+								end,
+								disabled = function() return not configDb.notification.mission.enabled end,
+							},
+							playSoundOnMissionCompleteName = {
+								order = 430,
+								type = "select",
+								name = L["Sound"],
+								desc = L["Sound"],
+								dialogControl = "LSM30_Sound",
+								values = LSM:HashTable("sound"),
+								get = function() return configDb.notification.mission.soundName end,
+								set = function(_,v)
+									configDb.notification.mission.soundName = v
+								end,
+								disabled = function() return not configDb.notification.mission.enabled or not configDb.notification.mission.playSound end,
+							},
 						},
 					},
-					notificationShipmentGroup = {
-						order = 100,
+					notificationBuildingGroup = {
+						order = 200,
 						type = "group",
-						name = L["Shipment"],
+						name = L["Building"],
 						cmdHidden = true,
 						args = {
 							notificationToggle = {
-								order = 100, 
-								type = "toggle", 
+								order = 100,
+								type = "toggle",
 								width = "full",
 								name = L["Enable Notifications"],
 								desc = L["Enable Notifications"],
-								get = function() return configDb.notification.shipment.enabled end,
-								set = function(_,v) configDb.notification.shipment.enabled = v 
+								get = function() return configDb.notification.building.enabled end,
+								set = function(_,v) configDb.notification.building.enabled = v
 									Garrison:Update()
 								end,
 							},
 							notificationRepeatOnLoad = {
 								order = 200,
-								type = "toggle", 
+								type = "toggle",
+								width = "full",
+								name = L["Repeat on Load"],
+								desc = L["Shows notification on each login/ui-reload"],
+								get = function() return configDb.notification.building.repeatOnLoad end,
+								set = function(_,v) configDb.notification.building.repeatOnLoad = v
+									Garrison:Update()
+								end,
+								disabled = function() return not configDb.notification.building.enabled end,
+							},
+							toastHeader = {
+								order = 300,
+								type = "header",
+								name = L["Toast Notifications"],
+								cmdHidden = true,
+							},
+							toastToggle = {
+								order = 310,
+								type = "toggle",
+								width = "full",
+								name = L["Enable Toasts"],
+								desc = L["Enable Toasts"],
+								get = function() return configDb.notification.building.toastEnabled end,
+								set = function(_,v) configDb.notification.building.toastEnabled = v
+								end,
+								disabled = function() return not configDb.notification.building.enabled end,
+							},
+							toastPersistent = {
+								order = 320,
+								type = "toggle",
+								width = "full",
+								name = L["Persistent Toasts"],
+								desc = L["Make Toasts persistent (no auto-hide)"],
+								get = function() return configDb.notification.building.toastPersistent end,
+								set = function(_,v) configDb.notification.building.toastPersistent = v
+								end,
+								disabled = function() return not configDb.notification.building.enabled
+														or not configDb.notification.building.toastEnabled end,
+							},
+							notificationExtendedToast = {
+								order = 330,
+								type = "toggle",
+								width = "full",
+								name = L["Advanced Toast controls"],
+								desc = L["Adds OK/Dismiss Button to Toasts (Requires 'Repeat on Load')"],
+								get = function() return configDb.notification.building.extendedToast end,
+								set = function(_,v) configDb.notification.building.extendedToast = v
+								end,
+								disabled = function() return not configDb.notification.building.enabled
+														or not configDb.notification.building.toastEnabled
+														or not configDb.notification.building.repeatOnLoad
+														 end,
+							},
+							miscHeader = {
+								order = 400,
+								type = "header",
+								name = L["Misc"],
+								cmdHidden = true,
+							},
+							hideBlizzardNotification = {
+								order = 410,
+								type = "toggle",
+								width = "full",
+								name = L["Hide Blizzard notifications"],
+								desc = L["Don't show the built-in notifications"],
+								get = function() return configDb.notification.building.hideBlizzardNotification end,
+								set = function(_,v)
+									configDb.notification.building.hideBlizzardNotification = v
+									Garrison:UpdateConfig()
+								end,
+								disabled = function() return not configDb.notification.building.enabled end,
+							},
+							playSound = {
+								order = 420,
+								type = "toggle",
+								name = L["Play Sound"],
+								desc = L["Play Sound"],
+								get = function() return configDb.notification.building.playSound end,
+								set = function(_,v)
+									configDb.notification.building.playSound = v
+								end,
+								disabled = function() return not configDb.notification.building.enabled end,
+							},
+							playSoundOnMissionCompleteName = {
+								order = 430,
+								type = "select",
+								name = L["Sound"],
+								desc = L["Sound"],
+								dialogControl = "LSM30_Sound",
+								values = LSM:HashTable("sound"),
+								get = function() return configDb.notification.building.soundName end,
+								set = function(_,v)
+									configDb.notification.building.soundName = v
+								end,
+								disabled = function() return not configDb.notification.building.enabled or not configDb.notification.building.playSound end,
+							},
+						},
+					},
+					notificationShipmentGroup = {
+						order = 300,
+						type = "group",
+						name = L["Shipment"],
+						cmdHidden = true,
+						args = {
+							notificationToggle = {
+								order = 100,
+								type = "toggle",
+								width = "full",
+								name = L["Enable Notifications"],
+								desc = L["Enable Notifications"],
+								get = function() return configDb.notification.shipment.enabled end,
+								set = function(_,v) configDb.notification.shipment.enabled = v
+									Garrison:Update()
+								end,
+							},
+							notificationRepeatOnLoad = {
+								order = 200,
+								type = "toggle",
 								width = "full",
 								name = L["Repeat on Load"],
 								desc = L["Shows notification on each login/ui-reload"],
 								get = function() return configDb.notification.shipment.repeatOnLoad end,
-								set = function(_,v) configDb.notification.shipment.repeatOnLoad = v 
+								set = function(_,v) configDb.notification.shipment.repeatOnLoad = v
 									Garrison:Update()
 								end,
 								disabled = function() return not configDb.notification.shipment.enabled end,
-							},		
+							},
+							toastHeader = {
+								order = 300,
+								type = "header",
+								name = L["Toast Notifications"],
+								cmdHidden = true,
+							},
+							toastToggle = {
+								order = 310,
+								type = "toggle",
+								width = "full",
+								name = L["Enable Toasts"],
+								desc = L["Enable Toasts"],
+								get = function() return configDb.notification.shipment.toastEnabled end,
+								set = function(_,v) configDb.notification.shipment.toastEnabled = v
+								end,
+								disabled = function() return not configDb.notification.shipment.enabled end,
+							},
+							toastPersistent = {
+								order = 320,
+								type = "toggle",
+								width = "full",
+								name = L["Persistent Toasts"],
+								desc = L["Make Toasts persistent (no auto-hide)"],
+								get = function() return configDb.notification.shipment.toastPersistent end,
+								set = function(_,v) configDb.notification.shipment.toastPersistent = v
+								end,
+								disabled = function() return not configDb.notification.shipment.enabled
+														or not configDb.notification.shipment.toastEnabled end,
+							},
+							notificationExtendedToast = {
+								order = 330,
+								type = "toggle",
+								width = "full",
+								name = L["Advanced Toast controls"],
+								desc = L["Adds OK/Dismiss Button to Toasts (Requires 'Repeat on Load')"],
+								get = function() return configDb.notification.shipment.extendedToast end,
+								set = function(_,v) configDb.notification.shipment.extendedToast = v
+								end,
+								disabled = function() return not configDb.notification.shipment.enabled
+														or not configDb.notification.shipment.toastEnabled
+														or not configDb.notification.shipment.repeatOnLoad
+														 end,
+							},
+							miscHeader = {
+								order = 400,
+								type = "header",
+								name = L["Misc"],
+								cmdHidden = true,
+							},
+							hideBlizzardNotification = {
+								order = 410,
+								type = "toggle",
+								width = "full",
+								name = L["Hide Blizzard notifications"],
+								desc = L["Don't show the built-in notifications"],
+								get = function() return configDb.notification.shipment.hideBlizzardNotification end,
+								set = function(_,v)
+									configDb.notification.shipment.hideBlizzardNotification = v
+									Garrison:UpdateConfig()
+								end,
+								disabled = true --function() return not configDb.notification.shipment.enabled end,
+							},
+							playSound = {
+								order = 420,
+								type = "toggle",
+								name = L["Play Sound"],
+								desc = L["Play Sound"],
+								get = function() return configDb.notification.shipment.playSound end,
+								set = function(_,v)
+									configDb.notification.shipment.playSound = v
+								end,
+								disabled = function() return not configDb.notification.shipment.enabled end,
+							},
+							playSoundOnMissionCompleteName = {
+								order = 430,
+								type = "select",
+								name = L["Sound"],
+								desc = L["Sound"],
+								dialogControl = "LSM30_Sound",
+								values = LSM:HashTable("sound"),
+								get = function() return configDb.notification.shipment.soundName end,
+								set = function(_,v)
+									configDb.notification.shipment.soundName = v
+								end,
+								disabled = function() return not configDb.notification.shipment.enabled or not configDb.notification.shipment.playSound end,
+							},
 						},
-					},
-
-					miscHeader = {
-						order = 400,
-						type = "header",
-						name = L["Misc"],
-						cmdHidden = true,
-					},								
-					hideBlizzardNotificationMission = {
-						order = 410, 
-						type = "toggle", 
-						width = "full",
-						name = L["Hide Blizzard notifications"],
-						desc = L["Don't show the built-in notifications"],
-						get = function() return configDb.notification.hideBlizzardNotificationMission end,
-						set = function(_,v) 
-							configDb.notification.hideBlizzardNotificationMission = v 
-							Garrison:UpdateConfig()
-						end,
-						disabled = function() return not configDb.notification.enabled end,
-					},
-					hideBlizzardNotificationBuilding = {
-						order = 420, 
-						type = "toggle", 
-						width = "full",
-						name = L["Hide Blizzard notifications"],
-						desc = L["Don't show the built-in notifications"],
-						get = function() return configDb.notification.hideBlizzardNotificationBuilding end,
-						set = function(_,v) 
-							configDb.notification.hideBlizzardNotificationBuilding = v 
-							Garrison:UpdateConfig()
-						end,
-						disabled = function() return not configDb.notification.enabled end,
-					},					
-					playSound = {
-						order = 420,
-						type = "toggle",
-						name = L["Play Sound"],
-						desc = L["Play Sound"],
-						get = function() return configDb.notification.playSound end,
-						set = function(_,v) 
-							configDb.notification.playSound = v
-						end,					
-						disabled = function() return not configDb.notification.enabled end,
-					},					
-					playSoundOnMissionCompleteName = {
-						order = 430,
-						type = "select",
-						name = L["Sound"],
-						desc = L["Sound"],
-						dialogControl = "LSM30_Sound",
-						values = LSM:HashTable("sound"),
-						get = function() return configDb.notification.soundName end,
-						set = function(_,v) 
-							configDb.notification.soundName = v
-						end,					
-						disabled = function() return not configDb.notification.enabled or not configDb.notification.playSound end,
-
 					},
 					outputHeader = {
 						order = 500,
 						type = "header",
 						name = L["Output"],
 						cmdHidden = true,
-					},		
-					notificationLibSink = Garrison:GetSinkAce3OptionsDataTable(),				
+					},
+					notificationLibSink = Garrison:GetSinkAce3OptionsDataTable(),
 				},
 			},
 			tooltipGroup = {
@@ -378,13 +565,13 @@ function Garrison:GetOptions()
 						dialogControl = "LSM30_Font",
 						values = LSM:HashTable("font"),
 						get = function() return configDb.tooltip.fontName end,
-						set = function(_,v) 
+						set = function(_,v)
 							configDb.tooltip.fontName = v
-						end,					
+						end,
 					},
 					fontSize = {
-						order = 140, 
-						type = "range", 
+						order = 140,
+						type = "range",
 						min = 9,
 						max = 20,
 						step = 1,
@@ -392,10 +579,10 @@ function Garrison:GetOptions()
 						name = L["Font Size"],
 						desc = L["Font Size"],
 						get = function() return configDb.tooltip.fontSize or 12 end,
-						set = function(_,v) 
-							configDb.tooltip.fontSize = v 
+						set = function(_,v)
+							configDb.tooltip.fontSize = v
 						end,
-					},					
+					},
 				},
 			},
 			aboutGroup = {
@@ -409,7 +596,7 @@ function Garrison:GetOptions()
 						type = "description",
 						name = ("Author: %s <EU-Khaz'Goroth>\nLayout: %s <EU-Khaz'Goroth>"):format(Garrison.getColoredUnitName("Smb","PRIEST"), Garrison.getColoredUnitName("Hotaruby","DRUID")),
 						cmdHidden = true,
-					},		
+					},
 					todoText = {
 						order = 920,
 						type = "description",
@@ -420,7 +607,7 @@ function Garrison:GetOptions()
 			},
 		},
 		plugins = {},
-	}	
+	}
 
 	return options
 end

@@ -12,7 +12,7 @@ local sort, select, format = table.sort, _G.select, string.format
 local garrisonDb, globalDb, configDb
 local charInfo = Garrison.charInfo
 
-function Garrison.tableSize(T) 
+function Garrison.tableSize(T)
 	local count = 0
 	if T then
 		for _ in pairs(T) do count = count + 1 end
@@ -24,7 +24,7 @@ function Garrison.round(num, idp)
 	return tonumber(string.format("%." .. (idp or 0) .. "f", num))
 end
 
-local function debugPrint(text) 
+local function debugPrint(text)
 	if(configDb.debugPrint) then
 		print(("%s: %s"):format(ADDON_NAME, text))
 	end
@@ -51,7 +51,7 @@ local lexsort
 do
 	local function sortByValue(t,f)
 		local a = {}
-			for k,v in pairs(t) do table.insert(a, { key = k, value = v }) 
+			for k,v in pairs(t) do table.insert(a, { key = k, value = v })
 			end
 			table.sort(a, f)
 			local i = 0      -- iterator variable
@@ -71,7 +71,7 @@ do
 	  		local k = select(i, ...)
 	 		local key,v = string.match(k, '([%a.]*),?([ad]?)')
 	 		code[#code+1] = format("local lv, rv, key, desc = lhs.value.%s, rhs.value.%s, '%s', %s", key, key, key, tostring(v == '' or v == 'd'))
-			--de[#code+1] = "print(('%s/%s - %s: %s <> %s = %s'):format(lname, rname, key, lv or '-', rv or '-', 'ret'))"			
+			--de[#code+1] = "print(('%s/%s - %s: %s <> %s = %s'):format(lname, rname, key, lv or '-', rv or '-', 'ret'))"
 			code[#code+1] = "if lv == nil and rv ~= nil then return false end"
 			code[#code+1] = "if lv ~= nil and rv == nil then return true end"
 			code[#code+1] = "if lv ~= nil and rv ~= nil then"
@@ -89,7 +89,7 @@ do
 		end
 		local retCode = table.concat(code, "\n")
 		--print(retCode)
-		return assert(loadstring(retCode)) 
+		return assert(loadstring(retCode))
 	end
 	function lexsort(t, ...)
 		local key = table.concat({n=select('#',...),...}, "\0")
@@ -99,10 +99,10 @@ do
 			lexcmps[key] = cmp
 		end
 		return sortByValue(t, cmp)
-	end  
+	end
 end
 
-function Garrison.getIconString(name, size) 
+function Garrison.getIconString(name, size)
 	local icon
 
 	if name and size then
@@ -116,7 +116,7 @@ end
 
 function Garrison.getColoredUnitName (name, class)
 	local colorUnitName
-	
+
 	if(not unitColor[name]) then
 		local classColor = Garrison.COLOR_TABLE[class]
 
@@ -124,12 +124,12 @@ function Garrison.getColoredUnitName (name, class)
 			classColor = Garrison.colors.white
 		end
 
-		colorUnitName = string.format("|cff%02x%02x%02x%s|r",classColor.r*255,classColor.g*255,classColor.b*255,name)	
-	
+		colorUnitName = string.format("|cff%02x%02x%02x%s|r",classColor.r*255,classColor.g*255,classColor.b*255,name)
+
 		unitColor[name] = colorUnitName
 	else
 		colorUnitName = unitColor[name]
-	end	
+	end
 	return colorUnitName
 end
 
@@ -138,15 +138,15 @@ function Garrison.getColoredTooltipString(text, conditionTable)
 
 	for name, val in pairs(conditionTable) do
 		if (val.condition) then
-			retText = string.format("|cff%02x%02x%02x%s|r",val.color.r*255,val.color.g*255,val.color.b*255, text)	
+			retText = string.format("|cff%02x%02x%02x%s|r",val.color.r*255,val.color.g*255,val.color.b*255, text)
 		end
 	end
-	
+
 	return retText
 end
 
 function Garrison.getColoredString(text, color)
-	return string.format("|cff%02x%02x%02x%s|r",color.r*255,color.g*255,color.b*255, text)	
+	return string.format("|cff%02x%02x%02x%s|r",color.r*255,color.g*255,color.b*255, text)
 end
 
 function Garrison.isCurrentChar(paramCharInfo)
@@ -178,7 +178,7 @@ end
 function Garrison.formatRealmPlayer(paramCharInfo, colored)
 	if colored then
 		return ("%s (%s)"):format(Garrison.getColoredUnitName(paramCharInfo.playerName, paramCharInfo.playerClass), paramCharInfo.realmName)
-	else		
+	else
 		return ("%s-%s"):format(paramCharInfo.playerName, paramCharInfo.realmName)
 	end
 end

@@ -10,7 +10,7 @@ local _G = getfenv(0)
 local pairs, time, C_Garrison, GetCurrencyInfo = _G.pairs, _G.time, _G.C_Garrison, _G.GetCurrencyInfo
 
 function Garrison:GARRISON_MISSION_COMPLETE_RESPONSE(event, missionID, canComplete, succeeded)
-	if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then				
+	if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then
 		debugPrint("Removed Mission: "..missionID.." ("..event..")")
 		globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = nil
 	else
@@ -46,7 +46,7 @@ function Garrison:GARRISON_MISSION_FINISHED(event, missionID)
 		debugPrint("Finished Mission: "..missionID)
 		if globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start == -1 then
 			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start = 0
-		end	
+		end
 	else
 		debugPrint("Unknown Mission: "..missionID)
 	end
@@ -72,7 +72,7 @@ function Garrison:BuildingUpdate(...)
 end
 
 
-function Garrison:ShipmentStatusUpdate(event, shipmentStarted)	
+function Garrison:ShipmentStatusUpdate(event, shipmentStarted)
 	if shipmentStarted then
 		debugPrint("ShipmentStatusUpdate")
 		C_Garrison.RequestLandingPageShipmentInfo()
@@ -87,13 +87,13 @@ function Garrison:UpdateCurrency()
 	Garrison:Update()
 end
 
-function Garrison:CheckAddonLoaded(event, addon)	
+function Garrison:CheckAddonLoaded(event, addon)
 	if addon == "Blizzard_GarrisonUI" then
 		-- Addon Loaded: Garrison UI - Hook AlertFrame
 		debugPrint("Event: Blizzard_GarrisonUI loaded")
-		Garrison:OnDependencyLoaded()		
+		Garrison:OnDependencyLoaded()
 		self:UnregisterEvent("ADDON_LOADED")
-	end		
+	end
 end
 
 function Garrison:GarrisonMissionAlertFrame_ShowAlert(missionID)
@@ -117,6 +117,6 @@ end
 function Garrison:InitEvent()
 	garrisonDb = self.DB
 	configDb = garrisonDb.profile
-	globalDb = garrisonDb.global	
+	globalDb = garrisonDb.global
 end
 
