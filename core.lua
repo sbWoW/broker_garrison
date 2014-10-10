@@ -17,9 +17,8 @@ local _G = getfenv(0)
 local math, string, table, print, pairs, ipairs = _G.math, _G.string, _G.table, _G.print, _G.pairs, _G.ipairs
 local tonumber, strupper, select, time = _G.tonumber, _G.strupper, _G.select, _G.time
 -- Blizzard
-local BreakUpLargeNumbers, C_Garrison, GetCurrencyInfo = _G.BreakUpLargeNumbers, _G.C_Garrison, _G.GetCurrencyInfo(id)
+local BreakUpLargeNumbers, C_Garrison, GetCurrencyInfo = _G.BreakUpLargeNumbers, _G.C_Garrison, _G.GetCurrencyInfo
 -- UI Elements
-local COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
 local InterfaceOptionsFrameAddOns, UIParentLoadAddOn, GarrisonLandingPage = _G.InterfaceOptionsFrameAddOns, _G.UIParentLoadAddOn, _G.GarrisonLandingPage
 local GarrisonMissionFrame, GarrisonLandingPageMinimapButton = _G.GarrisonLandingPageMinimapButton
 -- UI Functions
@@ -52,6 +51,8 @@ local colors = {
 Garrison.colors = colors
 Garrison.GARRISON_CURRENCY = 824
 
+local COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
+Garrison.COLOR_TABLE = COLOR_TABLE
 
 local COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
 
@@ -306,9 +307,9 @@ end
 function Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
 	local now = time()
 
-	local shipmentsReady
-	local shipmentsInProgress
-	local shipmentsAvailable
+	local shipmentsReady, shipmentsInProgress, shipmentsAvailable
+	local timeLeftNext = 0
+	local timeLeftTotal = 0
 
 	if shipmentData and shipmentData.shipmentsTotal then
 
@@ -324,14 +325,29 @@ function Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
 			shipmentsReady = shipmentData.shipmentsReady
 		else 
 			-- Only for other chars
-			shipmentsReady = shipmentData.shipmentsReady + shipmentsReadyByTime
+			shipmentsReady = math.min(shipmentData.shipmentsReady + shipmentsReadyByTime, shipmentData.shipmentsTotal)
 		end
 		shipmentsInProgress = shipmentData.shipmentsTotal - shipmentsReady
 		shipmentsAvailable = shipmentData.shipmentCapacity - shipmentData.shipmentsTotal
 
-		return shipmentsReady, shipmentsInProgress
+		local timeLeft = shipmentData.duration - timeDiff
+
+		if shipmentsInProgress == 0 then
+			timeLeft = 0			
+		elseif shipmentsInProgress == 1 then
+			if timeLeft < 0 then
+				timeLeft = 0
+			end			
+		else
+			if timeLeft < 0 then
+				timeLeft = timeLeft + (shipmentData.duration * (shipmentsReady - shipmentData.shipmentsReady))
+			end
+			timeLeftTotal = timeLeft + (shipmentData.duration * (shipmentsInProgress - 1))
+		end
+
+		return shipmentsReady, shipmentsInProgress, timeLeftNext, timeLeftTotal
 	else
-		return 0, 0
+		return 0, 0, 0, 0
 	end
 end
 
@@ -605,7 +621,10 @@ do
 						tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
 
 
-						for buildingID, buildingData in pairs(playerData.buildings) do
+						local sortedBuildingTable = Garrison.sort(playerData.buildings, "shipment.shipmentsTotal,d", "shipment.shipmentCapacity,d", "name,a")
+						--local sortedBuildingTable = Garrison.sort(playerData.buildings, "name,a")
+
+						for buildingID, buildingData in sortedBuildingTable do
 							-- Display building and Workorder data
 							row = tooltip:AddLine(" ")					
 							tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
@@ -632,7 +651,7 @@ do
 
 
 
-								local shipmentsReady, shipmentsInProgress = Garrison:DoShipmentMagic(shipmentData, playerData.info)
+								local shipmentsReady, shipmentsInProgress, timeLeft, timeLeftLocal = Garrison:DoShipmentMagic(shipmentData, playerData.info)
 								local shipmentsAvailable = shipmentData.shipmentCapacity
 								
 								if shipmentData.shipmentsTotal then
@@ -642,8 +661,7 @@ do
 								tooltip:SetCell(row, 4, shipmentsInProgress, nil, "LEFT", 1)
 								tooltip:SetCell(row, 5, shipmentsReady, nil, "LEFT", 1)
 
-
-								if shipmentData.creationTime and shipmentData.creationTime > 0 then
+								if timeLeft > 0 then
 									
 									-- Unfinished shipments! - display remaining time till next/last shipment
 									--local openShipments = shipmentData.shipmentsTotal - shipmentData.shipmentsReady
@@ -893,7 +911,7 @@ function Garrison:Update()
 		ldbText = L["Missions"]
 	end
 
-	ldb_object_mission.text = Garrison:getColoredTooltipString(ldbText, conditionTable)
+	ldb_object_mission.text = Garrison.getColoredTooltipString(ldbText, conditionTable)
 	for name, val in pairs(conditionTable) do
 		if (val.condition) then		
 			ldb_object_mission.iconR, ldb_object_mission.iconG, ldb_object_mission.iconB = val.color.r, val.color.g, val.color.b
