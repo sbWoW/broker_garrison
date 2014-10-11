@@ -84,7 +84,7 @@ function Garrison:GetOptions()
 			confdesc = {
 				order = 1,
 				type = "description",
-				name = L["Garrison Mission display for LDB\n"],
+				name = L["Garrison display for LDB\n"],
 				cmdHidden = true,
 			},
 			ldbGroup = {
@@ -103,7 +103,7 @@ function Garrison:GetOptions()
 						set = function(_,v) configDb.ldbConfig.hideGarrisonMinimapButton = v
 							Garrison:UpdateConfig()
 						end,
-					},
+					},				
 					showCurrency = {
 						order = 120,
 						type = "toggle",
@@ -252,8 +252,18 @@ function Garrison:GetOptions()
 								end,
 								disabled = function() return not configDb.notification.mission.enabled end,
 							},
-							playSound = {
+							garrisonMinimapButtonAnimation = {
 								order = 420,
+								type = "toggle",
+								width = "full",
+								name = L["Hide Minimap-Button animation"],
+								desc = L["Don't play pulse/flash animations on Minimap-Button"],
+								get = function() return configDb.notification.mission.hideMinimapPulse end,
+								set = function(_,v) configDb.notification.mission.hideMinimapPulse = v end,
+								disabled = function() return configDb.ldbConfig.hideGarrisonMinimapButton end,
+							},
+							playSound = {
+								order = 430,
 								type = "toggle",
 								name = L["Play Sound"],
 								desc = L["Play Sound"],
@@ -264,7 +274,7 @@ function Garrison:GetOptions()
 								disabled = function() return not configDb.notification.mission.enabled end,
 							},
 							playSoundOnMissionCompleteName = {
-								order = 430,
+								order = 440,
 								type = "select",
 								name = L["Sound"],
 								desc = L["Sound"],
@@ -369,8 +379,19 @@ function Garrison:GetOptions()
 								end,
 								disabled = function() return not configDb.notification.building.enabled end,
 							},
-							playSound = {
+							garrisonMinimapButtonAnimation = {
 								order = 420,
+								type = "toggle",
+								width = "full",
+								name = L["Hide Minimap-Button animation"],
+								desc = L["Don't play pulse/flash animations on Minimap-Button"],
+								get = function() return configDb.notification.building.hideMinimapPulse end,
+								set = function(_,v) configDb.notification.building.hideMinimapPulse = v
+								end,
+								disabled = function() return configDb.ldbConfig.hideGarrisonMinimapButton end,
+							},							
+							playSound = {
+								order = 430,
 								type = "toggle",
 								name = L["Play Sound"],
 								desc = L["Play Sound"],
@@ -381,7 +402,7 @@ function Garrison:GetOptions()
 								disabled = function() return not configDb.notification.building.enabled end,
 							},
 							playSoundOnMissionCompleteName = {
-								order = 430,
+								order = 440,
 								type = "select",
 								name = L["Sound"],
 								desc = L["Sound"],
@@ -486,8 +507,19 @@ function Garrison:GetOptions()
 								end,
 								disabled = true --function() return not configDb.notification.shipment.enabled end,
 							},
-							playSound = {
+							garrisonMinimapButtonAnimation = {
 								order = 420,
+								type = "toggle",
+								width = "full",
+								name = L["Hide Minimap-Button animation"],
+								desc = L["Don't play pulse/flash animations on Minimap-Button"],
+								get = function() return configDb.notification.shipment.hideMinimapPulse end,
+								set = function(_,v) configDb.notification.shipment.hideMinimapPulse = v
+								end,
+								disabled = function() return configDb.ldbConfig.hideGarrisonMinimapButton end,
+							},
+							playSound = {
+								order = 430,
 								type = "toggle",
 								name = L["Play Sound"],
 								desc = L["Play Sound"],
@@ -495,10 +527,10 @@ function Garrison:GetOptions()
 								set = function(_,v)
 									configDb.notification.shipment.playSound = v
 								end,
-								disabled = function() return not configDb.notification.shipment.enabled end,
+								disabled = function() return not configDb.notification.shipment.enabled end,								
 							},
 							playSoundOnMissionCompleteName = {
-								order = 430,
+								order = 440,
 								type = "select",
 								name = L["Sound"],
 								desc = L["Sound"],
@@ -511,7 +543,7 @@ function Garrison:GetOptions()
 								disabled = function() return not configDb.notification.shipment.enabled or not configDb.notification.shipment.playSound end,
 							},
 						},
-					},
+					},	
 					outputHeader = {
 						order = 500,
 						type = "header",

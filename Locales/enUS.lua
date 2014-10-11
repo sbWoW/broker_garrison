@@ -67,3 +67,6 @@ L["Garrison: Shipment complete"] = true
 L["Mission complete (%s): %s"] = true
 L["Building complete (%s): %s"] = true
 L["Shipment complete (%s): %s (%s / %s)"] = true
+
+L["Hide Minimap-Button animation"] = true
+L["Don't play pulse/flash animations on Minimap-Button"] = true

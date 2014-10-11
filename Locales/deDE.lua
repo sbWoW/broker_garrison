@@ -65,3 +65,6 @@ L["Garrison: Shipment complete"] = "Garnision: Lieferung abgeschlossen"
 L["Mission complete (%s): %s"] = "Mission abgeschlossen (%s): %s"
 L["Building complete (%s): %s"] = "Gebaeude abgeschlossen (%s): %s"
 L["Shipment complete (%s): %s (%s / %s)"] = "Lieferung abgeschlossen (%s): %s (%s / %s)"
+
+L["Hide Minimap-Button animation"] = "Minimap-Button animation ausblenden"
+L["Don't play pulse/flash animations on Minimap-Button"] = "Kein Puslieren/Blinken des Minimap-Buttons"

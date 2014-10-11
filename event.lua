@@ -114,6 +114,34 @@ function Garrison:GarrisonBuildingAlertFrame_ShowAlert(name)
 	end
 end
 
+function Garrison:GarrisonMinimapBuilding_ShowPulse()
+	if configDb.notification.building.hideMinimapPulse then
+		debugPrint("Hide Pulse (Building)")		
+	else
+		debugPrint("Play Pulse (Building)")
+		self.hooks.GarrisonMinimapBuilding_ShowPulse(_G.GarrisonLandingPageMinimapButton)		
+	end
+end
+function Garrison:GarrisonMinimapShipmentCreated_ShowPulse()
+	if configDb.notification.shipment.hideMinimapPulse then
+		debugPrint("Hide Pulse (Shipment)")		
+	else
+		debugPrint("Play Pulse (Shipment)")
+		self.hooks.GarrisonMinimapShipmentCreated_ShowPulse(_G.GarrisonLandingPageMinimapButton)
+	end
+end
+function Garrison:GarrisonMinimapMission_ShowPulse()
+	if configDb.notification.mission.hideMinimapPulse then
+		debugPrint("Hide Pulse (Mission)")		
+	else
+		debugPrint("Play Pulse (Mission)")
+		self.hooks.GarrisonMinimapMission_ShowPulse(_G.GarrisonLandingPageMinimapButton)
+	end
+end
+
+
+
+
 function Garrison:InitEvent()
 	garrisonDb = self.DB
 	configDb = garrisonDb.profile

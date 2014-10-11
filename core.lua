@@ -40,6 +40,7 @@ local delayedInit = false
 local CONFIG_VERSION = 1
 local DEBUG = true
 local timers = {}
+Garrison.timers = timers
 
 -- Garrison Functions
 local debugPrint, pairsByKeys, formatRealmPlayer, tableSize, isCurrentChar, getColoredString, getColoredUnitName, formattedSeconds, getIconString
@@ -90,7 +91,8 @@ local DB_DEFAULTS = {
 				repeatOnLoad = false,
 				toastEnabled = true,
 				toastPersistent = true,
-				hideBlizzardNotification = false,
+				hideBlizzardNotification = true,
+				hideMinimapPulse = false,
 			}
 		},
 		tooltip = {
@@ -130,7 +132,7 @@ local ldb_object_building = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObjec
    })
 
 
-function Garrison.OnDependencyLoaded()
+function Garrison:OnDependencyLoaded()
 	GarrisonLandingPage = _G.GarrisonLandingPage
 	GarrisonMissionFrame = _G.GarrisonMissionFrame
 end
@@ -987,6 +989,10 @@ function Garrison:OnInitialize()
 
 	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
 	self:RawHook("GarrisonBuildingAlertFrame_ShowAlert", true)
+
+	self:RawHook("GarrisonMinimapBuilding_ShowPulse", true)
+	self:RawHook("GarrisonMinimapShipmentCreated_ShowPulse", true)
+	self:RawHook("GarrisonMinimapMission_ShowPulse", true)		
 
 	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
 	timers.init_update = Garrison:ScheduleTimer("DelayedUpdate", 5)
