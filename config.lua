@@ -591,16 +591,22 @@ function Garrison:GetOptions()
 				name = "About",
 				cmdHidden = true,
 				args = {
-					about = {
-						order = 910,
-						type = "description",
-						name = ("Author: %s <EU-Khaz'Goroth>\nLayout: %s <EU-Khaz'Goroth>"):format(Garrison.getColoredUnitName("Smb","PRIEST"), Garrison.getColoredUnitName("Hotaruby","DRUID")),
+					aboutHeader = {
+						order = 100,
+						type = "header",
+						name = L["Broker Garrison"],
 						cmdHidden = true,
 					},
-					todoText = {
-						order = 920,
+					version = {				
+						order = 200,
 						type = "description",
-						name = "TODO: MORE OPTIONS!!!11",
+						name = ("Version: %s\n"):format(Garrison.versionString),
+						cmdHidden = true,
+					},
+					about = {
+						order = 300,
+						type = "description",
+						name = ("Author: %s <EU-Khaz'Goroth>\nLayout: %s <EU-Khaz'Goroth>"):format(Garrison.getColoredUnitName("Smb","PRIEST"), Garrison.getColoredUnitName("Hotaruby","DRUID")),
 						cmdHidden = true,
 					},
 				},

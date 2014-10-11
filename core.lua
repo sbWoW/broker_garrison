@@ -5,6 +5,8 @@ local LibStub = _G.LibStub
 local BrokerGarrison = LibStub('AceAddon-3.0'):NewAddon(ADDON_NAME, 'AceConsole-3.0', "AceHook-3.0", 'AceEvent-3.0', 'AceTimer-3.0', "LibSink-2.0")
 local Garrison = BrokerGarrison
 
+Garrison.versionString = GetAddOnMetadata(ADDON_NAME, "Version");
+
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale(ADDON_NAME)
 local LibQTip = LibStub('LibQTip-1.0')
@@ -334,14 +336,8 @@ function Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
 
 		if shipmentsInProgress == 0 then
 			timeLeftNext = 0
-		elseif shipmentsInProgress == 1 then
-			if timeLeftNext < 0 then
-				timeLeftNext = 0
-			end
 		else
-			if timeLeftNext < 0 then
-				timeLeftNext = timeLeftNext + (shipmentData.duration * (shipmentsReady - shipmentData.shipmentsReady))
-			end
+			timeLeftNext = timeLeftNext + (shipmentData.duration * shipmentsReadyByTime)
 			timeLeftTotal = timeLeftNext + (shipmentData.duration * (shipmentsInProgress - 1))
 		end
 
@@ -361,17 +357,18 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 
 		for buildingID, buildingData in pairs(buildings) do
 
-			if buildingData.isBuilding then
+			if buildingData.isBuilding or buildingData.canActivate then
 				-- Check for building complete
 				local timeLeft = buildingData.buildTime - (now - buildingData.timeStart)
 
-				if timeLeft < 0 then
+				if buildingData.canActivate or timeLeft < 0 then
 					Garrison:SendNotification(paramCharInfo, buildingData, TYPE_BUILDING)
 					buildingCount.complete = buildingCount.complete + 1
+					buildingData.canActivate = true
 
 				else
 					buildingCount.building = buildingCount.building + 1
-				end
+				end	
 			else
 				buildingCount.active = buildingCount.active + 1
 
@@ -631,7 +628,7 @@ do
 						tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
 
 
-						local sortedBuildingTable = Garrison.sort(playerData.buildings, "isBuilding,a", "shipment.shipmentsTotal,d", "shipment.shipmentCapacity,d", "name,a")
+						local sortedBuildingTable = Garrison.sort(playerData.buildings, "canActivate,d", "isBuilding,a", "shipment.shipmentsTotal,d", "shipment.shipmentCapacity,d", "name,a")
 						--local sortedBuildingTable = Garrison.sort(playerData.buildings, "name,a")
 
 						for buildingID, buildingData in sortedBuildingTable do
@@ -641,7 +638,7 @@ do
 
 
 							local rank
-							if buildingData.isBuilding then
+							if buildingData.isBuilding or buildingData.canActivate then
 								rank = string.format("%s->%s", (buildingData.rank - 1), buildingData.rank)
 							else
 								rank = buildingData.rank
@@ -653,7 +650,7 @@ do
 
 							local timeLeftBuilding = buildingData.buildTime - (now - buildingData.timeStart)
 
-							if buildingData.isBuilding and (buildingData.canActivate or timeLeftBuilding <= 0) then
+							if ((buildingData.isBuilding and timeLeftBuilding <= 0) or buildingData.canActivate) then
 								tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
 							elseif buildingData.isBuilding then
 								tooltip:SetCell(row, 6, ("%s%s"):format(
@@ -844,18 +841,23 @@ function Garrison:UpdateBuildingInfo()
 			--print(("   - shipment (%s): %s"):format(name or "-", shipmentsTotal or 0))
 		end
 
-		if 	globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID] and
-			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment and
-			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.shipmentsTotal and
-			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.shipmentsTotal > 0
-		then
-			local notificationValue = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.notificationValue
-			if notificationValue then
-				--debugPrint(("%s: preserve notificationValue: %s"):format(tmpBuildings[buildingID].shipment.name, notificationValue))
+		if 	globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID] then
+			
+			tmpBuildings[buildingID].notificationDismissed = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].notificationDismissed
+			tmpBuildings[buildingID].notification = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].notification
+
+			if 	globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment and
+				globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.shipmentsTotal and
+				globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.shipmentsTotal > 0 then
+
+				local notificationValue = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.notificationValue
+				if notificationValue then
+					--debugPrint(("%s: preserve notificationValue: %s"):format(tmpBuildings[buildingID].shipment.name, notificationValue))
+				end
+				tmpBuildings[buildingID].shipment.notificationValue = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.notificationValue
+				tmpBuildings[buildingID].shipment.notificationDismissed = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.notificationDismissed
+				tmpBuildings[buildingID].shipment.notification = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.notification
 			end
-			tmpBuildings[buildingID].shipment.notificationValue = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.notificationValue
-			tmpBuildings[buildingID].shipment.notificationDismissed = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.notificationDismissed
-			tmpBuildings[buildingID].shipment.notification = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID].shipment.notification
 		end
 
 	end

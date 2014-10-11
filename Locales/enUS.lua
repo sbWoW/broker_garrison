@@ -3,7 +3,7 @@ local L = LibStub:GetLibrary("AceLocale-3.0"):NewLocale("Broker_Garrison", "enUS
 if not L then return end
 
 L["Broker Garrison"] = true
-L["Garrison Mission display for LDB\n"] = true
+L["Garrison display for LDB\n"] = true
 L["Time left"] = true
 L["Delete char"] = true
 L["Delete the selected char"] = true
