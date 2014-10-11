@@ -3,7 +3,7 @@ local L = LibStub:GetLibrary("AceLocale-3.0"):NewLocale("Broker_Garrison", "enUS
 if not L then return end
 
 L["Broker Garrison"] = true
-L["Garrison Mission display for LDB\n"] = true
+L["Garrison display for LDB\n"] = true
 L["Time left"] = true
 L["Delete char"] = true
 L["Delete the selected char"] = true
@@ -27,9 +27,6 @@ L["Enable Notifications"] = true
 L["Repeat on Load"] = true
 L["Shows notification on each login/ui-reload"] = true
 L["Output"] = true
-L["Broker Garrison - Missions"] = true
-L["Mission complete (%s): %s"] = true
-L["Garrison: Mission complete"] = true
 
 L["Toast Notifications"] = true
 L["Enable Toasts"] = true
@@ -55,3 +52,18 @@ L["Misc"] = true
 L["Dismiss"] = true
 L["Advanced Toast controls"] = true
 L["Adds OK/Dismiss Button to Toasts (Requires 'Repeat on Load')"] = true
+
+-- v1.0.0
+L["Garrison: Missions"] = true
+L["Garrison: Buildings"] = true
+L["Mission"] = true
+L["Building"] = true
+L["Shipment"] = true
+
+L["Garrison: Mission complete"] = true
+L["Garrison: Building complete"] = true
+L["Garrison: Shipment complete"] = true
+
+L["Mission complete (%s): %s"] = true
+L["Building complete (%s): %s"] = true
+L["Shipment complete (%s): %s (%s / %s)"] = true
