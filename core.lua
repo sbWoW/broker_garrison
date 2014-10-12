@@ -943,6 +943,8 @@ function Garrison:DelayedUpdate()
 
 	Garrison:FullUpdateBuilding(TYPE_BUILDING)
 
+	Garrison:UpdateLocation()
+
 	self:RegisterEvent("GARRISON_BUILDING_PLACED", "BuildingUpdate")
 	self:RegisterEvent("GARRISON_BUILDING_REMOVED", "BuildingUpdate")
 	self:RegisterEvent("GARRISON_BUILDING_UPDATE", "BuildingUpdate")

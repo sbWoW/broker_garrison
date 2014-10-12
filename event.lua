@@ -66,10 +66,14 @@ function Garrison:GARRISON_MISSION_NPC_OPENED(...)
 	Garrison:UpdateUnknownMissions(true)
 end
 
-function Garrison:ZONE_CHANGED_NEW_AREA(...)
+function Garrison:UpdateLocation()
 	Garrison.location.mapName = _G.GetRealZoneText()
 	Garrison.location.inGarrison = (Garrison.location.mapName and Garrison.location.garrisonMapName and Garrison.location.mapName == Garrison.location.garrisonMapName)
-	debugPrint(("ZoneUpdate: %s (%s)"):format(Garrison.location.mapName, _G.tostring(Garrison.location.inGarrison)))
+	debugPrint(("ZoneUpdate: %s (%s)"):format(Garrison.location.mapName or "-", _G.tostring(Garrison.location.inGarrison)))
+end
+
+function Garrison:ZONE_CHANGED_NEW_AREA(...)
+	Garrison:UpdateLocation()
 end
 
 function Garrison:GetShipmentData(buildingID)
@@ -112,17 +116,22 @@ function Garrison:GetBuildingData(plotID)
 end
 
 
-function Garrison:UpdateShipment(buildingID, shipmentData)
-	local tmpShipment = Garrison:GetShipmentData(buildingID)
+function Garrison:UpdateShipment(buildingID, shipmentData)	
+	local tmpShipment = nil
+	if buildingID then
+		tmpShipment = Garrison:GetShipmentData(buildingID)
 
-	if shipmentData then
-	 	if shipmentData.shipmentsTotal and shipmentData.shipmentsTotal > 0 then
+		if shipmentData then
+		 	if shipmentData.shipmentsTotal and shipmentData.shipmentsTotal > 0 then
 
-			tmpShipment.notificationValue = shipmentData.notificationValue
-			tmpShipment.notificationDismissed = shipmentData.notificationDismissed
-			tmpShipment.notification = shipmentData.notification
+				tmpShipment.notificationValue = shipmentData.notificationValue or 0
+				tmpShipment.notificationDismissed = shipmentData.notificationDismissed or false
+				tmpShipment.notification = shipmentData.notification
 
-			debugPrint(("Update Shipment (%s) - NotificationValue=%s"):format(tmpShipment.name, tmpShipment.notificationValue))
+				if tmpShipment.notificationValue then
+					debugPrint(("Update Shipment (%s) - NotificationValue=%s"):format(tmpShipment.name, tmpShipment.notificationValue))
+				end
+			end
 		end
 	end
 
