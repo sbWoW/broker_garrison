@@ -368,7 +368,7 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 	if numBuildingsPlayer > 0 then
 		buildingCount.total = buildingCount.total + numBuildingsPlayer
 
-		for buildingID, buildingData in pairs(buildings) do
+		for plotID, buildingData in pairs(buildings) do
 
 			if buildingData.isBuilding or buildingData.canActivate then
 				-- Check for building complete
@@ -643,7 +643,7 @@ do
 						local sortedBuildingTable = Garrison.sort(playerData.buildings, "canActivate,d", "isBuilding,a", "shipment.shipmentsTotal,d", "shipment.shipmentCapacity,d", "name,a")
 						--local sortedBuildingTable = Garrison.sort(playerData.buildings, "name,a")
 
-						for buildingID, buildingData in sortedBuildingTable do
+						for plotID, buildingData in sortedBuildingTable do
 							-- Display building and Workorder data
 							row = tooltip:AddLine(" ")
 							tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)

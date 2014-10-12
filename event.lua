@@ -220,12 +220,11 @@ function Garrison:BuildingUpdate(event, ...)
 	end
 end
 
-
 function Garrison:ShipmentStatusUpdate(event, shipmentStarted)
 	if shipmentStarted then
 		debugPrint("ShipmentStatusUpdate")
 		C_Garrison.RequestLandingPageShipmentInfo()
-		timers.shipment_update = Garrison:ScheduleTimer("UpdateBuildingInfo", 5)
+		--timers.shipment_update = Garrison:ScheduleTimer("UpdateShipmentInfo", 5)
 	end
 end
 
