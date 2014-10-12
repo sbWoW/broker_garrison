@@ -72,16 +72,151 @@ function Garrison:ZONE_CHANGED_NEW_AREA(...)
 	debugPrint(("ZoneUpdate: %s (%s)"):format(Garrison.location.mapName, _G.tostring(Garrison.location.inGarrison)))
 end
 
+function Garrison:GetShipmentData(buildingID)
+	local name, texture, shipmentCapacity, shipmentsReady, shipmentsTotal, creationTime, duration, timeleftString, itemName, itemIcon, itemQuality, itemID = C_Garrison.GetLandingPageShipmentInfo(buildingID)
+
+	local tmpShipment = {
+		name = name,
+		texture = texture,
+		shipmentCapacity = shipmentCapacity,
+		shipmentsReady = shipmentsReady,
+		shipmentsTotal = shipmentsTotal,
+		creationTime = creationTime,
+		duration = duration,
+		timeleftString = timeleftString,
+		itemName = itemName,
+		itemQuality = itemQuality,
+		itemID = itemID
+	}
+
+	return tmpShipment
+end
+
+function Garrison:GetBuildingData(plotID)
+	local id, name, texPrefix, icon, rank, isBuilding, timeStart, buildTime, canActivate, canUpgrade, isPrebuilt = C_Garrison.GetOwnedBuildingInfoAbbrev(plotID)
+
+	local tmpBuilding = {
+		plotID = plotID,
+		id = id,
+		name = name,
+		texPrefix = texPrefix,
+		icon = icon,
+		rank = rank,
+		isBuilding = isBuilding,
+		canActivate = canActivate,
+		timeStart = timeStart,
+		buildTime = buildTime,
+	}
+
+	return tmpBuilding
+end
+
+
+function Garrison:UpdateShipment(buildingID, shipmentData)
+	local tmpShipment = Garrison:GetShipmentData(buildingID)
+
+	if shipmentData then
+	 	if shipmentData.shipmentsTotal and shipmentData.shipmentsTotal > 0 then
+
+			tmpShipment.notificationValue = shipmentData.notificationValue
+			tmpShipment.notificationDismissed = shipmentData.notificationDismissed
+			tmpShipment.notification = shipmentData.notification
+
+			debugPrint(("Update Shipment (%s) - NotificationValue=%s"):format(tmpShipment.name, tmpShipment.notificationValue))
+		end
+	end
+
+	return tmpShipment
+end
+
+function Garrison:UpdateBuilding(plotID)
+ 
+	local tmpBuilding = Garrison:GetBuildingData(plotID)
+
+	local buildingData = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID]
+
+	local shipmentData = nil
+
+	if buildingData then
+		tmpBuilding.notificationDismissed = buildingData.notificationDismissed
+		tmpBuilding.notification = buildingData.notification
+
+		shipmentData = buildingData.shipment
+	end
+
+	tmpBuilding.shipment = Garrison:UpdateShipment(tmpBuilding.id, shipmentData)
+
+	return tmpBuilding
+end
+
+function Garrison:FullUpdateBuilding(updateType)
+	C_Garrison.RequestLandingPageShipmentInfo()
+
+	local buildings = C_Garrison.GetBuildings()
+	local tmpBuildings = {}	
+
+	for i = 1, #buildings do
+		local buildingID = buildings[i].buildingID
+		local plotID = buildings[i].plotID
+
+		if updateType == Garrison.TYPE_BUILDING then
+			tmpBuildings[plotID] = Garrison:UpdateBuilding(plotID)
+		end
+		if updateType == Garrison.TYPE_SHIPMENT then
+			local buildingData = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID]			
+
+			if not buildingData then
+				debugPrint("UpdateShipment: Unknown Building: "..buildingID)
+			else
+				local tmpShipment = Garrison:UpdateShipment(buildingID, buildingData.shipment)
+
+				globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID].shipment = tmpShipment
+			end
+		end
+	end
+
+	if updateType == Garrison.TYPE_BUILDING then
+		globalDb.data[charInfo.realmName][charInfo.playerName].buildings = tmpBuildings
+	end
+end
+
 function Garrison:BuildingUpdate(event, ...)
 	if event == "GARRISON_BUILDING_PLACED" then
-		local buildingID = ...
-		if not globalDb.data[charInfo.realmName][charInfo.playerName].buildings or not globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID] then
-			debugPrint("BuildingPlaced: "..buildingID)
-			--Garrison:UpdateBuildingInfo()
+		local plotID, newPlacement = ...;		
+
+		local tmpBuilding = Garrison:GetBuildingData(plotID)
+		if newPlacement then
+			debugPrint(("New Building (%s): %s (%s)"):format(tmpBuilding.name, tmpBuilding.rank, tmpBuilding.id))
+			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID] = tmpBuilding
+		else
+			if globalDb.data[charInfo.realmName][charInfo.playerName].buildings and globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID] then
+				local currentBuilding = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID]
+				-- Already exists, check for update
+
+				if currentBuilding.id == tmpBuilding.id then
+					-- Ignore
+				else
+					-- Upgrade
+					debugPrint(("BuildingUpgrade (%s): %s (%s) -> %s (%s)"):format(tmpBuilding.name, currentBuilding.rank, currentBuilding.id, tmpBuilding.rank, tmpBuilding.id))
+
+					globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID] = tmpBuilding
+				end
+			end
 		end
+	elseif event == "GARRISON_BUILDING_REMOVED" then
+		local plotID, buildingID = ...;
+		debugPrint(("Removed Building %s"):format(buildingID))
+		globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID] = nil		
+	elseif event == "GARRISON_BUILDING_ACTIVATED" or event == "GARRISON_BUILDING_UPDATE" then
+		local plotID, buildingID = ...;
+		local tmpBuilding = Garrison:UpdateBuilding(plotID)
+
+		debugPrint(("BuildingInfoUpdate (%s)"):format(tmpBuilding.name))
+
+		globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID] = tmpBuilding	
 	else
 		debugPrint("BuildingUpdate")
-		Garrison:UpdateBuildingInfo()
+		Garrison:FullUpdateBuilding()
 	end
 end
 
@@ -170,8 +305,6 @@ function Garrison:GarrisonMinimapMission_ShowPulse()
 		self.hooks.GarrisonMinimapMission_ShowPulse(_G.GarrisonLandingPageMinimapButton)
 	end
 end
-
-
 
 
 function Garrison:InitEvent()
