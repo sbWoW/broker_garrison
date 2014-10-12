@@ -116,6 +116,13 @@ local charInfo = {
 }
 Garrison.charInfo = charInfo
 
+local location = {
+	garrisonMapName = _G.GetMapNameByID(976),
+	zoneName = nil,
+	inGarrison = nil,
+}
+Garrison.location = location
+
 -- LDB init
 local ldb_object_mission = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME.."Mission",
   { type = "data source",
@@ -383,8 +390,7 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 
 					shipmentData.shipmentsReadyEstimate = shipmentsReady
 
-					if shipmentData.shipmentsReadyEstimate > 0 then
-						debugPrint("shipments complete: "..shipmentData.shipmentsReadyEstimate)
+					if shipmentData.shipmentsReadyEstimate > 0 then						
 						Garrison:SendNotification(paramCharInfo, shipmentData, TYPE_SHIPMENT)
 					end
 
@@ -789,9 +795,13 @@ function Garrison:UpdateUnknownMissions(missionsLoaded)
 
 end
 
+--function Garrison:UpdateShipmentInfo()
+
+--end
+
 function Garrison:UpdateBuildingInfo()
+
 	debugPrint("UpdateBuildingInfo")
-	--print("------------------------- START -----------------------")
 
 	C_Garrison.RequestLandingPageShipmentInfo()
 
@@ -808,6 +818,7 @@ function Garrison:UpdateBuildingInfo()
 			local id, name, texPrefix, icon, rank, isBuilding, timeStart, buildTime, canActivate, canUpgrade, isPrebuilt = C_Garrison.GetOwnedBuildingInfoAbbrev(plotID)
 
 			tmpBuildings[buildingID] = {
+				plotID = plotID,
 				id = id,
 				name = name,
 				texPrefix = texPrefix,
@@ -868,7 +879,6 @@ function Garrison:UpdateBuildingInfo()
 
 end
 
-
 function Garrison:Update()
 	Garrison:UpdateBuildingInfo()
 
@@ -923,6 +933,7 @@ function Garrison:Update()
 		addonInitialized = true
 	end
 end
+
 
 function Garrison:OnInitialize()
 	garrisonDb = LibStub("AceDB-3.0"):New(ADDON_NAME .. "DB", DB_DEFAULTS, true)
@@ -985,6 +996,8 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE", "GARRISON_SHOW_LANDING_PAGE")
 	self:RegisterEvent("GARRISON_MISSION_NPC_OPENED", "GARRISON_MISSION_NPC_OPENED")
 
+	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED_NEW_AREA")
+
 	self:RegisterEvent("ADDON_LOADED", "CheckAddonLoaded")
 
 	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
@@ -994,7 +1007,7 @@ function Garrison:OnInitialize()
 	self:RawHook("GarrisonMinimapShipmentCreated_ShowPulse", true)
 	self:RawHook("GarrisonMinimapMission_ShowPulse", true)		
 
-	timers.icon_update = Garrison:ScheduleRepeatingTimer("Update", 60)
+	timers.icon_update = Garrison:ScheduleRepeatingTimer("SlowUpdate", 60)	
 	timers.init_update = Garrison:ScheduleTimer("DelayedUpdate", 5)
 end
 
@@ -1009,9 +1022,12 @@ function Garrison:DelayedUpdate()
 	self:RegisterEvent("GARRISON_BUILDING_REMOVED", "BuildingUpdate")
 	self:RegisterEvent("GARRISON_BUILDING_UPDATE", "BuildingUpdate")
 	self:RegisterEvent("GARRISON_BUILDING_ACTIVATED", "BuildingUpdate")
-	self:RegisterEvent("GARRISON_BUILDING_LIST_UPDATE", "BuildingUpdate")
+	--self:RegisterEvent("GARRISON_BUILDING_LIST_UPDATE", "BuildingUpdate")
+	self:RegisterEvent("GARRISON_UPDATE", "BuildingUpdate")
 	self:RegisterEvent("SHIPMENT_UPDATE", "ShipmentStatusUpdate")
 
 	--self:RegisterEvent("SHIPMENT_CRAFTER_CLOSED", "ShipmentUpdate")
 	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")
+
+	timers.notify_update = Garrison:ScheduleRepeatingTimer("QuickUpdate", 10)
 end

@@ -66,9 +66,23 @@ function Garrison:GARRISON_MISSION_NPC_OPENED(...)
 	Garrison:UpdateUnknownMissions(true)
 end
 
-function Garrison:BuildingUpdate(...)
-	debugPrint("BuildingUpdate")
-	Garrison:UpdateBuildingInfo()
+function Garrison:ZONE_CHANGED_NEW_AREA(...)
+	Garrison.location.mapName = _G.GetRealZoneText()
+	Garrison.location.inGarrison = (Garrison.location.mapName and Garrison.location.garrisonMapName and Garrison.location.mapName == Garrison.location.garrisonMapName)
+	debugPrint(("ZoneUpdate: %s (%s)"):format(Garrison.location.mapName, _G.tostring(Garrison.location.inGarrison)))
+end
+
+function Garrison:BuildingUpdate(event, ...)
+	if event == "GARRISON_BUILDING_PLACED" then
+		local buildingID = ...
+		if not globalDb.data[charInfo.realmName][charInfo.playerName].buildings or not globalDb.data[charInfo.realmName][charInfo.playerName].buildings[buildingID] then
+			debugPrint("BuildingPlaced: "..buildingID)
+			--Garrison:UpdateBuildingInfo()
+		end
+	else
+		debugPrint("BuildingUpdate")
+		Garrison:UpdateBuildingInfo()
+	end
 end
 
 
@@ -85,6 +99,24 @@ function Garrison:UpdateCurrency()
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
 
 	Garrison:Update()
+end
+
+function Garrison:QuickUpdate()
+	if Garrison.location.inGarrison then
+		-- on garrison - full update
+		Garrison:Update()
+	else
+		-- outside - only notifications
+		Garrison:GetMissionCount(nil)
+		Garrison:GetBuildingCount(nil)
+	end
+end
+
+function Garrison:SlowUpdate()
+	if not Garrison.location.inGarrison then
+		-- on garrison - full update
+		Garrison:Update()
+	end
 end
 
 function Garrison:CheckAddonLoaded(event, addon)

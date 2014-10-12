@@ -183,7 +183,6 @@ function Garrison.formatRealmPlayer(paramCharInfo, colored)
 	end
 end
 
-
 function Garrison:InitHelper()
 	garrisonDb = self.DB
 	configDb = garrisonDb.profile
