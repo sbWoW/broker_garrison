@@ -110,12 +110,41 @@ do
 	end
 end
 
-function Garrison.getIconString(name, size)
+function Garrison.getIconString(name, size, isAtlas)
 	local icon
 
+	if size and size == 0 then
+		return ""
+	end
+
 	if name and size then
-		icon = string.format("\124T%s:%d:%d:1:0\124t", name, size, size)
-	else
+		local key = name.."-"..size
+
+		if not Garrison.iconCache[key] then
+			if isAtlas then
+				local filename, width, height, txLeft, txRight, txTop, txBottom = GetAtlasInfo(name);
+
+				if filename then
+					local atlasWidth = width / (txRight - txLeft);
+					local atlasHeight = height / (txBottom - txTop);
+
+					local pxLeft	= atlasWidth	* txLeft;
+					local pxRight	= atlasWidth	* txRight;
+					local pxTop		= atlasHeight	* txTop;
+					local pxBottom	= atlasHeight	* txBottom;
+
+					Garrison.iconCache[key] = string.format("|T%s:%d:%d:0:0:%d:%d:%d:%d:%d:%d|t", filename, size, size, atlasWidth, atlasHeight, pxLeft, pxRight, pxTop, pxBottom);
+				end
+
+			else
+				Garrison.iconCache[key] = string.format("\124T%s:%d:%d:1:0\124t", name, size, size)
+			end
+		end
+		
+		icon = Garrison.iconCache[key]
+	end	
+	
+	if not icon then
 		icon = string.format("\124T%s:%d:%d:1:0\124t", "Interface\\Icons\\INV_Misc_QuestionMark", size, size)
 	end
 

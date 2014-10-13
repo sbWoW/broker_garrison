@@ -581,10 +581,10 @@ function Garrison:GetOptions()
 						max = 2,
 						step = 0.01,
 						get = function()
-							return configDb.tooltip.scale or 1
+							return configDb.display.scale or 1
 						end,
 						set = function(info, value)
-							configDb.tooltip.scale = value
+							configDb.display.scale = value
 						end,
 					},
 					autoHideDelay = {
@@ -596,10 +596,10 @@ function Garrison:GetOptions()
 						max = 3,
 						step = 0.01,
 						get = function()
-							return configDb.tooltip.autoHideDelay or 0.25
+							return configDb.display.autoHideDelay or 0.25
 						end,
 						set = function(info, value)
-							configDb.tooltip.autoHideDelay = value
+							configDb.display.autoHideDelay = value
 						end,
 					},
 					fontName = {
@@ -609,9 +609,9 @@ function Garrison:GetOptions()
 						desc = L["Font"],
 						dialogControl = "LSM30_Font",
 						values = LSM:HashTable("font"),
-						get = function() return configDb.tooltip.fontName end,
+						get = function() return configDb.display.fontName end,
 						set = function(_,v)
-							configDb.tooltip.fontName = v
+							configDb.display.fontName = v
 						end,
 					},
 					fontSize = {
@@ -623,11 +623,36 @@ function Garrison:GetOptions()
 						width = "full",
 						name = L["Font Size"],
 						desc = L["Font Size"],
-						get = function() return configDb.tooltip.fontSize or 12 end,
+						get = function() return configDb.display.fontSize or 12 end,
 						set = function(_,v)
-							configDb.tooltip.fontSize = v
+							configDb.display.fontSize = v
 						end,
 					},
+					showIcon = {
+						order = 150,
+						type = "toggle",
+						name = L["Show Icons"],
+						desc = L["Show Icons"],
+						get = function() return configDb.display.showIcon end,
+						set = function(_,v)
+							configDb.display.showIcon = v
+						end,
+					},					
+					iconSize = {
+						order = 160,
+						type = "range",
+						min = 0,
+						max = 64,
+						step = 1,
+						width = "full",
+						name = L["Icon Size"],
+						desc = L["Icon Size"],
+						get = function() return configDb.display.iconSize or 24 end,
+						set = function(_,v)
+							configDb.display.iconSize = v
+						end,
+						disabled = function() return not configDb.display.showIcon end,
+					},					
 				},
 			},
 			aboutGroup = {

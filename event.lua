@@ -32,6 +32,7 @@ function Garrison:GARRISON_MISSION_STARTED(event, missionID)
 				notification = 0,
 				timeLeft = garrisonMission.timeLeft,
 				type = garrisonMission.type,
+				typeAtlas = garrisonMission.typeAtlas,
 			}
 			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
 			debugPrint("Added Mission: "..missionID)

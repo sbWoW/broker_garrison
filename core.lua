@@ -46,6 +46,10 @@ local CONFIG_VERSION = 1
 local DEBUG = true
 local timers = {}
 Garrison.timers = timers
+local atlas = {}
+Garrison.atlas = atlas
+local iconCache = {}
+Garrison.iconCache = iconCache
 
 -- Garrison Functions
 local debugPrint, pairsByKeys, formatRealmPlayer, tableSize, isCurrentChar, getColoredString, getColoredUnitName, formattedSeconds, getIconString
@@ -100,9 +104,11 @@ local DB_DEFAULTS = {
 				hideMinimapPulse = false,
 			}
 		},
-		tooltip = {
+		display = {
 			scale = 1,
 			autoHideDelay = 0.1,
+			iconSize = 24,
+			showIcon = true,
 		},
 		configVersion = CONFIG_VERSION,
 		debugPrint = false,
@@ -546,10 +552,10 @@ do
 			end
 			tooltip:EnableMouse(true)
 			tooltip:SmartAnchorTo(anchor_frame)
-			tooltip:SetAutoHideDelay(configDb.tooltip.autoHideDelay or 0.1, LDB_anchor)
-			tooltip:SetScale(configDb.tooltip.scale or 1)
-			local font = LSM:Fetch("font", configDb.tooltip.fontName or DEFAULT_FONT)
-			local fontSize = configDb.tooltip.fontSize or 12
+			tooltip:SetAutoHideDelay(configDb.display.autoHideDelay or 0.1, LDB_anchor)
+			tooltip:SetScale(configDb.display.scale or 1)
+			local font = LSM:Fetch("font", configDb.display.fontName or DEFAULT_FONT)
+			local fontSize = configDb.display.fontSize or 12
 
 			local tmpFont = CreateFont("BrokerGarrisonTooltipFont")
 			tmpFont:SetFont(font, fontSize)
@@ -603,6 +609,9 @@ do
 
 							row = tooltip:AddLine(" ")
 
+							if configDb.display.showIcon then
+								tooltip:SetCell(row, 1, getIconString(missionData.typeAtlas, configDb.display.iconSize, true), nil, "LEFT", 1)
+							end
 							tooltip:SetCell(row, 2, missionData.name, nil, "LEFT", 2)
 
 							tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
@@ -682,7 +691,10 @@ do
 									rank = buildingData.rank
 								end
 
-								tooltip:SetCell(row, 1, getIconString(buildingData.icon, 16), nil, "LEFT", 1)
+								if configDb.display.showIcon then
+									tooltip:SetCell(row, 1, getIconString(buildingData.icon, configDb.display.iconSize, false), nil, "LEFT", 1)
+								end
+								
 								tooltip:SetCell(row, 2, buildingData.name, nil, "LEFT", 1)
 								tooltip:SetCell(row, 3, rank, nil, "LEFT", 1) -- TODO: Icon
 
@@ -800,6 +812,7 @@ function Garrison:UpdateUnknownMissions(missionsLoaded)
 				notification = 0,
 				timeLeft = garrisonMission.timeLeft,
 				type = garrisonMission.type,
+				typeAtlas = garrisonMission.typeAtlas,
 			}
 			globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID] = mission
 
