@@ -63,12 +63,11 @@ local DB_DEFAULTS = {
 	profile = {
 		general = {
 			mission = {
-				showCurrency = true,
-				showProgress = true,
-				showComplete = true,
+				ldbTemplate = "M1",
 			},
 			building = {
 				hideBuildingWithoutShipments = false,
+				ldbTemplate = "B1",
 			},
 			hideGarrisonMinimapButton = false,
 		},
@@ -166,7 +165,13 @@ local function toastMissionComplete (toast, text, missionData)
 	end
 	toast:SetTitle(L["Garrison: Mission complete"])
 	toast:SetFormattedText(getColoredString(text, colors.green))
-	toast:SetIconTexture([[Interface\Icons\Inv_Garrison_Resource]])
+
+	if missionData.typeAtlas then
+		toast:SetIconAtlas(missionData.typeAtlas)
+	else
+		toast:SetIconTexture([[Interface\Icons\Inv_Garrison_Resource]])
+	end
+
 	if configDb.notification.mission.extendedToast then
 		toast:SetPrimaryCallback(_G.OKAY, toastCallback)
 		toast:SetSecondaryCallback(L["Dismiss"], toastCallback)
@@ -288,6 +293,12 @@ function Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, missions)
 				if (timeLeft <= 0) then
 					missionCount.complete = missionCount.complete + 1
 				else
+					if missionCount.nextTime == -1 or timeLeft < missionCount.nextTime then
+						missionCount.nextTime = timeLeft
+						missionCount.nextData = missionData
+						missionCount.nextChar = paramCharInfo
+					end
+
 					missionCount.inProgress = missionCount.inProgress + 1
 				end
 			else
@@ -354,7 +365,7 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 	local numBuildingsPlayer = tableSize(buildings)
 
 	if numBuildingsPlayer > 0 then
-		buildingCount.total = buildingCount.total + numBuildingsPlayer
+		buildingCount.building.total = buildingCount.building.total + numBuildingsPlayer
 
 		for plotID, buildingData in pairs(buildings) do
 
@@ -364,21 +375,21 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 
 				if buildingData.canActivate or timeLeft < 0 then
 					Garrison:SendNotification(paramCharInfo, buildingData, TYPE_BUILDING)
-					buildingCount.complete = buildingCount.complete + 1
+					buildingCount.building.complete = buildingCount.building.complete + 1
 					buildingData.canActivate = true
 
 				else
-					buildingCount.building = buildingCount.building + 1
+					buildingCount.building.building = buildingCount.building.building + 1
 				end	
 			else
-				buildingCount.active = buildingCount.active + 1
+				buildingCount.building.active = buildingCount.building.active + 1
 
 				local shipmentData = buildingData.shipment
 
 				-- Check for work orders
 				if shipmentData and shipmentData.name and shipmentData.shipmentsTotal then
 
-					local shipmentsReady, shipmentsInProgress, shipmentsAvailable = Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
+					local shipmentsReady, shipmentsInProgress, shipmentsAvailable, timeLeftNext = Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
 
 					shipmentData.shipmentsReadyEstimate = shipmentsReady
 
@@ -390,12 +401,20 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 							shipmentData.notificationValue = shipmentData.shipmentsReadyEstimate
 					end
 
-					buildingCount.shipmentsInProgress = buildingCount.shipmentsInProgress + shipmentsInProgress
-					buildingCount.shipmentsReady = buildingCount.shipmentsReady + shipmentsReady
-					buildingCount.shipmentsTotal = buildingCount.shipmentsTotal + shipmentData.shipmentsTotal
-					buildingCount.shipmentsAvailable = buildingCount.shipmentsAvailable + shipmentsAvailable
+					buildingCount.shipment.inProgress = buildingCount.shipment.inProgress + shipmentsInProgress
+					buildingCount.shipment.ready = buildingCount.shipment.ready + shipmentsReady
+					buildingCount.shipment.total = buildingCount.shipment.total + shipmentData.shipmentsTotal
+					buildingCount.shipment.available = buildingCount.shipment.available + shipmentsAvailable
+
+					if timeLeftNext > 0 and (buildingCount.shipment.nextTime == -1 or timeLeftNext < buildingCount.shipment.nextTime) then
+						--debugPrint(("Update %s (%s)"):format(timeLeftNext, paramCharInfo.playerName))
+
+						buildingCount.shipment.nextTime = timeLeftNext
+						buildingCount.shipment.nextData = shipmentData
+						buildingCount.shipment.nextChar = paramCharInfo
+					end					
 				elseif shipmentData and shipmentData.name then
-					buildingCount.shipmentsAvailable = buildingCount.shipmentsAvailable + shipmentData.shipmentCapacity
+					buildingCount.shipment.available = buildingCount.shipment.available + shipmentData.shipmentCapacity
 				end
 			end
 		end
@@ -408,46 +427,71 @@ function Garrison:GetMissionCount(paramCharInfo)
 		total = 0,
 		inProgress = 0,
 		complete = 0,
+		nextTime = -1,
+		nextName = nil,
+		nextChar = nil,
 	}
+	local missionCountCurrent = nil
 
 	if paramCharInfo then
 		Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, globalDb.data[paramCharInfo.realmName][paramCharInfo.playerName].missions)
+		--missionCountCurrent = missionCount
 	else
+		Garrison:GetPlayerMissionCount(charInfo, missionCount, globalDb.data[charInfo.realmName][charInfo.playerName].missions)
+
+		missionCountCurrent = Garrison.deepcopy(missionCount, nil)
+		
 		for realmName, realmData in pairs(globalDb.data) do
 			for playerName, playerData in pairs(realmData) do
-				Garrison:GetPlayerMissionCount(playerData.info, missionCount, playerData.missions)
+				if not Garrison.isCurrentChar(playerData.info) then
+					Garrison:GetPlayerMissionCount(playerData.info, missionCount, playerData.missions)
+				end
 			end
 		end
 	end
 
-	--return missionCount.total, missionCount.inProgress, missionCount.complete
-	return missionCount
+	return missionCount, missionCountCurrent
 end
 
 function Garrison:GetBuildingCount(paramCharInfo)
 	local buildingCount = {
-		total = 0,
-		building = 0,
-		complete = 0,
-		active = 0,
-		shipmentsInProgress = 0,
-		shipmentsReady = 0,
-		shipmentsTotal = 0,
-		shipmentsAvailable = 0,
+		building = {
+			total = 0,
+			building = 0,
+			complete = 0,
+			active = 0,
+		},		
+		shipment = {
+			inProgress = 0,
+			ready = 0,
+			total = 0,
+			available = 0,
+			nextTime = -1,
+			nextName = nil,
+			nextChar = nil,
+		}	
 	}
+	local buildingCountCurrent
+
 
 	if paramCharInfo then
-		Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, globalDb.data[paramCharInfo.realmName][paramCharInfo.playerName].buildings)
+		Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, globalDb.data[paramCharInfo.realmName][paramCharInfo.playerName].buildings)		
+		--buildingCountCurrent = buildingCount
 	else
+		Garrison:GetPlayerBuildingCount(charInfo, buildingCount, globalDb.data[charInfo.realmName][charInfo.playerName].buildings)		
+
+		buildingCountCurrent = Garrison.deepcopy(buildingCount, nil)
+
 		for realmName, realmData in pairs(globalDb.data) do
 			for playerName, playerData in pairs(realmData) do
-				Garrison:GetPlayerBuildingCount(playerData.info, buildingCount, playerData.buildings)
+				if not Garrison.isCurrentChar(playerData.info) then
+					Garrison:GetPlayerBuildingCount(playerData.info, buildingCount, playerData.buildings)
+				end
 			end
 		end
 	end
 
-	--return buildingCount.total, buildingCount.building, buildingCount.active, buildingCount.shipmentInProgress, buildingCount.shipmentReady, buildingCount.shipmentTotal
-	return buildingCount
+	return buildingCount, buildingCountCurrent
 end
 
 
@@ -638,12 +682,12 @@ do
 					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
 					tooltip:SetCell(row, 3, ("%s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
 
-					tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(buildingCount.total), colors.lightGray))
+					tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(buildingCount.building.total), colors.lightGray))
 
 					tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, ("%s:%s"):format(realmName, playerName))
 					tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, playerData.buildingsExpanded)
 
-					if playerData.buildingsExpanded and buildingCount.total > 0 then
+					if playerData.buildingsExpanded and buildingCount.building.total > 0 then
 						row = tooltip:AddLine(" ")
 						AddSeparator(tooltip)
 
@@ -825,64 +869,49 @@ function Garrison:UpdateUnknownMissions(missionsLoaded)
 
 end
 
---function Garrison:UpdateShipmentInfo()
-
---end
-
 
 function Garrison:Update()
 	Garrison:FullUpdateBuilding(TYPE_SHIPMENT)
 
 	Garrison:UpdateUnknownMissions(false)
 
-	-- LDB Text
-	local missionCount = Garrison:GetMissionCount(nil)
-	local buildingCount = Garrison:GetBuildingCount(nil)
-
-	local conditionTable = {
-		completed = {
-			condition = (missionCount.total > 0 and missionCount.complete > 0),
-			color = { r = 0, g = 1, b = 0 }
-		},
-		inprogress = {
-			condition = (missionCount.total > 0 and missionCount.complete == 0),
-			color = { r = 1, g = 1, b = 1 }
-		},
-		nomission = {
-			condition = (missionCount.total == 0),
-			color = { r = 1, g = 0, b = 0 }
-		},
-	}
-
-	local ldbText = ""
-
-	if configDb.general.mission.showCurrency then
-		local currencyAmount = globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount
-		ldbText = ldbText..("%s %s"):format(BreakUpLargeNumbers(currencyAmount), Garrison.ICON_CURRENCY)
-	end
-	if configDb.general.mission.showProgress then
-		ldbText = ldbText.." "..(L["In Progress: %s"]):format(missionCount.inProgress)
-	end
-	if configDb.general.mission.showComplete then
-		ldbText = ldbText.." "..(L["Complete: %s"]):format(missionCount.complete)
-	end
-
-
-	if ldbText == "" then
-		ldbText = L["Missions"]
-	end
-
-	ldb_object_mission.text = Garrison.getColoredTooltipString(ldbText, conditionTable)
-	for name, val in pairs(conditionTable) do
-		if (val.condition) then
-			ldb_object_mission.iconR, ldb_object_mission.iconG, ldb_object_mission.iconB = val.color.r, val.color.g, val.color.b
-		end
-	end
+	Garrison:UpdateLDB()
 
 	-- First update
 	if delayedInit then
 		addonInitialized = true
 	end
+end
+
+function Garrison:UpdateLDB()
+	-- LDB Text
+	local missionCount, missionCountCurrent = Garrison:GetMissionCount(nil)
+	local buildingCount, buildingCountCurrent = Garrison:GetBuildingCount(nil)	
+
+	local currencyTotal, currencyAmount = 0, 0
+
+	for realmName, realmData in pairs(globalDb.data) do
+		for playerName, playerData in pairs(realmData) do
+			if Garrison.isCurrentChar(playerData.info) then
+				currencyAmount = playerData.currencyAmount
+			end
+			currencyTotal = currencyTotal + playerData.currencyAmount
+		end
+	end
+
+	local data = {
+		missionCount = missionCount,
+		buildingCount = buildingCount,
+		missionCountCurrent = missionCountCurrent,
+		buildingCountCurrent = buildingCountCurrent,		
+		currencyAmount = currencyAmount,
+		currencyTotal = currencyTotal,
+		currencyIcon = Garrison.ICON_CURRENCY
+	}
+
+	ldb_object_mission.text = Garrison.replaceVariables(Garrison:GetLDBText(Garrison.TYPE_MISSION), data)
+	ldb_object_building.text = Garrison.replaceVariables(Garrison:GetLDBText(Garrison.TYPE_BUILDING), data)
+
 end
 
 
@@ -985,5 +1014,6 @@ function Garrison:DelayedUpdate()
 	--self:RegisterEvent("SHIPMENT_CRAFTER_CLOSED", "ShipmentUpdate")
 	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")
 
-	timers.notify_update = Garrison:ScheduleRepeatingTimer("QuickUpdate", 10)
+	timers.notify_update = Garrison:ScheduleRepeatingTimer("QuickUpdate", 5)
+	timers.notify_update = Garrison:ScheduleRepeatingTimer("LDBUpdate", 1)
 end

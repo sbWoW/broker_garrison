@@ -54,6 +54,50 @@ function Garrison:GetSounds()
 	return sounds
 end
 
+function Garrison:GetTemplates(paramType)
+	local templates = {}
+	for k,v in pairs(Garrison.ldbTemplate) do
+		if not v.type or v.type == paramType then
+			templates[k] = v.name
+		end
+	end
+
+	templates["custom"] = L["Custom"]
+
+	return templates
+end
+
+function Garrison:GetLDBVariables(paramType)
+	local vars = {}
+
+	for k,v in Garrison.sort(Garrison.ldbVars, "name,a") do
+		if not v.type or v.type == paramType then
+			vars[k] = v.name
+		end
+	end
+
+	return vars
+end
+
+
+function Garrison:GetLDBText(paramType)
+	local template = configDb.general[paramType].ldbTemplate
+
+	local ldbText = ""
+
+	--debugPrint(paramType)
+	--debugPrint(template)
+
+	if template == "custom" then
+		ldbText = configDb.general[paramType].ldbText
+	elseif Garrison.ldbTemplate and Garrison.ldbTemplate[template] then
+
+		ldbText = Garrison.ldbTemplate[template].text
+	end
+
+	return ldbText
+end
+
 
 function Garrison:deletechar(realm_and_character)
 	local playerName, realmName = (":"):split(realm_and_character, 2)
@@ -94,9 +138,9 @@ function Garrison:GetOptions()
 				type = "group",
 				name = "General",
 				cmdHidden = true,
-				args = {
+				args = {				
 					garrisonMinimapButton = {
-						order = 110,
+						order = 100,
 						type = "toggle",
 						width = "full",
 						name = L["Hide Garrison Minimap-Button"],
@@ -105,51 +149,126 @@ function Garrison:GetOptions()
 						set = function(_,v) configDb.general.hideGarrisonMinimapButton = v
 							Garrison:UpdateConfig()
 						end,
-					},				
-					showCurrency = {
-						order = 120,
-						type = "toggle",
-						width = "full",
-						name = L["Show resources"],
-						desc = L["Show garrison resources in LDB"],
-						get = function() return configDb.general.mission.showCurrency end,
-						set = function(_,v) configDb.general.mission.showCurrency = v
-							Garrison:Update()
-						end,
-					},
-					showProgress = {
-						order = 130,
-						type = "toggle",
-						width = "full",
-						name = L["Show active missions"],
-						desc = L["Show active missions in LDB"],
-						get = function() return configDb.general.mission.showProgress end,
-						set = function(_,v) configDb.general.mission.showProgress = v
-							Garrison:Update()
-						end,
-					},
-					showComplete = {
-						order = 140,
-						type = "toggle",
-						width = "full",
-						name = L["Show completed missions"],
-						desc = L["Show completed missions in LDB"],
-						get = function() return configDb.general.mission.showComplete end,
-						set = function(_,v) configDb.general.mission.showComplete = v
-							Garrison:Update()
-						end,
-					},
-					hideBuildingWithoutShipments = {
-						order = 150,
-						type = "toggle",
-						width = "full",
-						name = L["Hide buildings without shipments"],
-						desc = L["Don't display buildings without shipments (barracks, stables, ...)"],
-						get = function() return configDb.general.building.hideBuildingWithoutShipments end,
-						set = function(_,v) configDb.general.building.hideBuildingWithoutShipments = v
-							Garrison:Update()
-						end,						
 					},	
+					missionGroup = {
+						order = 100,
+						type = "group",
+						name = L["Mission"],
+						cmdHidden = true,
+						args = {
+							ldbHeader = {
+								order = 100,
+								type = "header",
+								name = L["LDB Display"],
+								cmdHidden = true,
+							},
+							ldbTemplateSelect = {
+								order = 120,
+								type = "select",
+								width = "full",
+								name = L["LDB Text"],
+								desc = L["LDB Text"],
+								values = Garrison:GetTemplates(Garrison.TYPE_MISSION),
+								get = function() return configDb.general.mission.ldbTemplate end,
+								set = function(_,v) 
+									if v then
+										configDb.general.mission.ldbText = Garrison:GetLDBText(Garrison.TYPE_MISSION) or ""
+									end
+									configDb.general.mission.ldbTemplate = v
+								end,
+							},							
+							ldbText = {
+								order = 130,
+								type = "input",
+								width = "full",
+								name = L["Custom LDB Text"],
+								desc = L["Custom LDB Text"],
+								get = function() return configDb.general.mission.ldbText end,
+								set = function(_,v) configDb.general.mission.ldbText = v
+								end,
+								disabled = function() return not configDb.general.mission.ldbTemplate or not (configDb.general.mission.ldbTemplate == "custom") end,
+							},
+							ldbVar = {
+								order = 140,
+								type = "select",
+								width = "full",
+								name = L["Add item to custom LDB Text"],
+								name = L["Add item to custom LDB Text"],
+								values = Garrison:GetLDBVariables(Garrison.TYPE_MISSION),
+								get = function() return "" end,
+								set = function(_,v) 									
+									configDb.general.mission.ldbText = ("%s%%%s%%"):format(configDb.general.mission.ldbText or "", v or "")
+								end,
+								disabled = function() return not configDb.general.mission.ldbTemplate or not (configDb.general.mission.ldbTemplate == "custom") end,
+							},
+
+						},
+					},
+					buildingGroup = {
+						order = 200,
+						type = "group",
+						name = L["Building"],
+						cmdHidden = true,
+						args = {
+						hideBuildingWithoutShipments = {
+								order = 10,
+								type = "toggle",
+								width = "full",
+								name = L["Hide buildings without shipments"],
+								desc = L["Don't display buildings without shipments (barracks, stables, ...)"],
+								get = function() return configDb.general.building.hideBuildingWithoutShipments end,
+								set = function(_,v) configDb.general.building.hideBuildingWithoutShipments = v
+									Garrison:Update()
+								end,						
+							},						
+							ldbHeader = {
+								order = 100,
+								type = "header",
+								name = L["LDB Display"],
+								cmdHidden = true,
+							},	
+							ldbTemplateSelect = {
+								order = 120,
+								type = "select",
+								width = "full",
+								name = L["LDB Text"],
+								desc = L["LDB Text"],
+								values = Garrison:GetTemplates(Garrison.TYPE_BUILDING),
+								get = function() return configDb.general.building.ldbTemplate end,
+								set = function(_,v) 
+									if v then
+										configDb.general.building.ldbText = Garrison:GetLDBText(Garrison.TYPE_BUILDING) or ""
+									end
+									configDb.general.building.ldbTemplate = v
+								end,
+							},							
+							ldbText = {
+								order = 130,
+								type = "input",
+								width = "full",
+								name = L["Custom LDB Text"],
+								desc = L["Custom LDB Text"],
+								get = function() return configDb.general.building.ldbText end,
+								set = function(_,v) configDb.general.building.ldbText = v
+								end,
+								disabled = function() return not configDb.general.building.ldbTemplate or not (configDb.general.building.ldbTemplate == "custom") end,
+							},
+							ldbVar = {
+								order = 140,
+								type = "select",
+								width = "full",
+								name = L["Add item to custom LDB Text"],
+								name = L["Add item to custom LDB Text"],
+								values = Garrison:GetLDBVariables(Garrison.TYPE_BUILDING),
+								get = function() return "" end,
+								set = function(_,v) 									
+									configDb.general.building.ldbText = ("%s%%%s%%"):format(configDb.general.building.ldbText or "", v or "")
+								end,
+								disabled = function() return not configDb.general.building.ldbTemplate or not (configDb.general.building.ldbTemplate == "custom") end,
+							},							
+	
+						},
+					},					
 				},
 			},
 			dataGroup = {

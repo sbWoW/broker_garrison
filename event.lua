@@ -276,11 +276,15 @@ function Garrison:QuickUpdate()
 	if Garrison.location.inGarrison then
 		-- on garrison - full update
 		Garrison:Update()
-	else
+	--else
 		-- outside - only notifications
-		Garrison:GetMissionCount(nil)
-		Garrison:GetBuildingCount(nil)
+		--Garrison:UpdateLDB()
+	--end
 	end
+end
+
+function Garrison:LDBUpdate()
+	Garrison:UpdateLDB()
 end
 
 function Garrison:SlowUpdate()

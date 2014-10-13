@@ -20,6 +20,27 @@ function Garrison.tableSize(T)
 	return count
 end
 
+local function deepcopy(o, seen)
+  seen = seen or {}
+  if o == nil then return nil end
+  if seen[o] then return seen[o] end
+
+  local no
+  if type(o) == 'table' then
+    no = {}
+    seen[o] = no
+
+    for k, v in next, o, nil do
+      no[deepcopy(k, seen)] = deepcopy(v, seen)
+    end
+    setmetatable(no, deepcopy(getmetatable(o), seen))
+  else -- number, string, boolean, etc
+    no = o
+  end
+  return no
+end
+Garrison.deepcopy = deepcopy
+
 function Garrison.round(num, idp)
 	return tonumber(string.format("%." .. (idp or 0) .. "f", num))
 end
@@ -213,12 +234,56 @@ function Garrison.formattedSeconds(seconds)
 end
 
 function Garrison.formatRealmPlayer(paramCharInfo, colored)
+	if not paramCharInfo then return "" end
+
 	if colored then
 		return ("%s (%s)"):format(Garrison.getColoredUnitName(paramCharInfo.playerName, paramCharInfo.playerClass), paramCharInfo.realmName)
 	else
 		return ("%s-%s"):format(paramCharInfo.playerName, paramCharInfo.realmName)
 	end
 end
+
+function Garrison.safeReturn(data, ...) 
+	if data then
+
+		local cnt = select('#', ...)
+
+		local cur = data
+
+ 		for i = 1, cnt do
+	  		local k = select(i, ...)
+
+	  		if cur[k] then
+				cur = cur[k]
+			end
+		end
+
+		if cur then
+			return cur
+		end
+	end
+	
+	return nil
+end
+
+function Garrison.replaceVariables(text, data)
+	local returnText = ""
+	if text then
+		returnText = text:gsub("%%(%w+)%%", function (s)
+			local key = tostring(s)
+			local textFun = Garrison.ldbVars[key]
+
+			if textFun and textFun.data then
+				return textFun.data(data)
+			else				
+				return ("[noval:%s]"):format(key)
+	    	end
+		end)
+	end
+
+	return returnText
+end
+
 
 function Garrison:InitHelper()
 	garrisonDb = self.DB
