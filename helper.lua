@@ -26,7 +26,15 @@ end
 
 local function debugPrint(text)
 	if(configDb.debugPrint) then
-		print(("%s: %s"):format(ADDON_NAME, text))
+		if type(text) == 'table' then
+			local i = 0
+			for k,v in pairs(text) do
+				i = i + 1
+				print(("%s: (%i) %s = %s"):format(ADDON_NAME, i, k, tostring(v or 'nil')))
+			end
+		else
+			print(("%s: %s"):format(ADDON_NAME, tostring(text or 'nil')))
+		end
 	end
 end
 Garrison.debugPrint = debugPrint

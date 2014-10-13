@@ -80,6 +80,8 @@ function Garrison:GetOptions()
 	local options = {
 		name = L["Broker Garrison"],
 		type = "group",
+		childGroups = "tab",
+		handler = self,
 		args = {
 			confdesc = {
 				order = 1,
@@ -87,10 +89,10 @@ function Garrison:GetOptions()
 				name = L["Garrison display for LDB\n"],
 				cmdHidden = true,
 			},
-			ldbGroup = {
+			general = {
 				order = 100,
 				type = "group",
-				name = "LDB",
+				name = "General",
 				cmdHidden = true,
 				args = {
 					garrisonMinimapButton = {
@@ -99,8 +101,8 @@ function Garrison:GetOptions()
 						width = "full",
 						name = L["Hide Garrison Minimap-Button"],
 						desc = L["Hide Garrison Minimap-Button"],
-						get = function() return configDb.ldbConfig.hideGarrisonMinimapButton end,
-						set = function(_,v) configDb.ldbConfig.hideGarrisonMinimapButton = v
+						get = function() return configDb.general.hideGarrisonMinimapButton end,
+						set = function(_,v) configDb.general.hideGarrisonMinimapButton = v
 							Garrison:UpdateConfig()
 						end,
 					},				
@@ -110,8 +112,8 @@ function Garrison:GetOptions()
 						width = "full",
 						name = L["Show resources"],
 						desc = L["Show garrison resources in LDB"],
-						get = function() return configDb.ldbConfig.showCurrency end,
-						set = function(_,v) configDb.ldbConfig.showCurrency = v
+						get = function() return configDb.general.mission.showCurrency end,
+						set = function(_,v) configDb.general.mission.showCurrency = v
 							Garrison:Update()
 						end,
 					},
@@ -121,8 +123,8 @@ function Garrison:GetOptions()
 						width = "full",
 						name = L["Show active missions"],
 						desc = L["Show active missions in LDB"],
-						get = function() return configDb.ldbConfig.mission.showProgress end,
-						set = function(_,v) configDb.ldbConfig.mission.showProgress = v
+						get = function() return configDb.general.mission.showProgress end,
+						set = function(_,v) configDb.general.mission.showProgress = v
 							Garrison:Update()
 						end,
 					},
@@ -132,11 +134,22 @@ function Garrison:GetOptions()
 						width = "full",
 						name = L["Show completed missions"],
 						desc = L["Show completed missions in LDB"],
-						get = function() return configDb.ldbConfig.mission.showComplete end,
-						set = function(_,v) configDb.ldbConfig.mission.showComplete = v
+						get = function() return configDb.general.mission.showComplete end,
+						set = function(_,v) configDb.general.mission.showComplete = v
 							Garrison:Update()
 						end,
 					},
+					hideBuildingWithoutShipments = {
+						order = 150,
+						type = "toggle",
+						width = "full",
+						name = L["Hide buildings without shipments"],
+						desc = L["Don't display buildings without shipments (barracks, stables, ...)"],
+						get = function() return configDb.general.building.hideBuildingWithoutShipments end,
+						set = function(_,v) configDb.general.building.hideBuildingWithoutShipments = v
+							Garrison:Update()
+						end,						
+					},	
 				},
 			},
 			dataGroup = {
@@ -553,10 +566,10 @@ function Garrison:GetOptions()
 					notificationLibSink = Garrison:GetSinkAce3OptionsDataTable(),
 				},
 			},
-			tooltipGroup = {
-				order = 100,
+			displayGroup = {
+				order = 500,
 				type = "group",
-				name = L["Tooltip"],
+				name = L["Display"],
 				cmdHidden = true,
 				args = {
 					scale = {
@@ -657,8 +670,9 @@ function Garrison:SetupOptions()
 
 	local options = Garrison:GetOptions()
 
-	AceConfigRegistry:RegisterOptionsTable(ADDON_NAME, options)
-	Garrison.optionsFrame = AceConfigDialog:AddToBlizOptions(ADDON_NAME)
+	AceConfigRegistry:RegisterOptionsTable(ADDON_NAME, options)	
+	Garrison.optionsFrame = AceConfigDialog:AddToBlizOptions(ADDON_NAME, Garrison.cleanName)
+	
 
 	-- Fix sink config options
 	options.args.notificationGroup.args.notificationLibSink.order = 600
@@ -666,9 +680,17 @@ function Garrison:SetupOptions()
 	options.args.notificationGroup.args.notificationLibSink.name = ""
 	options.args.notificationGroup.args.notificationLibSink.disabled = function() return not configDb.notification.enabled end
 
-
 	options.plugins["profiles"] = {
 		profiles = AceDBOptions:GetOptionsTable(garrisonDb)
 	}
 	options.plugins.profiles.profiles.order = 800
+
+	--local sortedOptions = Garrison.sort(options.args, "order,a")
+	--for k, v in sortedOptions do
+	--	if v and v.type == "group" then
+	--		print("AddOption "..k)
+	--		AceConfigRegistry:RegisterOptionsTable(ADDON_NAME.."-"..k, v)			
+	--		AceConfigDialog:AddToBlizOptions(ADDON_NAME.."-"..k, v.name, Garrison.cleanName)
+	--	end
+	--end
 end

@@ -6,6 +6,7 @@ local BrokerGarrison = LibStub('AceAddon-3.0'):NewAddon(ADDON_NAME, 'AceConsole-
 local Garrison = BrokerGarrison
 
 Garrison.versionString = GetAddOnMetadata(ADDON_NAME, "Version");
+Garrison.cleanName = "Broker Garrison"
 
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale(ADDON_NAME)
@@ -28,7 +29,7 @@ local ShowUIPanel, HideUIPanel, CreateFont, PlaySoundFile = _G.ShowUIPanel, _G.H
 -- UI Hooks
 local OptionsListButtonToggle_OnClick = _G.OptionsListButtonToggle_OnClick
 
-local garrisonDb, configDb, globalDb, DEFAULT_FONT, toolTipRef
+local garrisonDb, configDb, globalDb, DEFAULT_FONT
 
 -- Constants
 local TYPE_BUILDING = "building"
@@ -77,20 +78,20 @@ local TOAST_SHIPMENT_COMPLETE = "BrokerGarrisonShipmentComplete"
 
 local DB_DEFAULTS = {
 	profile = {
-		ldbConfig = {
+		general = {
 			mission = {
 				showCurrency = true,
 				showProgress = true,
 				showComplete = true,
 			},
 			building = {
-
+				hideBuildingWithoutShipments = false,
 			},
 			hideGarrisonMinimapButton = false,
 		},
 		notification = {
 			sink = {},
-			['*'] = {
+			['**'] = {
 				enabled = true,
 				repeatOnLoad = false,
 				toastEnabled = true,
@@ -101,7 +102,7 @@ local DB_DEFAULTS = {
 		},
 		tooltip = {
 			scale = 1,
-			autoHideDelay = 0.25,
+			autoHideDelay = 0.1,
 		},
 		configVersion = CONFIG_VERSION,
 		debugPrint = false,
@@ -466,11 +467,11 @@ end
 function Garrison:UpdateConfig()
 	if GarrisonLandingPageMinimapButton then
 		if GarrisonLandingPageMinimapButton:IsShown() then
-			if configDb.ldbConfig.hideGarrisonMinimapButton then
+			if configDb.general.hideGarrisonMinimapButton then
 				GarrisonLandingPageMinimapButton:Hide()
 			end
 		else
-			if not configDb.ldbConfig.hideGarrisonMinimapButton then
+			if not configDb.general.hideGarrisonMinimapButton then
 				GarrisonLandingPageMinimapButton:Show()
 			end
 		end
@@ -480,9 +481,11 @@ end
 local DrawTooltip
 do
 	local NUM_TOOLTIP_COLUMNS = 9
-	local tooltip
+	local tooltipRegistry = {}	
 	local LDB_anchor
 	local tooltipType
+	local tooltip
+	local locked = false
 
 	local function ExpandButton_OnMouseUp(tooltip_cell, realm_and_character)
 		local realm, character_name = (":"):split(realm_and_character, 2)
@@ -501,11 +504,22 @@ do
 		tooltip:SetCell(line, column, is_expanded and ICON_CLOSE_DOWN or ICON_OPEN_DOWN)
 	end
 
-	local function Tooltip_OnRelease(self)
-		tooltip = nil
+	local function Tooltip_OnRelease_Mission(arg)
+		--debugPrint(arg)
+		tooltipRegistry[TYPE_MISSION] = nil
+		--tooltip = nil
 		LDB_anchor = nil
-		tooltipType = nil
+		tooltipType = nil		
 	end
+
+	local function Tooltip_OnRelease_Building(arg)
+		--debugPrint(arg)
+		tooltipRegistry[TYPE_BUILDING] = nil
+		--tooltip = nil
+		LDB_anchor = nil
+		tooltipType = nil		
+	end
+
 
 	local function AddSeparator(tooltip)
 		tooltip:AddSeparator(1, colors.lightGray.r, colors.lightGray.g, colors.lightGray.b, colors.lightGray.a)
@@ -517,13 +531,22 @@ do
 		end
 		LDB_anchor = anchor_frame
 		tooltipType = paramTooltipType
+		tooltip	= tooltipRegistry[tooltipType]
+
+		locked = true
 
 		if not tooltip then
-			tooltip = LibQTip:Acquire("BrokerGarrisonTooltip", NUM_TOOLTIP_COLUMNS, "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT")
-			tooltip.OnRelease = Tooltip_OnRelease
+			tooltipRegistry[tooltipType] = LibQTip:Acquire("BrokerGarrisonTooltip-"..paramTooltipType, NUM_TOOLTIP_COLUMNS, "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT")
+			tooltip = tooltipRegistry[tooltipType]
+
+			if tooltipType == TYPE_MISSION then
+				tooltip.OnRelease = Tooltip_OnRelease_Mission
+			elseif tooltipType == TYPE_BUILDING then
+				tooltip.OnRelease = Tooltip_OnRelease_Building
+			end
 			tooltip:EnableMouse(true)
 			tooltip:SmartAnchorTo(anchor_frame)
-			tooltip:SetAutoHideDelay(configDb.tooltip.autoHideDelay or 0.25, LDB_anchor)
+			tooltip:SetAutoHideDelay(configDb.tooltip.autoHideDelay or 0.1, LDB_anchor)
 			tooltip:SetScale(configDb.tooltip.scale or 1)
 			local font = LSM:Fetch("font", configDb.tooltip.fontName or DEFAULT_FONT)
 			local fontSize = configDb.tooltip.fontSize or 12
@@ -532,8 +555,6 @@ do
 			tmpFont:SetFont(font, fontSize)
 			tooltip:SetFont(tmpFont)
 		end
-
-		toolTipRef = tooltip
 
 		local now = time()
 		local name, row, realmName, realmData, playerName, playerData, missionID, missionData
@@ -644,53 +665,60 @@ do
 						--local sortedBuildingTable = Garrison.sort(playerData.buildings, "name,a")
 
 						for plotID, buildingData in sortedBuildingTable do
-							-- Display building and Workorder data
-							row = tooltip:AddLine(" ")
-							tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
+
+							if not configDb.general.building.hideBuildingWithoutShipments or 
+								(buildingData.isBuilding or buildingData.canActivate) or
+								(buildingData.shipment and buildingData.shipment.shipmentCapacity) then 							
+
+								-- Display building and Workorder data
+								row = tooltip:AddLine(" ")
+								tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
 
 
-							local rank
-							if buildingData.isBuilding or buildingData.canActivate then
-								rank = string.format("%s->%s", (buildingData.rank - 1), buildingData.rank)
-							else
-								rank = buildingData.rank
-							end
-
-							tooltip:SetCell(row, 1, getIconString(buildingData.icon, 16), nil, "LEFT", 1)
-							tooltip:SetCell(row, 2, buildingData.name, nil, "LEFT", 1)
-							tooltip:SetCell(row, 3, rank, nil, "LEFT", 1) -- TODO: Icon
-
-							local timeLeftBuilding = buildingData.buildTime - (now - buildingData.timeStart)
-
-							if ((buildingData.isBuilding and timeLeftBuilding <= 0) or buildingData.canActivate) then
-								tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
-							elseif buildingData.isBuilding then
-								tooltip:SetCell(row, 6, ("%s%s"):format(
-									getColoredString(("%s | "):format(formattedSeconds(buildingData.buildTime)), colors.lightGray),
-									getColoredString(formattedSeconds(timeLeftBuilding), colors.white)
-								), nil, "RIGHT", 1)
-							elseif buildingData.shipment and buildingData.shipment.name then
-								local shipmentData = buildingData.shipment
-
-								local shipmentsReady, shipmentsInProgress, shipmentsAvailable, timeLeftNext, timeLeftTotal = Garrison:DoShipmentMagic(shipmentData, playerData.info)
-
-								tooltip:SetCell(row, 4, shipmentsInProgress, nil, "LEFT", 1)
-								tooltip:SetCell(row, 5, shipmentsReady, nil, "LEFT", 1)
-
-								if timeLeftNext > 0 then
-									tooltip:SetCell(row, 6, formattedSeconds(timeLeftNext), nil, "LEFT", 1)
-
-									if timeLeftTotal > 0 then
-										tooltip:SetCell(row, 7, formattedSeconds(timeLeftTotal), nil, "LEFT", 1)
-									end
+								local rank
+								if buildingData.isBuilding or buildingData.canActivate then
+									rank = string.format("%s->%s", (buildingData.rank - 1), buildingData.rank)
+								else
+									rank = buildingData.rank
 								end
 
-								tooltip:SetCell(row, 9, shipmentsAvailable, nil, "LEFT", 1)
+								tooltip:SetCell(row, 1, getIconString(buildingData.icon, 16), nil, "LEFT", 1)
+								tooltip:SetCell(row, 2, buildingData.name, nil, "LEFT", 1)
+								tooltip:SetCell(row, 3, rank, nil, "LEFT", 1) -- TODO: Icon
 
-							else
-								tooltip:SetCell(row, 4, "-", nil, "LEFT", 1)
-								tooltip:SetCell(row, 5, "-", nil, "LEFT", 1)
-								tooltip:SetCell(row, 9, "-", nil, "LEFT", 1)
+								local timeLeftBuilding = buildingData.buildTime - (now - buildingData.timeStart)
+
+								if ((buildingData.isBuilding and timeLeftBuilding <= 0) or buildingData.canActivate) then
+									tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
+								elseif buildingData.isBuilding then
+									tooltip:SetCell(row, 6, ("%s%s"):format(
+										getColoredString(("%s | "):format(formattedSeconds(buildingData.buildTime)), colors.lightGray),
+										getColoredString(formattedSeconds(timeLeftBuilding), colors.white)
+									), nil, "RIGHT", 1)
+								elseif buildingData.shipment and buildingData.shipment.name then
+									local shipmentData = buildingData.shipment
+
+									local shipmentsReady, shipmentsInProgress, shipmentsAvailable, timeLeftNext, timeLeftTotal = Garrison:DoShipmentMagic(shipmentData, playerData.info)
+
+									tooltip:SetCell(row, 4, shipmentsInProgress, nil, "LEFT", 1)
+									tooltip:SetCell(row, 5, shipmentsReady, nil, "LEFT", 1)
+
+									if timeLeftNext > 0 then
+										tooltip:SetCell(row, 6, formattedSeconds(timeLeftNext), nil, "LEFT", 1)
+
+										if timeLeftTotal > 0 then
+											tooltip:SetCell(row, 7, formattedSeconds(timeLeftTotal), nil, "LEFT", 1)
+										end
+									end
+
+									tooltip:SetCell(row, 9, shipmentsAvailable, nil, "LEFT", 1)
+
+								else
+									tooltip:SetCell(row, 4, "-", nil, "LEFT", 1)
+									tooltip:SetCell(row, 5, "-", nil, "LEFT", 1)
+									tooltip:SetCell(row, 9, "-", nil, "LEFT", 1)
+								end
+
 							end
 						end
 					end
@@ -701,6 +729,8 @@ do
 		end
 
 	  	tooltip:Show()
+
+	  	locked = false
 	end
 
 	function ldb_object_building:OnEnter()
@@ -708,6 +738,7 @@ do
 	end
 
 	function ldb_object_building:OnLeave()
+		
 	end
 
 	function ldb_object_mission:OnEnter()
@@ -715,6 +746,7 @@ do
 	end
 
 	function ldb_object_mission:OnLeave()
+
 	end
 
 	local function onclick(button)
@@ -830,14 +862,14 @@ function Garrison:Update()
 
 	local ldbText = ""
 
-	if configDb.ldbConfig.mission.showCurrency then
+	if configDb.general.mission.showCurrency then
 		local currencyAmount = globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount
 		ldbText = ldbText..("%s %s"):format(BreakUpLargeNumbers(currencyAmount), ICON_CURRENCY)
 	end
-	if configDb.ldbConfig.mission.showProgress then
+	if configDb.general.mission.showProgress then
 		ldbText = ldbText.." "..(L["In Progress: %s"]):format(missionCount.inProgress)
 	end
-	if configDb.ldbConfig.mission.showComplete then
+	if configDb.general.mission.showComplete then
 		ldbText = ldbText.." "..(L["Complete: %s"]):format(missionCount.complete)
 	end
 
