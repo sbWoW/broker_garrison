@@ -36,6 +36,7 @@ Locales\deDE.lua
 Locales\zhTW.lua
 
 core.lua
+data.lua
 helper.lua
 config.lua
 event.lua

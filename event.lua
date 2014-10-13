@@ -9,6 +9,10 @@ local _G = getfenv(0)
 
 local pairs, time, C_Garrison, GetCurrencyInfo = _G.pairs, _G.time, _G.C_Garrison, _G.GetCurrencyInfo
 
+
+Garrison.shipmentUpdate = {}
+
+
 function Garrison:GARRISON_MISSION_COMPLETE_RESPONSE(event, missionID, canComplete, succeeded)
 	if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then
 		debugPrint("Removed Mission: "..missionID.." ("..event..")")
@@ -67,13 +71,29 @@ function Garrison:GARRISON_MISSION_NPC_OPENED(...)
 	Garrison:UpdateUnknownMissions(true)
 end
 
+function Garrison:IsInGarrison()
+	local mapName = _G.GetRealZoneText()
+
+	if (mapName and Garrison.location.garrisonMapName and mapName == Garrison.location.garrisonMapName) then
+		return true
+	end		
+
+	local instanceMapID = select(8, GetInstanceInfo())
+
+	if Garrison.instanceId[instanceMapID] then
+		return true
+	end
+
+	return false
+end
+
 function Garrison:UpdateLocation()
-	Garrison.location.mapName = _G.GetRealZoneText()
-	Garrison.location.inGarrison = (Garrison.location.mapName and Garrison.location.garrisonMapName and Garrison.location.mapName == Garrison.location.garrisonMapName)
+	--Garrison.location.mapName = _G.GetRealZoneText()
+	Garrison.location.inGarrison = Garrison:IsInGarrison()
 	debugPrint(("ZoneUpdate: %s (%s)"):format(Garrison.location.mapName or "-", _G.tostring(Garrison.location.inGarrison)))
 end
 
-function Garrison:ZONE_CHANGED_NEW_AREA(...)
+function Garrison:ZoneUpdate(...)
 	Garrison:UpdateLocation()
 end
 
@@ -118,6 +138,8 @@ end
 
 
 function Garrison:UpdateShipment(buildingID, shipmentData)	
+	Garrison.shipmentUpdate.success = false
+
 	local tmpShipment = nil
 	if buildingID then
 		tmpShipment = Garrison:GetShipmentData(buildingID)
@@ -160,6 +182,7 @@ function Garrison:UpdateBuilding(plotID)
 end
 
 function Garrison:FullUpdateBuilding(updateType)
+
 	C_Garrison.RequestLandingPageShipmentInfo()
 
 	local buildings = C_Garrison.GetBuildings()
@@ -170,6 +193,7 @@ function Garrison:FullUpdateBuilding(updateType)
 		local plotID = buildings[i].plotID
 
 		if updateType == Garrison.TYPE_BUILDING then
+			debugPrint(("FullUpdate: %s / %s"):format(plotID or "0", buildingID or "0"))
 			tmpBuildings[plotID] = Garrison:UpdateBuilding(plotID)
 		end
 		if updateType == Garrison.TYPE_SHIPMENT then
@@ -233,8 +257,11 @@ end
 function Garrison:ShipmentStatusUpdate(event, shipmentStarted)
 	if shipmentStarted then
 		debugPrint("ShipmentStatusUpdate")
-		C_Garrison.RequestLandingPageShipmentInfo()
-		--timers.shipment_update = Garrison:ScheduleTimer("UpdateShipmentInfo", 5)
+		C_Garrison.RequestLandingPageShipmentInfo()	
+
+		Garrison.shipmentUpdate.success = true
+
+		--timers.shipment_update = Garrison:ScheduleTimer("UpdateShipmentInfo", 20)
 	end
 end
 
@@ -312,6 +339,34 @@ function Garrison:GarrisonMinimapMission_ShowPulse()
 	else
 		debugPrint("Play Pulse (Mission)")
 		self.hooks.GarrisonMinimapMission_ShowPulse(_G.GarrisonLandingPageMinimapButton)
+	end
+end
+
+--function Garrison:GarrisonCapacitiveDisplayFrame_Update()
+function Garrison:GarrisonCapacitiveDisplayFrame_Update(obj, success, maxShipments, plotID)
+	if success then
+		--debugPrint(("Update: %s - %s - %s"):format(tostring(success), maxShipments, plotID))
+		Garrison.shipmentUpdate.plotID = plotID
+		--Garrison.shipmentUpdate.numPending = C_Garrison.GetNumPendingShipments()
+
+		--debugPrint(("numPending: %s"):format(Garrison.shipmentUpdate.numPending or "0"))
+	end
+
+	local numPending = C_Garrison.GetNumPendingShipments()
+
+	
+	if Garrison.shipmentUpdate.success then
+		debugPrint(("numPending: %s"):format(numPending or "0"))
+
+		local buildingData = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[Garrison.shipmentUpdate.plotID]
+		if buildingData and buildingData.shipment then
+			if numPending >= buildingData.shipment.shipmentsTotal then
+				debugPrint(("Update Shipment (%s): %s"):format(buildingData.name, numPending))
+				buildingData.shipment.shipmentsTotal = numPending
+
+				Garrison.shipmentUpdate.success = false
+			end
+		end		
 	end
 end
 

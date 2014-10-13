@@ -29,7 +29,7 @@ local ShowUIPanel, HideUIPanel, CreateFont, PlaySoundFile = _G.ShowUIPanel, _G.H
 -- UI Hooks
 local OptionsListButtonToggle_OnClick = _G.OptionsListButtonToggle_OnClick
 
-local garrisonDb, configDb, globalDb, DEFAULT_FONT
+local garrisonDb, configDb, globalDb, DEFAULT_FONT, colors
 
 -- Constants
 local TYPE_BUILDING = "building"
@@ -54,27 +54,6 @@ Garrison.iconCache = iconCache
 -- Garrison Functions
 local debugPrint, pairsByKeys, formatRealmPlayer, tableSize, isCurrentChar, getColoredString, getColoredUnitName, formattedSeconds, getIconString
 
-local colors = {
-	green = {r=0, g=1, b=0, a=1},
-	white = {r=1, g=1, b=1, a=1},
-	lightGray = {r=0.25, g=0.25, b=0.25, a=1},
-	darkGray = {r=0.1, g=0.1, b=0.1, a=1},
-}
-Garrison.colors = colors
-Garrison.GARRISON_CURRENCY = 824
-
-local COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
-Garrison.COLOR_TABLE = COLOR_TABLE
-
-local COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
-
-local ICON_CURRENCY = string.format("\124TInterface\\Icons\\Inv_Garrison_Resource:%d:%d:1:0\124t", 16, 16)
-
-local ICON_OPEN = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Open:%d:%d:1:0\124t", 16, 16)
-local ICON_CLOSE = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Close:%d:%d:1:0\124t", 16, 16)
-
-local ICON_OPEN_DOWN = ICON_OPEN
-local ICON_CLOSE_DOWN = ICON_CLOSE
 
 local TOAST_MISSION_COMPLETE = "BrokerGarrisonMissionComplete"
 local TOAST_BUILDING_COMPLETE = "BrokerGarrisonBuildingComplete"
@@ -153,6 +132,8 @@ local ldb_object_building = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObjec
 function Garrison:OnDependencyLoaded()
 	GarrisonLandingPage = _G.GarrisonLandingPage
 	GarrisonMissionFrame = _G.GarrisonMissionFrame
+
+	self:Hook("GarrisonCapacitiveDisplayFrame_Update", true)
 end
 
 function Garrison:LoadDependencies()
@@ -343,12 +324,12 @@ function Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
 			shipmentsReadyByTime = math.floor(timeDiff / shipmentData.duration)
 		end
 
-		if isCurrentChar(paramCharInfo) then
-			shipmentsReady = shipmentData.shipmentsReady
-		else
+		--if isCurrentChar(paramCharInfo) then
+		--	shipmentsReady = shipmentData.shipmentsReady
+		--else
 			-- Only for other chars
 			shipmentsReady = math.min(shipmentData.shipmentsReady + shipmentsReadyByTime, shipmentData.shipmentsTotal)
-		end
+		--end
 		shipmentsInProgress = shipmentData.shipmentsTotal - shipmentsReady
 		shipmentsAvailable = shipmentData.shipmentCapacity - shipmentData.shipmentsTotal
 
@@ -507,7 +488,7 @@ do
 
 	local function ExpandButton_OnMouseDown(tooltip_cell, is_expanded)
 		local line, column = tooltip_cell:GetPosition()
-		tooltip:SetCell(line, column, is_expanded and ICON_CLOSE_DOWN or ICON_OPEN_DOWN)
+		tooltip:SetCell(line, column, is_expanded and Garrison.ICON_CLOSE_DOWN or Garrison.ICON_OPEN_DOWN)
 	end
 
 	local function Tooltip_OnRelease_Mission(arg)
@@ -586,9 +567,9 @@ do
 					row = tooltip:AddLine()
 
 
-					tooltip:SetCell(row, 1, playerData.missionsExpanded and ICON_CLOSE or ICON_OPEN)
+					tooltip:SetCell(row, 1, playerData.missionsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN)
 					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
-					tooltip:SetCell(row, 3, ("%s %s"):format(ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
+					tooltip:SetCell(row, 3, ("%s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
 
 					tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(missionCount.total), colors.lightGray))
 					tooltip:SetCell(row, 5, getColoredString((L["In Progress: %s"]):format(missionCount.inProgress), colors.lightGray))
@@ -653,9 +634,9 @@ do
 					row = tooltip:AddLine(" ")
 					row = tooltip:AddLine()
 
-					tooltip:SetCell(row, 1, playerData.buildingsExpanded and ICON_CLOSE or ICON_OPEN)
+					tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN)
 					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
-					tooltip:SetCell(row, 3, ("%s %s"):format(ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
+					tooltip:SetCell(row, 3, ("%s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
 
 					tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(buildingCount.total), colors.lightGray))
 
@@ -694,7 +675,7 @@ do
 								if configDb.display.showIcon then
 									tooltip:SetCell(row, 1, getIconString(buildingData.icon, configDb.display.iconSize, false), nil, "LEFT", 1)
 								end
-								
+
 								tooltip:SetCell(row, 2, buildingData.name, nil, "LEFT", 1)
 								tooltip:SetCell(row, 3, rank, nil, "LEFT", 1) -- TODO: Icon
 
@@ -877,7 +858,7 @@ function Garrison:Update()
 
 	if configDb.general.mission.showCurrency then
 		local currencyAmount = globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount
-		ldbText = ldbText..("%s %s"):format(BreakUpLargeNumbers(currencyAmount), ICON_CURRENCY)
+		ldbText = ldbText..("%s %s"):format(BreakUpLargeNumbers(currencyAmount), Garrison.ICON_CURRENCY)
 	end
 	if configDb.general.mission.showProgress then
 		ldbText = ldbText.." "..(L["In Progress: %s"]):format(missionCount.inProgress)
@@ -949,6 +930,8 @@ function Garrison:OnInitialize()
 	getColoredString, getColoredUnitName, formattedSeconds  = Garrison.getColoredString, Garrison.getColoredUnitName, Garrison.formattedSeconds
 	isCurrentChar, getIconString = Garrison.isCurrentChar, Garrison.getIconString
 
+	colors = Garrison.colors
+
 	self:SetupOptions()
 
 	Garrison:SetSinkStorage(configDb.notification.sink)
@@ -966,7 +949,8 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE", "GARRISON_SHOW_LANDING_PAGE")
 	self:RegisterEvent("GARRISON_MISSION_NPC_OPENED", "GARRISON_MISSION_NPC_OPENED")
 
-	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED_NEW_AREA")
+	self:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ZoneUpdate")
+	self:RegisterEvent("ZONE_CHANGED", "ZoneUpdate")
 
 	self:RegisterEvent("ADDON_LOADED", "CheckAddonLoaded")
 
@@ -975,7 +959,7 @@ function Garrison:OnInitialize()
 
 	self:RawHook("GarrisonMinimapBuilding_ShowPulse", true)
 	self:RawHook("GarrisonMinimapShipmentCreated_ShowPulse", true)
-	self:RawHook("GarrisonMinimapMission_ShowPulse", true)		
+	self:RawHook("GarrisonMinimapMission_ShowPulse", true)			
 
 	timers.icon_update = Garrison:ScheduleRepeatingTimer("SlowUpdate", 60)	
 	timers.init_update = Garrison:ScheduleTimer("DelayedUpdate", 5)
