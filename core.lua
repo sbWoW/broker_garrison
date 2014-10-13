@@ -12,7 +12,7 @@ local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale(ADDON_NAME)
 local LibQTip = LibStub('LibQTip-1.0')
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
-local Toast = LibStub("LibToast-1.0")
+local Toast, ToastVersion = LibStub("LibToast-1.0")
 local LSM = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 -- LUA
@@ -166,7 +166,7 @@ local function toastMissionComplete (toast, text, missionData)
 	toast:SetTitle(L["Garrison: Mission complete"])
 	toast:SetFormattedText(getColoredString(text, colors.green))
 
-	if missionData.typeAtlas then
+	if ToastVersion >= 8 and missionData.typeAtlas then
 		toast:SetIconAtlas(missionData.typeAtlas)
 	else
 		toast:SetIconTexture([[Interface\Icons\Inv_Garrison_Resource]])
