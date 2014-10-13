@@ -909,6 +909,7 @@ function Garrison:UpdateLDB()
 		currencyIcon = Garrison.ICON_CURRENCY
 	}
 
+
 	ldb_object_mission.text = Garrison.replaceVariables(Garrison:GetLDBText(Garrison.TYPE_MISSION), data)
 	ldb_object_building.text = Garrison.replaceVariables(Garrison:GetLDBText(Garrison.TYPE_BUILDING), data)
 

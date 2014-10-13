@@ -243,7 +243,7 @@ function Garrison.formatRealmPlayer(paramCharInfo, colored)
 	end
 end
 
-function Garrison.safeReturn(data, ...) 
+function Garrison.getTableValue(data, ...) 
 	if data then
 
 		local cnt = select('#', ...)
@@ -253,9 +253,11 @@ function Garrison.safeReturn(data, ...)
  		for i = 1, cnt do
 	  		local k = select(i, ...)
 
-	  		if cur[k] then
+	  		if not cur[k] and i == cnt then
+	  			cur = nil
+	  		elseif cur[k] then
 				cur = cur[k]
-			end
+			end			
 		end
 
 		if cur then
