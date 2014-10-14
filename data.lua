@@ -103,15 +103,17 @@ Garrison.ldbVars = {
 		end,
 		type = Garrison.TYPE_MISSION,
 	},
-	["mnc"] = {
-		name = L["Character/Realm next mission"],
+	["mnr"] = {
+		name = L["Realm next mission"],
 		data = function(data) 
-			local char = Garrison.getTableValue(data, "missionCount", "nextChar")
-			if char ~= nil then
-				return Garrison.formatRealmPlayer(char, true)
-			else
-				return "-"
-			end
+			return Garrison.getTableValue(data, "missionCount", "nextChar", "playerRealm") or "-"
+		end,
+		type = Garrison.TYPE_MISSION,
+	},
+	["mnc"] = {
+		name = L["Character next mission"],
+		data = function(data) 
+			return Garrison.getTableValue(data, "missionCount", "nextChar", "playerName") or "-"
 		end,
 		type = Garrison.TYPE_MISSION,
 	},	
@@ -182,18 +184,20 @@ Garrison.ldbVars = {
 		end,
 		type = Garrison.TYPE_BUILDING,
 	},
-	["snc"] = {
-		name = L["Character/Realm next shipment"],
+	["sncr"] = {
+		name = L["Realm next shipment"],
 		data = function(data) 
-			local char = Garrison.getTableValue(data, "buildingCount", "shipment", "nextChar")
-			if char then
-				return Garrison.formatRealmPlayer(char, true)
-			else
-				return "-"
-			end
+			return Garrison.getTableValue(data, "buildingCount", "shipment", "nextChar", "playerRealm") or "-"
 		end,
 		type = Garrison.TYPE_BUILDING,
 	},
+	["snc"] = {
+		name = L["Character next shipment"],
+		data = function(data) 
+			return Garrison.getTableValue(data, "buildingCount", "shipment", "nextChar", "playerName") or "-"
+		end,
+		type = Garrison.TYPE_BUILDING,
+	},	
 	["cbt"] = {
 		name = L["Current Player Buildings: Total"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCountCurrent", "building", "total") end,
