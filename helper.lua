@@ -1,13 +1,17 @@
 local ADDON_NAME, private = ...
 
+local _G = getfenv(0)
+local LibStub = _G.LibStub
+
 local Garrison = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 
 local SECONDS_PER_HOUR = 60 * 60
 local SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR
 
-local _G = getfenv(0)
 local pairs, tonumber, string, print, table, math, assert, loadstring, tostring = _G.pairs, _G.tonumber, _G.string, _G.print, _G.table, _G.math, _G.assert, _G.loadstring, _G.tostring
-local sort, select, format = table.sort, _G.select, string.format
+local sort, select, format, type, setmetatable, getmetatable, next = table.sort, _G.select, string.format, _G.type, _G.setmetatable, _G.getmetatable, _G.next
+
+local GetAtlasInfo = _G.GetAtlasInfo
 
 local garrisonDb, globalDb, configDb
 local charInfo = Garrison.charInfo
