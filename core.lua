@@ -1,4 +1,5 @@
-local ADDON_NAME, private = ...
+local ADDON_NAME, _ = ...
+local _G = getfenv(0)
 
 local LibStub = _G.LibStub
 
@@ -16,7 +17,6 @@ local Toast, ToastVersion = LibStub("LibToast-1.0")
 local LSM = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 -- LUA
-local _G = getfenv(0)
 local math, string, table, print, pairs, ipairs = _G.math, _G.string, _G.table, _G.print, _G.pairs, _G.ipairs
 local tonumber, strupper, select, time = _G.tonumber, _G.strupper, _G.select, _G.time
 -- Blizzard
@@ -43,7 +43,7 @@ Garrison.TYPE_SHIPMENT = TYPE_SHIPMENT
 local addonInitialized = false
 local delayedInit = false
 local CONFIG_VERSION = 1
-local DEBUG = true
+
 local timers = {}
 Garrison.timers = timers
 local atlas = {}
@@ -52,7 +52,7 @@ local iconCache = {}
 Garrison.iconCache = iconCache
 
 -- Garrison Functions
-local debugPrint, pairsByKeys, formatRealmPlayer, tableSize, isCurrentChar, getColoredString, getColoredUnitName, formattedSeconds, getIconString
+local debugPrint, pairsByKeys, formatRealmPlayer, tableSize, getColoredString, getColoredUnitName, formattedSeconds, getIconString
 
 
 local TOAST_MISSION_COMPLETE = "BrokerGarrisonMissionComplete"
@@ -281,7 +281,7 @@ function Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, missions)
 
 
 				-- Deprecated - should be detected on finished event
-				local parsedTimeLeft = string.match(missionData.timeLeft, COMPLETED_PATTERN)
+				local parsedTimeLeft = string.match(missionData.timeLeft, Garrison.COMPLETED_PATTERN)
 				if (parsedTimeLeft == "0") then
 					-- 1 * 0 found in string -> assuming mission complete
 					missionData.start = 0
@@ -958,7 +958,7 @@ function Garrison:OnInitialize()
 	-- Assign functions
 	debugPrint, pairsByKeys, formatRealmPlayer, tableSize = Garrison.debugPrint, Garrison.pairsByKeys, Garrison.formatRealmPlayer, Garrison.tableSize
 	getColoredString, getColoredUnitName, formattedSeconds  = Garrison.getColoredString, Garrison.getColoredUnitName, Garrison.formattedSeconds
-	isCurrentChar, getIconString = Garrison.isCurrentChar, Garrison.getIconString
+	getIconString = Garrison.getIconString
 
 	colors = Garrison.colors
 

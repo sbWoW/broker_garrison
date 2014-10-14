@@ -1,5 +1,8 @@
 local ADDON_NAME, private = ...
 
+local _G = getfenv(0)
+local LibStub = _G.LibStub
+
 local Garrison = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale(ADDON_NAME)
 
@@ -57,39 +60,39 @@ Garrison.ldbTemplate = {
 	},	
 	["B1"] = {
 		name = L["Shipments Ready (All characters)"],
-		text = "Shipments Ready: %sr%",
+		text = L["Shipments Ready: %sr%"],
 		type = Garrison.TYPE_BUILDING,
 	},
 	["B2"] = {
 		name = L["Shipments Ready + Time to next shipment (All characters)"],
-		text = "Ready: %sr% Next: %snt%",
+		text = L["Ready: %sr% Next: %snt%"],
 		type = Garrison.TYPE_BUILDING,
 	},	
 	["B3"] = {
 		name = L["Shipments Ready + Time/Char to next shipment (All characters)"],
-		text = "Ready: %sr% Next: %snt% (%snc%)",
+		text = L["Ready: %sr% Next: %snt% (%snc%)"],
 		type = Garrison.TYPE_BUILDING,
 	},		
 }
 
 Garrison.ldbVars = {
 	["mt"] = {
-		name = "Missions: Total",
+		name = L["Missions: Total"],
 		data = function(data) return Garrison.getTableValue(data, "missionCount", "total") end,
 		type = Garrison.TYPE_MISSION,
 	},
 	["mp"] = {
-		name = "Missions: In Progress",
+		name = L["Missions: In Progress"],
 		data = function(data) return Garrison.getTableValue(data, "missionCount", "inProgress") end,
 		type = Garrison.TYPE_MISSION,
 	},
 	["mc"] = {
-		name = "Missions: Complete",
+		name = L["Missions: Complete"],
 		data = function(data) return Garrison.getTableValue(data, "missionCount", "complete") end,
 		type = Garrison.TYPE_MISSION,
 	},
 	["mnt"] = {
-		name = "Time until next mission",
+		name = L["Time until next mission"],
 		data = function(data) 
 			local time = Garrison.getTableValue(data, "missionCount", "nextTime") or 0
 			if time > 0 then
@@ -101,7 +104,7 @@ Garrison.ldbVars = {
 		type = Garrison.TYPE_MISSION,
 	},
 	["mnc"] = {
-		name = "Character/Realm next mission",
+		name = L["Character/Realm next mission"],
 		data = function(data) 
 			local char = Garrison.getTableValue(data, "missionCount", "nextChar")
 			if char ~= nil then
@@ -113,62 +116,62 @@ Garrison.ldbVars = {
 		type = Garrison.TYPE_MISSION,
 	},	
 	["cmt"] = {
-		name = "Current Player Missions: Total",
+		name = L["Current Player Missions: Total"],
 		data = function(data) return Garrison.getTableValue(data, "missionCountCurrent", "total") end,
 		type = Garrison.TYPE_MISSION,
 	},
 	["cmp"] = {
-		name = "Current Player Missions: In Progress",
+		name = L["Current Player Missions: In Progress"],
 		data = function(data) return Garrison.getTableValue(data, "missionCountCurrent", "inProgress") end,
 		type = Garrison.TYPE_MISSION,
 	},
 	["cmc"] = {
-		name = "Current Player Missions: Complete",
+		name = L["Current Player Missions: Complete"],
 		data = function(data) return Garrison.getTableValue(data, "missionCountCurrent", "complete") end,
 		type = Garrison.TYPE_MISSION,
 	},	
 	["bt"] = {
-		name = "Buildings: Total",
+		name = L["Buildings: Total"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCount", "building", "total") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["bb"] = {
-		name = "Buildings: Building",
+		name = L["Buildings: Building"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCount", "building", "building") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["bc"] = {
-		name = "Buildings: Complete",
+		name = L["Buildings: Complete"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCount", "building", "complete") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["ba"] = {
-		name = "Buildings: Active",
+		name = L["Buildings: Active"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCount", "building", "active") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["st"] = {
-		name = "Shipments: Total",
+		name = L["Shipments: Total"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCount", "shipment", "total") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["sp"] = {
-		name = "Shipments: In Progress",
+		name = L["Shipments: In Progress"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCount", "shipment", "inProgress") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["sr"] = {
-		name = "Shipments: Ready",
+		name = L["Shipments: Ready"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCount", "shipment", "ready") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["sa"] = {
-		name = "Shipments: Available",
+		name = L["Shipments: Available"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCount", "shipment", "available") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["snt"] = {
-		name = "Time until next shipment",
+		name = L["Time until next shipment"],
 		data = function(data) 
 			local time = Garrison.getTableValue(data, "buildingCount", "shipment", "nextTime") or 0
 			if time > 0 then
@@ -180,7 +183,7 @@ Garrison.ldbVars = {
 		type = Garrison.TYPE_BUILDING,
 	},
 	["snc"] = {
-		name = "Character/Realm next shipment",
+		name = L["Character/Realm next shipment"],
 		data = function(data) 
 			local char = Garrison.getTableValue(data, "buildingCount", "shipment", "nextChar")
 			if char then
@@ -192,63 +195,63 @@ Garrison.ldbVars = {
 		type = Garrison.TYPE_BUILDING,
 	},
 	["cbt"] = {
-		name = "Current Player Buildings: Total",
+		name = L["Current Player Buildings: Total"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCountCurrent", "building", "total") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["cbb"] = {
-		name = "Current Player Buildings: Building",
+		name = L["Current Player Buildings: Building"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCountCurrent", "building", "building") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["cbc"] = {
-		name = "Current Player Buildings: Complete",
+		name = L["Current Player Buildings: Complete"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCountCurrent", "building", "complete") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["cba"] = {
-		name = "Current Player Buildings: Active",
+		name = L["Current Player Buildings: Active"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCountCurrent", "building", "active") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["cst"] = {
-		name = "Current Player Shipments: Total",
+		name = L["Current Player Shipments: Total"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCountCurrent", "shipment", "total") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["csp"] = {
-		name = "Current Player Shipments: In Progress",
+		name = L["Current Player Shipments: In Progress"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCountCurrent", "shipment", "inProgress") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["csr"] = {
-		name = "Current Player Shipments: Ready",
+		name = L["Current Player Shipments: Ready"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCountCurrent", "shipment", "ready") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["csa"] = {
-		name = "Current Player Shipments: Available",
+		name = L["Current Player Shipments: Available"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCountCurrent", "shipment", "available") end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["res"] = {
-		name = "Garrison Resources",
+		name = L["Garrison Resources"],
 		data = function(data) return Garrison.getTableValue(data, "currencyAmount") or 0 end,
 	},
 	["resfmt"] = {
-		name = "Garrison Resources (Formatted)",
-		data = function(data) return BreakUpLargeNumbers(Garrison.getTableValue(data, "currencyAmount") or 0) end,
+		name = L["Garrison Resources (Formatted)"],
+		data = function(data) return _G.BreakUpLargeNumbers(Garrison.getTableValue(data, "currencyAmount") or 0) end,
 	},
 	["tres"] = {
-		name = "Garrison Resources (Total)",
+		name = L["Garrison Resources (Total)"],
 		data = function(data) return Garrison.getTableValue(data, "currencyTotal") or 0 end,
 	},
 	["tresfmt"] = {
-		name = "Garrison Resources (Total, Formatted)",
-		data = function(data) return BreakUpLargeNumbers(Garrison.getTableValue(data, "currencyTotal") or 0) end,
+		name = L["Garrison Resources (Total, Formatted)"],
+		data = function(data) return _G.BreakUpLargeNumbers(Garrison.getTableValue(data, "currencyTotal") or 0) end,
 	},
 	["resicon"] = {
-		name = "Icon: Garrison Resource",
+		name = L["Icon: Garrison Resource"],
 		data = function(data) return Garrison.ICON_CURRENCY end,
 	},		
 }

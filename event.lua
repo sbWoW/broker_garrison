@@ -78,7 +78,7 @@ function Garrison:IsInGarrison()
 		return true
 	end		
 
-	local instanceMapID = select(8, GetInstanceInfo())
+	local instanceMapID = _G.select(8, _G.GetInstanceInfo())
 
 	if Garrison.instanceId[instanceMapID] then
 		return true
@@ -120,6 +120,8 @@ end
 function Garrison:GetBuildingData(plotID)
 	local id, name, texPrefix, icon, rank, isBuilding, timeStart, buildTime, canActivate, canUpgrade, isPrebuilt = C_Garrison.GetOwnedBuildingInfoAbbrev(plotID)
 
+	local plots = C_Garrison.GetPlots()
+
 	local tmpBuilding = {
 		plotID = plotID,
 		id = id,
@@ -132,6 +134,13 @@ function Garrison:GetBuildingData(plotID)
 		timeStart = timeStart,
 		buildTime = buildTime,
 	}
+
+	for k,v in pairs(plots) do
+		if v.id == plotID then
+			tmpBuilding.plotSize = v.size
+			break
+		end
+	end
 
 	return tmpBuilding
 end
