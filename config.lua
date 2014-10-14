@@ -172,9 +172,14 @@ function Garrison:GetOptions()
 								get = function() return configDb.general.mission.ldbTemplate end,
 								set = function(_,v) 
 									if v then
-										configDb.general.mission.ldbText = Garrison:GetLDBText(Garrison.TYPE_MISSION) or ""
+										if configDb.general.mission.ldbText == "custom" then
+											configDb.general.mission.ldbText = Garrison:GetLDBText(Garrison.TYPE_MISSION) or ""
+											configDb.general.mission.ldbTemplate = v
+										else
+											configDb.general.mission.ldbTemplate = v
+											configDb.general.mission.ldbText = Garrison:GetLDBText(Garrison.TYPE_MISSION) or ""
+										end
 									end
-									configDb.general.mission.ldbTemplate = v
 								end,
 							},							
 							ldbText = {
@@ -237,9 +242,15 @@ function Garrison:GetOptions()
 								get = function() return configDb.general.building.ldbTemplate end,
 								set = function(_,v) 
 									if v then
-										configDb.general.building.ldbText = Garrison:GetLDBText(Garrison.TYPE_BUILDING) or ""
+										if configDb.general.building.ldbText == "custom" then
+											configDb.general.building.ldbText = Garrison:GetLDBText(Garrison.TYPE_BUILDING) or ""
+											configDb.general.building.ldbTemplate = v
+										else
+											configDb.general.building.ldbTemplate = v
+											configDb.general.building.ldbText = Garrison:GetLDBText(Garrison.TYPE_BUILDING) or ""
+										end
 									end
-									configDb.general.building.ldbTemplate = v
+									
 								end,
 							},							
 							ldbText = {

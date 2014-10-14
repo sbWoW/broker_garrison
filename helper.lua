@@ -275,12 +275,12 @@ end
 function Garrison.replaceVariables(text, data)
 	local returnText = ""
 	if text then
-		returnText = text:gsub("%%(%w+)%%", function (s)
+		returnText = text:gsub("%%(%w+)|?([^%%]*)%%", function (s, default)
 			local key = tostring(s)
 			local textFun = Garrison.ldbVars[key]
 
 			if textFun and textFun.data then
-				return textFun.data(data)
+				return textFun.data(data) or default
 			else				
 				return ("[noval:%s]"):format(key)
 	    	end

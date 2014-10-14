@@ -50,12 +50,12 @@ Garrison.ldbTemplate = {
 	},	
 	["M2"] = {
 		name = L["Missions Complete + Time to next completion (All characters)"],
-		text = L["Complete: %mc% Next: %mnt%"],
+		text = L["Complete: %mc% Next: %mnt|-%"],
 		type = Garrison.TYPE_MISSION,
 	},	
 	["M3"] = {
 		name = L["Missions Complete + Time/Char to next completion (All characters)"],
-		text = L["Complete: %mc% Next: %mnt% (%mnc%)"],
+		text = L["Complete: %mc% Next: %mnt|-% (%mnc|-%)"],
 		type = Garrison.TYPE_MISSION,
 	},	
 	["B1"] = {
@@ -65,12 +65,12 @@ Garrison.ldbTemplate = {
 	},
 	["B2"] = {
 		name = L["Shipments Ready + Time to next shipment (All characters)"],
-		text = L["Ready: %sr% Next: %snt%"],
+		text = L["Ready: %sr% Next: %snt|-%"],
 		type = Garrison.TYPE_BUILDING,
 	},	
 	["B3"] = {
 		name = L["Shipments Ready + Time/Char to next shipment (All characters)"],
-		text = L["Ready: %sr% Next: %snt% (%snc%)"],
+		text = L["Ready: %sr% Next: %snt|-% (%snc|-%)"],
 		type = Garrison.TYPE_BUILDING,
 	},		
 }
@@ -98,7 +98,7 @@ Garrison.ldbVars = {
 			if time > 0 then
 				return Garrison.formattedSeconds(time)
 			else
-				return "-"
+				return nil
 			end
 		end,
 		type = Garrison.TYPE_MISSION,
@@ -106,14 +106,14 @@ Garrison.ldbVars = {
 	["mnr"] = {
 		name = L["Realm next mission"],
 		data = function(data) 
-			return Garrison.getTableValue(data, "missionCount", "nextChar", "playerRealm") or "-"
+			return Garrison.getTableValue(data, "missionCount", "nextChar", "playerRealm")
 		end,
 		type = Garrison.TYPE_MISSION,
 	},
 	["mnc"] = {
 		name = L["Character next mission"],
 		data = function(data) 
-			return Garrison.getTableValue(data, "missionCount", "nextChar", "playerName") or "-"
+			return Garrison.getTableValue(data, "missionCount", "nextChar", "playerName")
 		end,
 		type = Garrison.TYPE_MISSION,
 	},	
@@ -179,7 +179,7 @@ Garrison.ldbVars = {
 			if time > 0 then
 				return Garrison.formattedSeconds(time)
 			else
-				return "-"
+				return nil
 			end
 		end,
 		type = Garrison.TYPE_BUILDING,
@@ -187,14 +187,14 @@ Garrison.ldbVars = {
 	["sncr"] = {
 		name = L["Realm next shipment"],
 		data = function(data) 
-			return Garrison.getTableValue(data, "buildingCount", "shipment", "nextChar", "playerRealm") or "-"
+			return Garrison.getTableValue(data, "buildingCount", "shipment", "nextChar", "playerRealm")
 		end,
 		type = Garrison.TYPE_BUILDING,
 	},
 	["snc"] = {
 		name = L["Character next shipment"],
 		data = function(data) 
-			return Garrison.getTableValue(data, "buildingCount", "shipment", "nextChar", "playerName") or "-"
+			return Garrison.getTableValue(data, "buildingCount", "shipment", "nextChar", "playerName")
 		end,
 		type = Garrison.TYPE_BUILDING,
 	},	
