@@ -17,7 +17,7 @@ local Toast, ToastVersion = LibStub("LibToast-1.0")
 local LSM = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 -- LUA
-local math, string, table, print, pairs, ipairs = _G.math, _G.string, _G.table, _G.print, _G.pairs, _G.ipairs
+local math, string, table, print, pairs, ipairs, unpack = _G.math, _G.string, _G.table, _G.print, _G.pairs, _G.ipairs, _G.unpack
 local tonumber, strupper, select, time = _G.tonumber, _G.strupper, _G.select, _G.time
 -- Blizzard
 local BreakUpLargeNumbers, C_Garrison, GetCurrencyInfo = _G.BreakUpLargeNumbers, _G.C_Garrison, _G.GetCurrencyInfo
@@ -70,6 +70,68 @@ local DB_DEFAULTS = {
 				ldbTemplate = "B1",
 			},
 			hideGarrisonMinimapButton = false,
+		},
+		tooltip = {
+			building = {
+				sort = {
+					[1] = {
+						value = "b.canActivate",
+						ascending = true,
+					},
+					[2] = {
+						value = "b.isBuilding",
+						ascending = false,
+					},
+					[3] = {
+						value = "b.shipmentsReady",
+						ascending = false,
+					},
+					[4] = {
+						value = "b.shipmentCapacity",
+						ascending = false,
+					},
+					[5] = {
+						value = "b.name",
+						ascending = true,
+					},
+					['*'] = {
+						value = "-",
+						ascending = false,
+					},
+				},
+				group = {
+					[1] = {
+						value = "b.size",
+						ascending = true,
+					},
+				},
+			},
+			mission = {
+				sort = {
+					[1] = {
+						value = "m.timeLeft",
+						ascending = true,
+					},
+					[2] = {
+						value = "m.level",
+						ascending = false,
+					},
+					[3] = {
+						value = "m.name",
+						ascending = true,
+					},					
+					['*'] = {
+						value = "-",
+						ascending = false,
+					},					
+				},
+				group = {
+					[1] = {
+						value = "m.missionState",
+						ascending = true,
+					},
+				},				
+			},
 		},
 		notification = {
 			sink = {},
@@ -292,22 +354,28 @@ function Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, missions)
 			if missionData.start > 0 then
 				if (timeLeft <= 0) then
 					missionCount.complete = missionCount.complete + 1
+					missionData.statusComplete = true
 				else
 					if missionCount.nextTime == -1 or timeLeft < missionCount.nextTime then
 						missionCount.nextTime = timeLeft
 						missionCount.nextData = missionData
 						missionCount.nextChar = paramCharInfo
-					end
+					end					
 
 					missionCount.inProgress = missionCount.inProgress + 1
 				end
 			else
 				if missionData.start == 0 then
 					missionCount.complete = missionCount.complete + 1
+					missionData.statusComplete = true
 				else
 					missionCount.inProgress = missionCount.inProgress + 1
 				end
 			end
+
+			missionData.missionState = missionData.statusComplete and Garrison.STATE_MISSION_COMPLETE or Garrison.STATE_MISSION_INPROGRESS
+
+			missionData.timeLeftCalc = math.max(0, timeLeft)
 
 			if (timeLeft < 0 and missionData.start >= 0) then
 				Garrison:SendNotification(paramCharInfo, missionData, TYPE_MISSION)
@@ -377,12 +445,14 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 					Garrison:SendNotification(paramCharInfo, buildingData, TYPE_BUILDING)
 					buildingCount.building.complete = buildingCount.building.complete + 1
 					buildingData.canActivate = true
-
+					buildingData.buildingState = Garrison.STATE_BUILDING_COMPLETE
 				else
 					buildingCount.building.building = buildingCount.building.building + 1
+					buildingData.buildingState = Garrison.STATE_BUILDING_BUILDING
 				end	
 			else
 				buildingCount.building.active = buildingCount.building.active + 1
+				buildingData.buildingState = Garrison.STATE_BUILDING_ACTIVE
 
 				local shipmentData = buildingData.shipment
 
@@ -392,6 +462,8 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 					local shipmentsReady, shipmentsInProgress, shipmentsAvailable, timeLeftNext = Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
 
 					shipmentData.shipmentsReadyEstimate = shipmentsReady
+					shipmentData.shipmentsInProgress = shipmentsInProgress
+					shipmentData.shipmentsAvailable = shipmentsAvailable
 
 					if shipmentData.shipmentsReadyEstimate > 0 then						
 						Garrison:SendNotification(paramCharInfo, shipmentData, TYPE_SHIPMENT)
@@ -412,7 +484,7 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 						buildingCount.shipment.nextTime = timeLeftNext
 						buildingCount.shipment.nextData = shipmentData
 						buildingCount.shipment.nextChar = paramCharInfo
-					end					
+					end	
 				elseif shipmentData and shipmentData.name then
 					buildingCount.shipment.available = buildingCount.shipment.available + shipmentData.shipmentCapacity
 				end
@@ -556,6 +628,16 @@ do
 		tooltip:AddSeparator(1, colors.lightGray.r, colors.lightGray.g, colors.lightGray.b, colors.lightGray.a)
 	end
 
+	local function AddEmptyLine(tooltip, ...)
+		local color = ...
+		local row = tooltip:AddLine(" ")
+		if color then
+			tooltip:SetLineColor(row, color.r, color.g, color.b, 1)
+		end
+
+		return row
+	end
+
 	function DrawTooltip(anchor_frame, paramTooltipType)
 		if not anchor_frame then
 			return
@@ -596,6 +678,8 @@ do
 		tooltip:SetCellMarginV(0)
 
 		if tooltipType == TYPE_MISSION then
+			local sortOptions, groupBy = Garrison.getSortOptions(Garrison.TYPE_MISSION, "name")
+
 			for realmName, realmData in pairsByKeys(globalDb.data) do
 				row = tooltip:AddLine()
 				tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 3)
@@ -626,20 +710,45 @@ do
 						row = tooltip:AddLine(" ")
 						AddSeparator(tooltip)
 
-						row = tooltip:AddLine(" ")
-						tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
+						AddEmptyLine(tooltip, colors.darkGray)
 
-						for missionID, missionData in pairs(playerData.missions) do
+
+						debugPrint(groupBy)
+						local sortedMissionTable = Garrison.sort(playerData.missions, unpack(sortOptions))
+						local lastGroupValue = nil
+
+						for missionID, missionData in sortedMissionTable do
+
+							local isGrouped = false
+							local groupByValue = Garrison.getTableValue(missionData, unpack(groupBy))
+							if lastGroupValue == nil then
+								lastGroupValue = groupByValue
+							else
+								if lastGroupValue == groupByValue then
+									-- OK
+								else 
+									AddEmptyLine(tooltip, colors.darkGray)
+									AddSeparator(tooltip)
+									AddEmptyLine(tooltip)
+									AddSeparator(tooltip)
+									AddEmptyLine(tooltip, colors.darkGray)
+
+									lastGroupValue = groupByValue
+									isGrouped = true
+								end
+							end
+
+
+							debugPrint(("%s: %s => %s"):format(missionData.name, groupByValue or '-', _G.tostring(isGrouped)))
+
 							local timeLeft = missionData.duration - (now - missionData.start)
 
-							row = tooltip:AddLine(" ")
+							row = AddEmptyLine(tooltip, colors.darkGray)
 
 							if configDb.display.showIcon then
 								tooltip:SetCell(row, 1, getIconString(missionData.typeAtlas, configDb.display.iconSize, true), nil, "LEFT", 1)
 							end
 							tooltip:SetCell(row, 2, missionData.name, nil, "LEFT", 2)
-
-							tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
 
 							if (missionData.start == -1) then
 								tooltip:SetCell(row, 4, ("%s%s"):format(
@@ -654,10 +763,10 @@ do
 									getColoredString(formattedSeconds(timeLeft), colors.white)
 								), nil, "RIGHT", 3)
 							end
+
 						end
 
-						row = tooltip:AddLine(" ")
-						tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
+						AddEmptyLine(tooltip, colors.darkGray)
 
 						AddSeparator(tooltip)
 					end
@@ -665,6 +774,8 @@ do
 				row = tooltip:AddLine(" ")
 			end
 		elseif tooltipType == TYPE_BUILDING then
+			local sortOptions, groupBy = Garrison.getSortOptions(Garrison.TYPE_BUILDING, "name")			
+
 			for realmName, realmData in pairsByKeys(globalDb.data) do
 				row = tooltip:AddLine()
 				tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 3)
@@ -691,22 +802,45 @@ do
 						row = tooltip:AddLine(" ")
 						AddSeparator(tooltip)
 
-						row = tooltip:AddLine(" ")
-						tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
+						row = AddEmptyLine(tooltip, colors.darkGray)
 
-
-						local sortedBuildingTable = Garrison.sort(playerData.buildings, "canActivate,d", "isBuilding,a", "shipment.shipmentsTotal,d", "shipment.shipmentCapacity,d", "name,a")
+						local sortedBuildingTable = Garrison.sort(playerData.buildings, unpack(sortOptions))
+						local lastGroupValue = nil
 						--local sortedBuildingTable = Garrison.sort(playerData.buildings, "name,a")
 
 						for plotID, buildingData in sortedBuildingTable do
+
+							local isGrouped = false
+
+							local groupByValue = Garrison.getTableValue(buildingData, unpack(groupBy))
+							
+
+							if lastGroupValue == nil then
+								lastGroupValue = groupByValue
+							else
+								if lastGroupValue == groupByValue then
+									-- OK
+								else 
+									AddEmptyLine(tooltip, colors.darkGray)
+									AddSeparator(tooltip)
+									AddEmptyLine(tooltip)
+									AddSeparator(tooltip)
+									AddEmptyLine(tooltip, colors.darkGray)
+
+									lastGroupValue = groupByValue
+									isGrouped = true
+								end
+							end
+
+							--debugPrint(("%s: %s => %s"):format(buildingData.name, groupByValue or '-', tostring(isGrouped)))
+
 
 							if not configDb.general.building.hideBuildingWithoutShipments or 
 								(buildingData.isBuilding or buildingData.canActivate) or
 								(buildingData.shipment and buildingData.shipment.shipmentCapacity) then 							
 
-								-- Display building and Workorder data
-								row = tooltip:AddLine(" ")
-								tooltip:SetLineColor(row, colors.darkGray.r, colors.darkGray.g, colors.darkGray.b, 1)
+								-- Display building and Workorder data								
+								row = AddEmptyLine(tooltip, colors.darkGray)
 
 
 								local rank
@@ -723,7 +857,10 @@ do
 								tooltip:SetCell(row, 2, buildingData.name, nil, "LEFT", 1)
 								tooltip:SetCell(row, 3, rank, nil, "LEFT", 1) -- TODO: Icon
 
-								local timeLeftBuilding = buildingData.buildTime - (now - buildingData.timeStart)
+								local timeLeftBuilding = 0
+								if buildingData.isBuilding then
+									timeLeftBuilding = buildingData.buildTime - (now - buildingData.timeStart)
+								end
 
 								if ((buildingData.isBuilding and timeLeftBuilding <= 0) or buildingData.canActivate) then
 									tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
@@ -756,8 +893,13 @@ do
 									tooltip:SetCell(row, 9, "-", nil, "LEFT", 1)
 								end
 
-							end
+							end					
 						end
+					
+						AddEmptyLine(tooltip, colors.darkGray)
+
+						AddSeparator(tooltip)
+
 					end
 				end
 			end
@@ -838,6 +980,7 @@ function Garrison:UpdateUnknownMissions(missionsLoaded)
 				timeLeft = garrisonMission.timeLeft,
 				type = garrisonMission.type,
 				typeAtlas = garrisonMission.typeAtlas,
+				level = garrisonMission.level,
 			}
 			globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID] = mission
 

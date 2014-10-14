@@ -9,7 +9,7 @@ local LSM = LibStub:GetLibrary("LibSharedMedia-3.0")
 
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON_NAME)
 
-local table, print, pairs = _G.table, _G.print, _G.pairs
+local table, print, pairs, strsub, tonumber = _G.table, _G.print, _G.pairs, _G.strsub, _G.tonumber
 
 local garrisonDb, globalDb, configDb
 
@@ -17,6 +17,12 @@ local debugPrint = Garrison.debugPrint
 
 local fonts = {}
 local sounds = {}
+
+local prefixSortValue = "sortValue"
+local prefixSortAscending = "sortAscending"
+
+local lenPrefixSortValue = _G.strlen(prefixSortValue)
+local lenPrefixSortAscending = _G.strlen(prefixSortAscending)
 
 function Garrison:returnchars()
 	local a = {}
@@ -79,14 +85,22 @@ function Garrison:GetLDBVariables(paramType)
 	return vars
 end
 
+function Garrison:GetTooltipSortOptions(paramType)
+	local vars = {}
+
+	for k,v in pairs(Garrison.tooltipConfig) do
+		if not v.type or v.type == paramType then
+			vars[k] = v.name
+		end
+	end
+
+	return vars
+end
 
 function Garrison:GetLDBText(paramType)
 	local template = configDb.general[paramType].ldbTemplate
 
 	local ldbText = ""
-
-	--debugPrint(paramType)
-	--debugPrint(template)
 
 	if template == "custom" then
 		ldbText = configDb.general[paramType].ldbText
@@ -695,7 +709,7 @@ function Garrison:GetOptions()
 					},
 					notificationLibSink = Garrison:GetSinkAce3OptionsDataTable(),
 				},
-			},
+			},			
 			displayGroup = {
 				order = 500,
 				type = "group",
@@ -785,6 +799,110 @@ function Garrison:GetOptions()
 					},					
 				},
 			},
+			tooltip = {
+				order = 600,
+				type = "group",
+				name = L["Tooltip"],
+				cmdHidden = true,
+				args = {
+					mission = {
+						order = 100,
+						type = "group",
+						name = L["Mission"],
+						cmdHidden = true,
+						args = {
+							groupHeader = {
+								order = 100,
+								type = "header",
+								name = L["Group by"],
+								cmdHidden = true,
+							},						
+							groupOptionValue = {
+								order = 200,
+								type = "select",
+								width = "double",
+								name = L["Group by"],
+								desc = L["Group by"],
+								values = Garrison:GetTooltipSortOptions(Garrison.TYPE_MISSION),
+								get = function() return configDb.tooltip.mission.group[1].value end,
+								set = function(_,v)
+									configDb.tooltip.mission.group[1].value = v
+								end,
+							},
+							groupOptionAscending = {
+								order = 201,
+								type = "toggle",
+								name = L["Sort ascending"],
+								desc = L["Sort ascending"],
+								get = function() return configDb.tooltip.mission.group[1].ascending end,
+								set = function(_,v)
+									configDb.tooltip.mission.group[1].ascending = v
+								end,
+							},
+							groupOptionNewline = {
+								order = 202,
+								type = "description",
+								name = "",
+								width = "full",
+							},
+							sortHeader = {
+								order = 300,
+								type = "header",
+								name = L["Sort by"],
+								cmdHidden = true,
+							},
+						},
+					},
+					building = {
+						order = 200,
+						type = "group",
+						name = L["Building"],
+						cmdHidden = true,
+						args = {
+							groupHeader = {
+								order = 100,
+								type = "header",
+								name = L["Group by"],
+								cmdHidden = true,
+							},						
+							groupOptionValue = {
+								order = 200,
+								type = "select",
+								width = "double",
+								name = L["Group by"],
+								desc = L["Group by"],
+								values = Garrison:GetTooltipSortOptions(Garrison.TYPE_BUILDING),
+								get = function() return configDb.tooltip.building.group[1].value end,
+								set = function(_,v)
+									configDb.tooltip.building.group[1].value = v
+								end,
+							},
+							groupOptionAscending = {
+								order = 201,
+								type = "toggle",
+								name = L["Sort ascending"],
+								desc = L["Sort ascending"],
+								get = function() return configDb.tooltip.building.group[1].ascending end,
+								set = function(_,v)
+									configDb.tooltip.building.group[1].ascending = v
+								end,
+							},
+							groupOptionNewline = {
+								order = 202,
+								type = "description",
+								name = "",
+								width = "full",
+							},						
+							sortHeader = {
+								order = 300,
+								type = "header",
+								name = L["Sort by"],
+								cmdHidden = true,
+							},
+						},
+					},
+				},
+			},
 			aboutGroup = {
 				order = 900,
 				type = "group",
@@ -818,6 +936,57 @@ function Garrison:GetOptions()
 	return options
 end
 
+function Garrison:SetSortOptionValue(info, value)
+	local key = strsub(info[#info], lenPrefixSortValue + 1)
+	configDb.tooltip[info[2]].sort[tonumber(key)].value = value
+end
+function Garrison:GetSortOptionValue(info, ...)	
+	local key = strsub(info[#info], lenPrefixSortValue + 1)
+	return configDb.tooltip[info[2]].sort[tonumber(key)].value 
+end
+function Garrison:SetSortOptionAscending(info, value)
+	local key = strsub(info[#info], lenPrefixSortAscending + 1)
+	configDb.tooltip[info[2]].sort[tonumber(key)].ascending = value
+end
+function Garrison:GetSortOptionAscending(info, ...)	
+	local key = strsub(info[#info], lenPrefixSortAscending + 1)
+	return configDb.tooltip[info[2]].sort[tonumber(key)].ascending 
+end
+
+local function GetSortOptionTable(numOptions, paramType, baseOrder, sortTable)
+
+	local i 	
+
+	for i = 1, numOptions do
+		sortTable[prefixSortValue..i] = {
+			order = baseOrder + (i * 10) ,
+			type = "select",
+			width = "double",
+			name = (L["Sort order %i"]):format(i),
+			desc = (L["Sort order %i"]):format(i),
+			values = Garrison:GetTooltipSortOptions(paramType),
+			get = "GetSortOptionValue",
+			set = "SetSortOptionValue",
+		}
+		sortTable[prefixSortAscending..i] = {
+			order = baseOrder + (i * 10) + 1,
+			type = "toggle",
+			name = L["Sort ascending"],
+			desc = L["Sort ascending"],
+			get = "GetSortOptionAscending",
+			set = "SetSortOptionAscending",
+		}
+		sortTable["sortNewline"..i] = {
+			order = baseOrder + (i * 10) + 2,
+			type = "description",
+			name = "",
+			width = "full",
+		}
+	end
+
+	return sortTable
+end
+
 function Garrison:SetupOptions()
 	garrisonDb = self.DB
 	configDb = garrisonDb.profile
@@ -839,6 +1008,10 @@ function Garrison:SetupOptions()
 		profiles = AceDBOptions:GetOptionsTable(garrisonDb)
 	}
 	options.plugins.profiles.profiles.order = 800
+
+
+	options.args.tooltip.args.building.args = GetSortOptionTable(7, Garrison.TYPE_BUILDING, 400, options.args.tooltip.args.building.args)
+	options.args.tooltip.args.mission.args = GetSortOptionTable(7, Garrison.TYPE_MISSION, 400, options.args.tooltip.args.mission.args)
 
 	--local sortedOptions = Garrison.sort(options.args, "order,a")
 	--for k, v in sortedOptions do

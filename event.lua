@@ -37,6 +37,7 @@ function Garrison:GARRISON_MISSION_STARTED(event, missionID)
 				timeLeft = garrisonMission.timeLeft,
 				type = garrisonMission.type,
 				typeAtlas = garrisonMission.typeAtlas,
+				level = garrisonMission.level,
 			}
 			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
 			debugPrint("Added Mission: "..missionID)
@@ -254,9 +255,11 @@ function Garrison:BuildingUpdate(event, ...)
 		local plotID, buildingID = ...;
 		local tmpBuilding = Garrison:UpdateBuilding(plotID)
 
-		debugPrint(("BuildingInfoUpdate %s (%s)"):format(plotID, tmpBuilding.name or buildingID or '-'))
+		if tmpBuilding and tmpBuilding.name then
+			debugPrint(("BuildingInfoUpdate %s (%s)"):format(plotID, tmpBuilding.name or buildingID or '-'))
 
-		globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID] = tmpBuilding	
+			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID] = tmpBuilding	
+		end
 	else
 		debugPrint("BuildingUpdate")
 		Garrison:FullUpdateBuilding()

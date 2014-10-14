@@ -257,14 +257,14 @@ function Garrison.getTableValue(data, ...)
  		for i = 1, cnt do
 	  		local k = select(i, ...)
 
-	  		if not cur[k] and i == cnt then
+	  		if cur[k] == nil and i == cnt then
 	  			cur = nil
 	  		elseif cur[k] then
 				cur = cur[k]
 			end			
 		end
 
-		if cur then
+		if cur ~= nil then
 			return cur
 		end
 	end
@@ -288,6 +288,50 @@ function Garrison.replaceVariables(text, data)
 	end
 
 	return returnText
+end
+
+function Garrison.getSortOptions(paramType, default)
+	local sortConfig = configDb.tooltip[paramType].sort
+	local groupConfig = configDb.tooltip[paramType].group
+
+	local sortArray = {}
+	local groupBy = {}
+
+	local i = 1
+
+	if groupConfig and groupConfig[1] then
+		local configValue = Garrison.tooltipConfig[groupConfig[1].value]
+		if configValue then
+			sortArray[1] = ("%s,%s"):format(configValue.value, "a")
+
+			for w in (configValue.value .. "."):gmatch("([^.]*).") do 
+   				table.insert(groupBy, w) 
+			end
+
+			i = i + 1
+		end
+	end
+	
+	for k, v in pairs(sortConfig) do
+		if k ~= '-' and Garrison.tooltipConfig[v.value] then
+
+			local value = Garrison.tooltipConfig[v.value].value
+
+			if value then
+				sortArray[i] = ("%s,%s"):format(value, v.ascending and "a" or "d")
+				i = i + 1
+			end
+		end
+	end
+
+	--debugPrint(sortArray)
+	--debugPrint(groupBy)
+
+	if #sortArray == 0 then
+		sortArray[1] = default
+	end
+
+	return sortArray, groupBy
 end
 
 

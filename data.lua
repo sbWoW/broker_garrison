@@ -24,6 +24,13 @@ Garrison.instanceId = {
 }
 	
 
+Garrison.STATE_BUILDING_ACTIVE = 0
+Garrison.STATE_BUILDING_COMPLETE = 1
+Garrison.STATE_BUILDING_BUILDING = 2
+
+Garrison.STATE_MISSION_COMPLETE = 0
+Garrison.STATE_MISSION_INPROGRESS = 1
+
 Garrison.COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
 
 Garrison.COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
@@ -33,6 +40,87 @@ Garrison.ICON_CLOSE = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Me
 
 Garrison.ICON_OPEN_DOWN = ICON_OPEN
 Garrison.ICON_CLOSE_DOWN = ICON_CLOSE
+
+Garrison.tooltipConfig = {
+	["-"] = {
+		name = " - ",
+	},
+	["b.canActivate"] = {
+		value = "canActivate",
+		name = L["Can be activated"],
+		type = Garrison.TYPE_BUILDING,
+	},
+	["b.isBuilding"]= {
+		value = "isBuilding",
+		name = L["Is Building"],
+		type = Garrison.TYPE_BUILDING,
+	},
+	["b.shipmentsReady"] = {
+		value = "shipment.shipmentsReadyEstimate",
+		name = L["Shipments Ready"],
+		type = Garrison.TYPE_BUILDING,
+	},	
+	["b.shipmentsInProgress"] = {
+		value = "shipment.shipmentsInProgress",
+		name = L["Shipments In Progress"],
+		type = Garrison.TYPE_BUILDING,
+	},
+	["b.shipmentsTotal"] = {
+		value = "shipment.shipmentsTotal",
+		name = L["Shipments Total (Progress+Ready)"],
+		type = Garrison.TYPE_BUILDING,
+	},		
+	["b.shipmentsAvailable"] = {
+		value = "shipment.shipmentsAvailable",
+		name = L["Shipments Available"],
+		type = Garrison.TYPE_BUILDING,
+	},
+	["b.shipmentCapacity"] = {
+		value = "shipment.shipmentCapacity",
+		name = L["Shipment Capacity"],
+		type = Garrison.TYPE_BUILDING,
+	},
+	["b.buildingState"] = {
+		value = "buildingState",
+		name = L["Building State (Active, Complete, Building)"],
+		type = Garrison.TYPE_BUILDING,
+	},	
+	["b.size"] = {
+		value = "plotSize",
+		name = L["Building Size"],
+		type = Garrison.TYPE_BUILDING,
+	},	
+	["b.rank"] = {
+		value = "rank",
+		name = L["Building Rank"],
+		type = Garrison.TYPE_BUILDING,
+	},	
+	["b.name"] = {
+		value = "name",
+		name = L["Building Name"],
+		type = Garrison.TYPE_BUILDING,
+	},
+	["m.timeLeft"] = {
+		value = "timeLeftCalc",
+		name = L["Remaining Time"],
+		type = Garrison.TYPE_MISSION,
+	},	
+	["m.level"] = {
+		value = "level",
+		name = L["Mission Level"],
+		type = Garrison.TYPE_MISSION,
+	},
+	["m.missionState"] = {
+		value = "missionState",
+		name = L["Mission State (Complete, In Progress)"],
+		type = Garrison.TYPE_MISSION,
+	},	
+	["m.name"] = {
+		value = "name",
+		name = L["Mission Name"],
+		type = Garrison.TYPE_MISSION,
+	},
+}
 
 Garrison.ldbTemplate = {
 	["A1"] = {
