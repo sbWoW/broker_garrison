@@ -279,7 +279,11 @@ end
 
 function Garrison:UpdateCurrency()
 	local _, amount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY)
+	local _, amountApexis, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_APEXIS)
+
+	
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
+	globalDb.data[charInfo.realmName][charInfo.playerName].currencyApexisAmount = amountApexis
 
 	Garrison:Update()
 end

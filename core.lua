@@ -695,7 +695,7 @@ do
 
 					tooltip:SetCell(row, 1, playerData.missionsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN)
 					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
-					tooltip:SetCell(row, 3, ("%s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
+					tooltip:SetCell(row, 3, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)))
 
 					tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(missionCount.total), colors.lightGray))
 					tooltip:SetCell(row, 5, getColoredString((L["In Progress: %s"]):format(missionCount.inProgress), colors.lightGray))
@@ -789,7 +789,7 @@ do
 
 					tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN)
 					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
-					tooltip:SetCell(row, 3, ("%s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0)))
+					tooltip:SetCell(row, 3, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)))
 
 					tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(buildingCount.building.total), colors.lightGray))
 
@@ -1030,13 +1030,16 @@ function Garrison:UpdateLDB()
 	local buildingCount, buildingCountCurrent = Garrison:GetBuildingCount(nil)	
 
 	local currencyTotal, currencyAmount = 0, 0
+	local currencyApexisAmount, currencyApexisTotal = 0, 0
 
 	for realmName, realmData in pairs(globalDb.data) do
 		for playerName, playerData in pairs(realmData) do
 			if Garrison.isCurrentChar(playerData.info) then
-				currencyAmount = playerData.currencyAmount
+				currencyAmount = (playerData.currencyAmount or 0)
+				currencyApexisAmount = playerData.currencyApexisAmount or 0
 			end
-			currencyTotal = currencyTotal + playerData.currencyAmount
+			currencyTotal = currencyTotal + (playerData.currencyAmount or 0)
+			currencyApexisTotal = currencyApexisTotal + (playerData.currencyApexisAmount or 0)
 		end
 	end
 
@@ -1046,8 +1049,11 @@ function Garrison:UpdateLDB()
 		missionCountCurrent = missionCountCurrent,
 		buildingCountCurrent = buildingCountCurrent,		
 		currencyAmount = currencyAmount,
+		currencyApexisAmount = currencyApexisAmount,
+		currencyApexisTotal = currencyApexisTotal,
 		currencyTotal = currencyTotal,
-		currencyIcon = Garrison.ICON_CURRENCY
+		currencyIcon = Garrison.ICON_CURRENCY,
+		currencyApexisIcon = Garrison.ICON_CURRENCY_APEXIS,
 	}
 
 

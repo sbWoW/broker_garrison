@@ -14,6 +14,7 @@ Garrison.colors = {
 }
 
 Garrison.GARRISON_CURRENCY = 824
+Garrison.GARRISON_CURRENCY_APEXIS = 823
 
 Garrison.instanceId = {
 	[1153] = "HL3",
@@ -35,6 +36,9 @@ Garrison.COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
 
 Garrison.COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
 Garrison.ICON_CURRENCY = string.format("\124TInterface\\Icons\\Inv_Garrison_Resource:%d:%d:1:0\124t", 16, 16)
+
+Garrison.ICON_CURRENCY_APEXIS = string.format("\124TInterface\\Icons\\Inv_Apexis_Draenor:%d:%d:1:0\124t", 16, 16)
+
 Garrison.ICON_OPEN = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Open:%d:%d:1:0\124t", 16, 16)
 Garrison.ICON_CLOSE = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Close:%d:%d:1:0\124t", 16, 16)
 
@@ -345,5 +349,17 @@ Garrison.ldbVars = {
 	["resicon"] = {
 		name = L["Icon: Garrison Resource"],
 		data = function(data) return Garrison.ICON_CURRENCY end,
-	},		
+	},
+	["apexis"] = {
+		name = L["Apexis Crystals"],
+		data = function(data) return Garrison.getTableValue(data, "currencyApexisAmount") or 0 end,
+	},
+	["tapexis"] = {
+		name = L["Apexis Crystals (Total)"],
+		data = function(data) return Garrison.getTableValue(data, "currencyApexisTotal") or 0 end,
+	},
+	["apexisicon"] = {
+		name = L["Icon: Apexis Crystal"],
+		data = function(data) return Garrison.ICON_CURRENCY_APEXIS end,
+	},	
 }

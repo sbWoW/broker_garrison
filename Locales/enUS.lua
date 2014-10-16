@@ -124,3 +124,7 @@ L["Mission State (Complete, In Progress)"] = true
 L["Mission Level"] = true
 L["Remaining Time"] = true
 L["Sort order %i"] = true
+
+L["Apexis Crystals"] = true
+L["Apexis Crystals (Total)"] = true
+L["Icon: Apexis Crystal"] = true
