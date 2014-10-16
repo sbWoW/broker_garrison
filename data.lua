@@ -38,8 +38,8 @@ Garrison.ICON_CURRENCY = string.format("\124TInterface\\Icons\\Inv_Garrison_Reso
 Garrison.ICON_OPEN = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Open:%d:%d:1:0\124t", 16, 16)
 Garrison.ICON_CLOSE = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Close:%d:%d:1:0\124t", 16, 16)
 
-Garrison.ICON_OPEN_DOWN = ICON_OPEN
-Garrison.ICON_CLOSE_DOWN = ICON_CLOSE
+Garrison.ICON_OPEN_DOWN = Garrison.ICON_OPEN
+Garrison.ICON_CLOSE_DOWN = Garrison.ICON_CLOSE
 
 Garrison.tooltipConfig = {
 	["-"] = {

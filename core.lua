@@ -608,17 +608,15 @@ do
 	end
 
 	local function Tooltip_OnRelease_Mission(arg)
-		--debugPrint(arg)
+
 		tooltipRegistry[TYPE_MISSION] = nil
-		--tooltip = nil
+
 		LDB_anchor = nil
 		tooltipType = nil		
 	end
 
 	local function Tooltip_OnRelease_Building(arg)
-		--debugPrint(arg)
 		tooltipRegistry[TYPE_BUILDING] = nil
-		--tooltip = nil
 		LDB_anchor = nil
 		tooltipType = nil		
 	end
@@ -713,7 +711,7 @@ do
 						AddEmptyLine(tooltip, colors.darkGray)
 
 
-						debugPrint(groupBy)
+						--debugPrint(groupBy)
 						local sortedMissionTable = Garrison.sort(playerData.missions, unpack(sortOptions))
 						local lastGroupValue = nil
 
@@ -739,7 +737,7 @@ do
 							end
 
 
-							debugPrint(("%s: %s => %s"):format(missionData.name, groupByValue or '-', _G.tostring(isGrouped)))
+							--debugPrint(("%s: %s => %s"):format(missionData.name, groupByValue or '-', _G.tostring(isGrouped)))
 
 							local timeLeft = missionData.duration - (now - missionData.start)
 
