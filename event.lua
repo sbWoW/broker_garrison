@@ -198,6 +198,12 @@ function Garrison:FullUpdateBuilding(updateType)
 	local buildings = C_Garrison.GetBuildings()
 	local tmpBuildings = {}	
 
+	if #buildings == 0 then
+		return false
+	end
+
+	debugPrint(("FullUpdate (%s): %s"):format(updateType, #buildings))
+
 	for i = 1, #buildings do
 		local buildingID = buildings[i].buildingID
 		local plotID = buildings[i].plotID
@@ -222,6 +228,8 @@ function Garrison:FullUpdateBuilding(updateType)
 	if updateType == Garrison.TYPE_BUILDING then
 		globalDb.data[charInfo.realmName][charInfo.playerName].buildings = tmpBuildings
 	end
+
+	return true
 end
 
 function Garrison:BuildingUpdate(event, ...)
@@ -261,7 +269,7 @@ function Garrison:BuildingUpdate(event, ...)
 			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID] = tmpBuilding	
 		end
 	else
-		debugPrint("BuildingUpdate")
+		debugPrint(("BuildingUpdate (%s)"):format(_G.tostring(event)))
 		Garrison:FullUpdateBuilding()
 	end
 end

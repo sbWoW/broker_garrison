@@ -8,7 +8,6 @@
 ## X-Email: sb@sbuehl.com
 ## OptionalDeps: Ace3, CallbackHandler-1.0, LibQTip-1.0, LibStub, LibSink-2.0, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, LibDataBroker-1.1, LibToast-1.0, AdiDebug
 ## X-Embeds: Ace3, CallbackHandler-1.0, LibQTip-1.0, LibStub, LibSink-2.0, LibSharedMedia-3.0, AceGUI-3.0-SharedMediaWidgets, LibDataBroker-1.1, LibToast-1.0
-## RequiredDeps: Blizzard_GarrisonUI
 
 #@no-lib-strip@
 Libs\LibStub\LibStub.lua

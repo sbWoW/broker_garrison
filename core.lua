@@ -192,14 +192,28 @@ local ldb_object_building = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObjec
 
 
 function Garrison:OnDependencyLoaded()
-	GarrisonLandingPage = _G.GarrisonLandingPage
-	GarrisonMissionFrame = _G.GarrisonMissionFrame
+	if not dependencyLoaded then
+		dependencyLoaded = true
+	
+		GarrisonLandingPage = _G.GarrisonLandingPage
+		GarrisonMissionFrame = _G.GarrisonMissionFrame
 
-	debugPrint("DependencyLoaded")
+		debugPrint("DependencyLoaded")
 
-	self:Hook("GarrisonCapacitiveDisplayFrame_Update", true)
+		Garrison:ScheduleTimer("RegisterEvents", 5)
 
-	Garrison:FullUpdateBuilding(TYPE_BUILDING)
+		self:Hook("GarrisonCapacitiveDisplayFrame_Update", true)
+	end
+end
+
+function Garrison:RegisterEvents()
+	debugPrint("RegisterEvents")
+
+	local fullUpdateRet = Garrison:FullUpdateBuilding(TYPE_BUILDING)	
+
+	timers.notify_update = Garrison:ScheduleRepeatingTimer("QuickUpdate", 5)
+	timers.ldb_update = Garrison:ScheduleRepeatingTimer("LDBUpdate", 1)	
+	timers.icon_update = Garrison:ScheduleRepeatingTimer("SlowUpdate", 60)	
 
 	self:RegisterEvent("GARRISON_BUILDING_PLACED", "BuildingUpdate")
 	self:RegisterEvent("GARRISON_BUILDING_REMOVED", "BuildingUpdate")
@@ -208,11 +222,6 @@ function Garrison:OnDependencyLoaded()
 	self:RegisterEvent("GARRISON_UPDATE", "BuildingUpdate")
 	self:RegisterEvent("SHIPMENT_UPDATE", "ShipmentStatusUpdate")
 
-	timers.notify_update = Garrison:ScheduleRepeatingTimer("QuickUpdate", 5)
-	timers.ldb_update = Garrison:ScheduleRepeatingTimer("LDBUpdate", 1)	
-	timers.icon_update = Garrison:ScheduleRepeatingTimer("SlowUpdate", 60)	
-
-	dependencyLoaded = true
 end
 
 function Garrison:LoadDependencies()
@@ -223,7 +232,7 @@ function Garrison:LoadDependencies()
 		end
 	end
 
-	if _G.IsAddOnLoaded("Blizzard_GarrisonUI") and not dependencyLoaded then
+	if not dependencyLoaded and _G.IsAddOnLoaded("Blizzard_GarrisonUI") then
 		Garrison:OnDependencyLoaded()
 	end
 end
@@ -821,7 +830,6 @@ do
 
 					row = tooltip:AddLine(" ")
 
-					tooltip:SetCell(row, 3, getColoredString("Rank", colors.lightGray))
 					tooltip:SetCell(row, 4, getColoredString("In Progress", colors.lightGray))
 					tooltip:SetCell(row, 5, getColoredString("Ready", colors.lightGray))
 					tooltip:SetCell(row, 6, getColoredString("Time Next", colors.lightGray))
@@ -1171,10 +1179,7 @@ function Garrison:OnInitialize()
 	self:RawHook("GarrisonMinimapShipmentCreated_ShowPulse", true)
 	self:RawHook("GarrisonMinimapMission_ShowPulse", true)			
 
-	
-	timers.init_update = Garrison:ScheduleTimer("DelayedUpdate", 5)
-
-	Garrison:LoadDependencies()
+	timers.init_update = Garrison:ScheduleTimer("DelayedUpdate", 5)	
 end
 
 
