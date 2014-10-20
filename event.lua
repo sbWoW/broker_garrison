@@ -290,12 +290,8 @@ end
 
 function Garrison:QuickUpdate()
 	if Garrison.location.inGarrison then
-		-- on garrison - full update
+		-- in garrison - full update (quick)
 		Garrison:Update()
-	--else
-		-- outside - only notifications
-		--Garrison:UpdateLDB()
-	--end
 	end
 end
 
@@ -305,7 +301,7 @@ end
 
 function Garrison:SlowUpdate()
 	if not Garrison.location.inGarrison then
-		-- on garrison - full update
+		-- not in garrison - full update (slow)
 		Garrison:Update()
 	end
 end

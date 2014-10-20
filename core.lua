@@ -42,6 +42,7 @@ Garrison.TYPE_SHIPMENT = TYPE_SHIPMENT
 
 local addonInitialized = false
 local delayedInit = false
+local dependencyLoaded = false
 local CONFIG_VERSION = 1
 
 local timers = {}
@@ -194,7 +195,24 @@ function Garrison:OnDependencyLoaded()
 	GarrisonLandingPage = _G.GarrisonLandingPage
 	GarrisonMissionFrame = _G.GarrisonMissionFrame
 
+	debugPrint("DependencyLoaded")
+
 	self:Hook("GarrisonCapacitiveDisplayFrame_Update", true)
+
+	Garrison:FullUpdateBuilding(TYPE_BUILDING)
+
+	self:RegisterEvent("GARRISON_BUILDING_PLACED", "BuildingUpdate")
+	self:RegisterEvent("GARRISON_BUILDING_REMOVED", "BuildingUpdate")
+	self:RegisterEvent("GARRISON_BUILDING_UPDATE", "BuildingUpdate")
+	self:RegisterEvent("GARRISON_BUILDING_ACTIVATED", "BuildingUpdate")
+	self:RegisterEvent("GARRISON_UPDATE", "BuildingUpdate")
+	self:RegisterEvent("SHIPMENT_UPDATE", "ShipmentStatusUpdate")
+
+	timers.notify_update = Garrison:ScheduleRepeatingTimer("QuickUpdate", 5)
+	timers.ldb_update = Garrison:ScheduleRepeatingTimer("LDBUpdate", 1)	
+	timers.icon_update = Garrison:ScheduleRepeatingTimer("SlowUpdate", 60)	
+
+	dependencyLoaded = true
 end
 
 function Garrison:LoadDependencies()
@@ -203,6 +221,10 @@ function Garrison:LoadDependencies()
 		if UIParentLoadAddOn("Blizzard_GarrisonUI") then
 			Garrison:OnDependencyLoaded()
 		end
+	end
+
+	if _G.IsAddOnLoaded("Blizzard_GarrisonUI") and not dependencyLoaded then
+		Garrison:OnDependencyLoaded()
 	end
 end
 -- Helper Functions
@@ -796,6 +818,17 @@ do
 					tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, ("%s:%s"):format(realmName, playerName))
 					tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, playerData.buildingsExpanded)
 
+
+					row = tooltip:AddLine(" ")
+
+					tooltip:SetCell(row, 3, getColoredString("Rank", colors.lightGray))
+					tooltip:SetCell(row, 4, getColoredString("In Progress", colors.lightGray))
+					tooltip:SetCell(row, 5, getColoredString("Ready", colors.lightGray))
+					tooltip:SetCell(row, 6, getColoredString("Time Next", colors.lightGray))
+					tooltip:SetCell(row, 7, getColoredString("Time Total", colors.lightGray))
+					tooltip:SetCell(row, 9, getColoredString("Available", colors.lightGray))
+
+
 					if playerData.buildingsExpanded and buildingCount.building.total > 0 then
 						row = tooltip:AddLine(" ")
 						AddSeparator(tooltip)
@@ -1138,30 +1171,21 @@ function Garrison:OnInitialize()
 	self:RawHook("GarrisonMinimapShipmentCreated_ShowPulse", true)
 	self:RawHook("GarrisonMinimapMission_ShowPulse", true)			
 
-	timers.icon_update = Garrison:ScheduleRepeatingTimer("SlowUpdate", 60)	
+	
 	timers.init_update = Garrison:ScheduleTimer("DelayedUpdate", 5)
+
+	Garrison:LoadDependencies()
 end
 
 
 function Garrison:DelayedUpdate()
+	Garrison:LoadDependencies()
+
 	delayedInit = true
-	Garrison:UpdateCurrency()
-
-	Garrison:FullUpdateBuilding(TYPE_BUILDING)
-
+	Garrison:UpdateCurrency()	
 	Garrison:UpdateLocation()
-
-	self:RegisterEvent("GARRISON_BUILDING_PLACED", "BuildingUpdate")
-	self:RegisterEvent("GARRISON_BUILDING_REMOVED", "BuildingUpdate")
-	self:RegisterEvent("GARRISON_BUILDING_UPDATE", "BuildingUpdate")
-	self:RegisterEvent("GARRISON_BUILDING_ACTIVATED", "BuildingUpdate")
-	--self:RegisterEvent("GARRISON_BUILDING_LIST_UPDATE", "BuildingUpdate")
-	self:RegisterEvent("GARRISON_UPDATE", "BuildingUpdate")
-	self:RegisterEvent("SHIPMENT_UPDATE", "ShipmentStatusUpdate")
 
 	--self:RegisterEvent("SHIPMENT_CRAFTER_CLOSED", "ShipmentUpdate")
 	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")
 
-	timers.notify_update = Garrison:ScheduleRepeatingTimer("QuickUpdate", 5)
-	timers.notify_update = Garrison:ScheduleRepeatingTimer("LDBUpdate", 1)
 end
