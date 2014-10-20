@@ -62,7 +62,15 @@ local function debugPrint(text)
 		end
 	end
 end
-Garrison.debugPrint = debugPrint
+
+if AdiDebug then
+	AdiDebug:Embed(Garrison, ADDON_NAME)
+else
+	Garrison.Debug = debugPrint
+end
+Garrison.debugPrint = Garrison.Debug
+
+--Garrison.debugPrint = 
 
 function Garrison.pairsByKeys(t,f)
 	local a = {}
