@@ -37,13 +37,23 @@ Garrison.COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
 
 local mediaPath = "Interface\\AddOns\\Broker_Garrison\\Media\\"
 
+Garrison.ICON_REPLACEMENT = {
+	["Interface\\ICONS\\Garrison_Building_Armory.blp"] = mediaPath.."garrison_building_armory_2",
+}
+
 Garrison.ICON_PATH_CURRENCY = mediaPath.."Inv_Garrison_Resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS = mediaPath.."Inv_Apexis_Draenor"
-Garrison.ICON_PATH_MISSION = mediaPath.."Mission"
-Garrison.ICON_PATH_BUILDING = mediaPath.."Building"
+Garrison.ICON_PATH_MISSION = mediaPath.."bg_missions"
+Garrison.ICON_PATH_BUILDING = mediaPath.."bg_buildings"
+
 
 Garrison.ICON_PATH_OPEN = mediaPath.."Open"
 Garrison.ICON_PATH_CLOSE = mediaPath.."Close"
+
+Garrison.ICON_PATH_ARROW_UP = mediaPath.."arrow_up"
+Garrison.ICON_PATH_ARROW_UP_WAITING = mediaPath.."arrow_up_waiting"
+
+
 
 Garrison.COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
 --Garrison.ICON_CURRENCY = string.format("\124T%s\\%s:%d:%d:1:0\124t", mediaPath, name, 16, 16)
@@ -51,6 +61,12 @@ Garrison.COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
 Garrison.ICON_CURRENCY = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY, 16, false)
 Garrison.ICON_CURRENCY_APEXIS = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS, 16, false)
 Garrison.ICON_MISSION = Garrison.getIconString(Garrison.ICON_PATH_MISSION, 16, false)
+Garrison.ICON_BUILDING = Garrison.getIconString(Garrison.ICON_PATH_BUILDING, 16, false)
+
+Garrison.ICON_ARROW_UP = Garrison.getIconString(Garrison.ICON_PATH_ARROW_UP, 16, false)
+Garrison.ICON_ARROW_UP_WAITING = Garrison.getIconString(Garrison.ICON_PATH_ARROW_UP_WAITING, 16, false)
+
+
 
 --Garrison.ICON_CURRENCY_APEXIS = string.format("\124TInterface\\Icons\\Inv_Apexis_Draenor:%d:%d:1:0\124t", 16, 16)
 

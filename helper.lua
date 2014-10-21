@@ -143,6 +143,16 @@ do
 	end
 end
 
+function Garrison.GetIconPath(name) 
+	local iconPath = Garrison.ICON_REPLACEMENT[name]
+
+	if iconPath ~= nil then
+		return iconPath
+	else
+		return name
+	end
+end
+
 function Garrison.getIconString(name, size, isAtlas)
 	local icon
 
@@ -153,7 +163,7 @@ function Garrison.getIconString(name, size, isAtlas)
 	if name and size then
 		local key = name.."-"..size
 
-		if not Garrison.iconCache[key] then
+		if Garrison.iconCache[key] == nil then
 			if isAtlas then
 				local filename, width, height, txLeft, txRight, txTop, txBottom = GetAtlasInfo(name);
 
@@ -169,8 +179,8 @@ function Garrison.getIconString(name, size, isAtlas)
 					Garrison.iconCache[key] = string.format("|T%s:%d:%d:0:0:%d:%d:%d:%d:%d:%d|t", filename, size, size, atlasWidth, atlasHeight, pxLeft, pxRight, pxTop, pxBottom);
 				end
 
-			else
-				Garrison.iconCache[key] = string.format("\124T%s:%d:%d:1:0\124t", name, size, size)
+			else				
+				Garrison.iconCache[key] = string.format("\124T%s:%d:%d:1:0\124t", Garrison.GetIconPath(name), size, size)
 			end
 		end
 		
@@ -309,7 +319,7 @@ function Garrison.getSortOptions(paramType, default)
 
 	if groupConfig and groupConfig[1] then
 		local configValue = Garrison.tooltipConfig[groupConfig[1].value]
-		if configValue then
+		if configValue and configValue.value then
 			sortArray[1] = ("%s,%s"):format(configValue.value, "a")
 
 			for w in (configValue.value .. "."):gmatch("([^.]*).") do 

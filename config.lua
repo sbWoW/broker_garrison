@@ -228,18 +228,7 @@ function Garrison:GetOptions()
 						type = "group",
 						name = L["Building"],
 						cmdHidden = true,
-						args = {
-						hideBuildingWithoutShipments = {
-								order = 10,
-								type = "toggle",
-								width = "full",
-								name = L["Hide buildings without shipments"],
-								desc = L["Don't display buildings without shipments (barracks, stables, ...)"],
-								get = function() return configDb.general.building.hideBuildingWithoutShipments end,
-								set = function(_,v) configDb.general.building.hideBuildingWithoutShipments = v
-									Garrison:Update()
-								end,						
-							},						
+						args = {					
 							ldbHeader = {
 								order = 100,
 								type = "header",
@@ -408,7 +397,7 @@ function Garrison:GetOptions()
 									Garrison:UpdateConfig()
 								end,
 								disabled = function() return not configDb.notification.mission.enabled end,
-							},
+							},							
 							garrisonMinimapButtonAnimation = {
 								order = 420,
 								type = "toggle",
@@ -859,6 +848,34 @@ function Garrison:GetOptions()
 						name = L["Building"],
 						cmdHidden = true,
 						args = {
+							miscHeader = {
+								order = 10,
+								type = "header",
+								name = L["Misc"],
+								cmdHidden = true,
+							},						
+							hideHeader = {
+								order = 20,
+								type = "toggle",
+								width = "full",
+								name = L["Hide column header"],
+								desc = L["Hide column header"],
+								get = function() return configDb.general.building.hideHeader end,
+								set = function(_,v) configDb.general.building.hideHeader = v
+									Garrison:Update()
+								end,						
+							},								
+							hideBuildingWithoutShipments = {
+								order = 50,
+								type = "toggle",
+								width = "full",
+								name = L["Hide buildings without shipments"],
+								desc = L["Don't display buildings without shipments (barracks, stables, ...)"],
+								get = function() return configDb.general.building.hideBuildingWithoutShipments end,
+								set = function(_,v) configDb.general.building.hideBuildingWithoutShipments = v
+									Garrison:Update()
+								end,						
+							},	
 							groupHeader = {
 								order = 100,
 								type = "header",
