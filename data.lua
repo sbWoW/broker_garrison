@@ -34,13 +34,31 @@ Garrison.STATE_MISSION_INPROGRESS = 1
 
 Garrison.COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
 
+
+local mediaPath = "Interface\\AddOns\\Broker_Garrison\\Media\\"
+
+Garrison.ICON_PATH_CURRENCY = mediaPath.."Inv_Garrison_Resource"
+Garrison.ICON_PATH_CURRENCY_APEXIS = mediaPath.."Inv_Apexis_Draenor"
+Garrison.ICON_PATH_MISSION = mediaPath.."Mission"
+Garrison.ICON_PATH_BUILDING = mediaPath.."Building"
+
+Garrison.ICON_PATH_OPEN = mediaPath.."Open"
+Garrison.ICON_PATH_CLOSE = mediaPath.."Close"
+
 Garrison.COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
-Garrison.ICON_CURRENCY = string.format("\124TInterface\\Icons\\Inv_Garrison_Resource:%d:%d:1:0\124t", 16, 16)
+--Garrison.ICON_CURRENCY = string.format("\124T%s\\%s:%d:%d:1:0\124t", mediaPath, name, 16, 16)
 
-Garrison.ICON_CURRENCY_APEXIS = string.format("\124TInterface\\Icons\\Inv_Apexis_Draenor:%d:%d:1:0\124t", 16, 16)
+Garrison.ICON_CURRENCY = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY, 16, false)
+Garrison.ICON_CURRENCY_APEXIS = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS, 16, false)
+Garrison.ICON_MISSION = Garrison.getIconString(Garrison.ICON_PATH_MISSION, 16, false)
 
-Garrison.ICON_OPEN = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Open:%d:%d:1:0\124t", 16, 16)
-Garrison.ICON_CLOSE = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Close:%d:%d:1:0\124t", 16, 16)
+--Garrison.ICON_CURRENCY_APEXIS = string.format("\124TInterface\\Icons\\Inv_Apexis_Draenor:%d:%d:1:0\124t", 16, 16)
+
+
+Garrison.ICON_OPEN = Garrison.getIconString(Garrison.ICON_PATH_OPEN, 16, false)
+Garrison.ICON_CLOSE = Garrison.getIconString(Garrison.ICON_PATH_CLOSE, 16, false)
+--Garrison.ICON_OPEN = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Open:%d:%d:1:0\124t", 16, 16)
+--Garrison.ICON_CLOSE = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Close:%d:%d:1:0\124t", 16, 16)
 
 Garrison.ICON_OPEN_DOWN = Garrison.ICON_OPEN
 Garrison.ICON_CLOSE_DOWN = Garrison.ICON_CLOSE

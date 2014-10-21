@@ -1180,6 +1180,8 @@ function Garrison:OnInitialize()
 	self:RawHook("GarrisonMinimapMission_ShowPulse", true)			
 
 	timers.init_update = Garrison:ScheduleTimer("DelayedUpdate", 5)	
+
+	ldb_object_mission.icon = Garrison.ICON_PATH_MISSION
 end
 
 
