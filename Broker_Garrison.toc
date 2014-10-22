@@ -40,3 +40,4 @@ helper.lua
 data.lua
 config.lua
 event.lua
+tooltip.lua
