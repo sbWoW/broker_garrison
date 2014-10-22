@@ -121,6 +121,8 @@ end
 function Garrison:GetBuildingData(plotID)
 	local id, name, texPrefix, icon, rank, isBuilding, timeStart, buildTime, canActivate, canUpgrade, isPrebuilt = C_Garrison.GetOwnedBuildingInfoAbbrev(plotID)
 
+	local hasFollowerSlot = _G.select(17, C_Garrison.GetOwnedBuildingInfo(plotID))	
+
 	local plots = C_Garrison.GetPlots()
 
 	local tmpBuilding = {
@@ -134,6 +136,7 @@ function Garrison:GetBuildingData(plotID)
 		canActivate = canActivate,
 		timeStart = timeStart,
 		buildTime = buildTime,
+		hasFollowerSlot = hasFollowerSlot,
 	}
 
 	for k,v in pairs(plots) do
@@ -145,6 +148,31 @@ function Garrison:GetBuildingData(plotID)
 
 	return tmpBuilding
 end
+
+function Garrison:GetFollowerData(plotID)
+	local followerName, level, quality, displayID, followerID, garrFollowerID, status, portraitIconID = C_Garrison.GetFollowerInfoForBuilding(plotID);
+
+	local tmpFollower = {}
+
+	if followerName then
+		tmpFollower = {
+			followerName = followerName, 
+			level = level, 
+			quality = quality,
+			displayID = displayID, 
+			followerID = followerID, 
+			garrFollowerID = garrFollowerID, 
+			status = status, 
+			portraitIconID = portraitIconID,
+		}
+
+		debugPrint(("(%s): Added Follower (%s)"):format(plotID, followerName))
+	end
+
+	return tmpFollower
+
+end
+
 
 
 function Garrison:UpdateShipment(buildingID, shipmentData)	
@@ -187,6 +215,10 @@ function Garrison:UpdateBuilding(plotID)
 	end
 
 	tmpBuilding.shipment = Garrison:UpdateShipment(tmpBuilding.id, shipmentData)
+
+	if tmpBuilding.hasFollowerSlot then
+		tmpBuilding.follower = Garrison:GetFollowerData(plotID)
+	end
 
 	return tmpBuilding
 end
@@ -232,6 +264,18 @@ function Garrison:FullUpdateBuilding(updateType)
 	return true
 end
 
+function Garrison:GetPlotID(buildingID)
+	if globalDb.data[charInfo.realmName][charInfo.playerName].buildings then
+		for buildingPlotID, buildingData in pairs(globalDb.data[charInfo.realmName][charInfo.playerName].buildings) do
+			if buildingData and buildingData.id and buildingData.id == buildingID then
+				return buildingPlotID 
+			end
+		end
+	end
+
+	return nil
+end
+
 function Garrison:BuildingUpdate(event, ...)
 	if event == "GARRISON_BUILDING_PLACED" then
 		local plotID, newPlacement = ...;		
@@ -259,15 +303,32 @@ function Garrison:BuildingUpdate(event, ...)
 		local plotID, buildingID = ...;
 		debugPrint(("Removed Building %s"):format(buildingID))
 		globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID] = nil		
-	elseif event == "GARRISON_BUILDING_ACTIVATED" or event == "GARRISON_BUILDING_UPDATE" then
-		local plotID, buildingID = ...;
+	elseif event == "GARRISON_BUILDING_ACTIVATED" then 
+		local plotID = ...;
 		local tmpBuilding = Garrison:UpdateBuilding(plotID)
 
+		--debugPrint(("BuildingEvent: %s (%s): %s / %s"):format(event, plotID, tostring(tmpBuilding), tostring(tmpBuilding.name)))
+
 		if tmpBuilding and tmpBuilding.name then
-			debugPrint(("BuildingInfoUpdate %s (%s)"):format(plotID, tmpBuilding.name or buildingID or '-'))
+			debugPrint(("GARRISON_BUILDING_ACTIVATED %s (%s)"):format(plotID, tmpBuilding.name or '-'))
 
 			globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID] = tmpBuilding	
 		end
+	elseif event == "GARRISON_BUILDING_UPDATE" then
+		local buildingID = ...;
+
+		-- BuildingID => PlotID
+		local plotID = Garrison:GetPlotID(buildingID)
+
+		if plotID then
+			local tmpBuilding = Garrison:UpdateBuilding(plotID)
+			if tmpBuilding and tmpBuilding.name then
+				debugPrint(("GARRISON_BUILDING_UPDATE %s (%s)"):format(plotID, tmpBuilding.name or '-'))
+
+				globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID] = tmpBuilding	
+			end
+		end
+
 	else
 		debugPrint(("BuildingUpdate (%s)"):format(_G.tostring(event)))
 		Garrison:FullUpdateBuilding()
