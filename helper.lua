@@ -153,7 +153,7 @@ function Garrison.GetIconPath(name)
 	end
 end
 
-function Garrison.getIconString(name, size, isAtlas)
+function Garrison.getIconString(name, size, isAtlas, ...)
 	local icon
 
 	if size and size == 0 then
@@ -180,7 +180,12 @@ function Garrison.getIconString(name, size, isAtlas)
 				end
 
 			else				
-				Garrison.iconCache[key] = string.format("\124T%s:%d:%d:1:0\124t", Garrison.GetIconPath(name), size, size)
+				local iconZoom = ...
+				if iconZoom then			
+					Garrison.iconCache[key] = string.format("\124T%s:%d:%d:1:0:64:64:4:60:4:60\124t", Garrison.GetIconPath(name), size, size)
+				else
+					Garrison.iconCache[key] = string.format("\124T%s:%d:%d:1:0\124t", Garrison.GetIconPath(name), size, size)
+				end
 			end
 		end
 		
