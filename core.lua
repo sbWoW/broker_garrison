@@ -303,6 +303,7 @@ end
 
 
 
+
 function Garrison:SendNotification(paramCharInfo, data, notificationType)
 
 	local retVal = false
@@ -920,12 +921,24 @@ do
 								end
 
 								if configDb.display.showIcon then
-									tooltip:SetCell(row, 1, getIconString(buildingData.icon, configDb.display.iconSize, false), nil, "LEFT", 1)
+									tooltip:SetCell(row, 1, getIconString(buildingData.icon, configDb.display.iconSize, false, true), nil, "LEFT", 1)
 								end
 
 								tooltip:SetCell(row, 2, ("%s %s"):format(buildingData.name, rank), nil, "LEFT", 1)
 
 								--tooltip:SetCell(row, 3, isBuildingIcon, nil, "LEFT", 1) 
+
+								
+								if buildingData.hasFollowerSlot then
+									local followerTexture
+									if buildingData.follower and buildingData.follower.followerName then
+										followerTexture = buildingData.follower.portraitIconID
+									else
+										followerTexture = "Interface\\Garrison\\Portraits\\FollowerPortrait_NoPortrait"
+									end
+
+									tooltip:SetCell(row, 3, "", nil, "LEFT", 1, Garrison.iconProvider, 0, 0, nil, nil, followerTexture, configDb.display.iconSize)
+								end
 
 								local timeLeftBuilding = 0
 								if buildingData.isBuilding then
