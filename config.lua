@@ -771,21 +771,6 @@ function Garrison:GetOptions()
 							configDb.display.showIcon = v
 						end,
 					},					
-					iconSize = {
-						order = 160,
-						type = "range",
-						min = 0,
-						max = 64,
-						step = 1,
-						width = "full",
-						name = L["Icon Size"],
-						desc = L["Icon Size"],
-						get = function() return configDb.display.iconSize or 24 end,
-						set = function(_,v)
-							configDb.display.iconSize = v
-						end,
-						disabled = function() return not configDb.display.showIcon end,
-					},					
 				},
 			},
 			tooltip = {

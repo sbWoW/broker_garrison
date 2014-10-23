@@ -67,18 +67,20 @@ Garrison.ICON_REPLACEMENT = {
 	["Interface\\ICONS\\INV_Inscription_Tradeskill01.blp"] = mediaPath.."inv_inscription_tradeskill01",
 
 
+
 }
 
 Garrison.ICON_PATH_CURRENCY = mediaPath.."Inv_Garrison_Resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS = mediaPath.."Inv_Apexis_Draenor"
 
-Garrison.ICON_PATH_CURRENCY_TOOLTIP = mediaPath.."bg_apexis_draenor_tooltip"
-Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP = mediaPath.."bg_garrison_resource_tooltip"
-
-
+Garrison.ICON_PATH_CURRENCY_TOOLTIP = mediaPath.."bg_garrison_resource_tooltip"
+Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP = mediaPath.."bg_apexis_draenor_tooltip"
 
 Garrison.ICON_PATH_MISSION = mediaPath.."bg_missions"
 Garrison.ICON_PATH_BUILDING = mediaPath.."bg_buildings"
+
+Garrison.ICON_PATH_FOLLOWER_NO_PORTRAIT = mediaPath.."follower_no_portrait"
+
 
 
 Garrison.ICON_PATH_OPEN = mediaPath.."arrow_open"
@@ -109,8 +111,8 @@ Garrison.ICON_ARROW_UP_WAITING = Garrison.getIconString(Garrison.ICON_PATH_ARROW
 --Garrison.ICON_CURRENCY_APEXIS = string.format("\124TInterface\\Icons\\Inv_Apexis_Draenor:%d:%d:1:0\124t", 16, 16)
 
 
-Garrison.ICON_OPEN = Garrison.getIconString(Garrison.ICON_PATH_OPEN, 24, false)
-Garrison.ICON_CLOSE = Garrison.getIconString(Garrison.ICON_PATH_CLOSE, 24, false)
+Garrison.ICON_OPEN = Garrison.getIconString(Garrison.ICON_PATH_OPEN, 16, false)
+Garrison.ICON_CLOSE = Garrison.getIconString(Garrison.ICON_PATH_CLOSE, 16, false)
 --Garrison.ICON_OPEN = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Open:%d:%d:1:0\124t", 16, 16)
 --Garrison.ICON_CLOSE = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Close:%d:%d:1:0\124t", 16, 16)
 

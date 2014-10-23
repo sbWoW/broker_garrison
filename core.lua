@@ -149,7 +149,8 @@ local DB_DEFAULTS = {
 		display = {
 			scale = 1,
 			autoHideDelay = 0.1,
-			iconSize = 24,
+			iconSize = 16,
+			fontSize = 12,
 			showIcon = true,
 		},
 		configVersion = CONFIG_VERSION,
@@ -963,7 +964,7 @@ do
 									if buildingData.follower and buildingData.follower.followerName then
 										followerTexture = buildingData.follower.portraitIconID
 									else
-										followerTexture = "Interface\\Garrison\\Portraits\\FollowerPortrait_NoPortrait"
+										followerTexture = Garrison.ICON_PATH_FOLLOWER_NO_PORTRAIT
 									end
 
 									tooltip:SetCell(row, 1, "", nil, "LEFT", 1, Garrison.iconProvider, 0, 0, nil, nil, followerTexture, configDb.display.iconSize)
