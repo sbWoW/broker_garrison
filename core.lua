@@ -616,47 +616,56 @@ end
 
 local DrawTooltip
 do
-	local NUM_TOOLTIP_COLUMNS = 9
+	local NUM_TOOLTIP_COLUMNS = 5
 	local tooltipRegistry = {}	
 	local LDB_anchor
 	local tooltipType
 	local tooltip
 	local locked = false
 
-	local function ExpandButton_OnMouseUp(tooltip_cell, realm_and_character)
+	local function ExpandButton_OnMouseUp(tooltip_cell, param, button)
+		local realm_and_character, paramType = unpack(param)
+
 		local realm, character_name = (":"):split(realm_and_character, 2)
 
-		if tooltipType == TYPE_MISSION then
+		--debugPrint(LDB_anchor)
+
+		if paramType == TYPE_MISSION then
 			globalDb.data[realm][character_name].missionsExpanded = not globalDb.data[realm][character_name].missionsExpanded
 		else
 			globalDb.data[realm][character_name].buildingsExpanded = not globalDb.data[realm][character_name].buildingsExpanded
 		end
 
-		DrawTooltip(LDB_anchor, tooltipType)
+
+
+		DrawTooltip(tooltipRegistry[paramType].anchor, paramType)
 	end
 
-	local function ExpandButton_OnMouseDown(tooltip_cell, is_expanded)
+	local function ExpandButton_OnMouseDown(tooltip_cell, param, button)
+		local is_expanded, paramType = unpack(param)
+
 		local line, column = tooltip_cell:GetPosition()
 		tooltip:SetCell(line, column, is_expanded and Garrison.ICON_CLOSE_DOWN or Garrison.ICON_OPEN_DOWN)
 	end
 
 	local function Tooltip_OnRelease_Mission(arg)
 
-		tooltipRegistry[TYPE_MISSION] = nil
-
+		tooltipRegistry[TYPE_MISSION].tooltip = nil
+		tooltipRegistry[TYPE_MISSION].anchor = nil
 		LDB_anchor = nil
 		tooltipType = nil		
 	end
 
 	local function Tooltip_OnRelease_Building(arg)
-		tooltipRegistry[TYPE_BUILDING] = nil
+		tooltipRegistry[TYPE_BUILDING].tooltip = nil
+		tooltipRegistry[TYPE_BUILDING].anchor = nil
 		LDB_anchor = nil
 		tooltipType = nil		
 	end
 
 
 	local function AddSeparator(tooltip)
-		tooltip:AddSeparator(1, colors.lightGray.r, colors.lightGray.g, colors.lightGray.b, colors.lightGray.a)
+		tooltip:AddSeparator(1, colors.lineGrey.r, colors.lineGrey.g, colors.lineGrey.b, colors.lineGrey.a)
 	end
 
 	local function AddEmptyLine(tooltip, ...)
@@ -673,15 +682,21 @@ do
 		if not anchor_frame then
 			return
 		end
-		LDB_anchor = anchor_frame
+		LDB_anchor = anchor_frame		
 		tooltipType = paramTooltipType
-		tooltip	= tooltipRegistry[tooltipType]
+		if not tooltipRegistry[tooltipType] then
+			tooltipRegistry[tooltipType] = {}
+		end
+
+		tooltip	= tooltipRegistry[tooltipType].tooltip
+		tooltipRegistry[tooltipType].anchor = LDB_anchor
+		--LDB_anchor = tooltipRegistry[tooltipType].tooltip
 
 		locked = true
 
 		if not tooltip then
-			tooltipRegistry[tooltipType] = LibQTip:Acquire("BrokerGarrisonTooltip-"..paramTooltipType, NUM_TOOLTIP_COLUMNS, "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT", "LEFT")
-			tooltip = tooltipRegistry[tooltipType]
+			tooltipRegistry[tooltipType].tooltip = LibQTip:Acquire("BrokerGarrisonTooltip-"..paramTooltipType, NUM_TOOLTIP_COLUMNS, "LEFT", "LEFT", "LEFT", "LEFT", "LEFT")
+			tooltip = tooltipRegistry[tooltipType].tooltip
 
 			if tooltipType == TYPE_MISSION then
 				tooltip.OnRelease = Tooltip_OnRelease_Mission
@@ -694,10 +709,16 @@ do
 			tooltip:SetScale(configDb.display.scale or 1)
 			local font = LSM:Fetch("font", configDb.display.fontName or DEFAULT_FONT)
 			local fontSize = configDb.display.fontSize or 12
+			local headerFontSize = fontSize + 2
 
 			local tmpFont = CreateFont("BrokerGarrisonTooltipFont")
 			tmpFont:SetFont(font, fontSize)
+
+			local tmpHeaderFont = CreateFont("BrokerGarrisonTooltipHeaderFont")
+			tmpHeaderFont:SetFont(font, headerFontSize)
+
 			tooltip:SetFont(tmpFont)
+			tooltip:SetHeaderFont(tmpHeaderFont)
 		end
 
 		local now = time()
@@ -716,7 +737,7 @@ do
 			for realmName, realmData in pairsByKeys(globalDb.data) do
 				realmNum = realmNum + 1
 
-				row = tooltip:AddLine()
+				row = tooltip:AddHeader()
 				tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 3)
 
 				row = tooltip:AddLine(" ")
@@ -733,16 +754,22 @@ do
 					tooltip:SetCell(row, 1, playerData.missionsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN)
 					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
 					--tooltip:SetCell(row, 3, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)))
-					tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(missionCount.total), colors.lightGray))
-					tooltip:SetCell(row, 5, getColoredString((L["In Progress: %s"]):format(missionCount.inProgress), colors.lightGray))
-					tooltip:SetCell(row, 6, getColoredString((L["Complete: %s"]):format(missionCount.complete), colors.lightGray))
+					
+							
 
-					tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, ("%s:%s"):format(realmName, playerName))
-					tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, playerData.missionsExpanded)
+					tooltip:SetCell(row, 4, getColoredString((L["Total: %s | In Progress: %s | Complete: %s"]):format(missionCount.total, missionCount.inProgress, missionCount.complete), colors.lightGray), nil, "RIGHT", 1)
+
+				--	tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(missionCount.total), colors.lightGray))
+					--tooltip:SetCell(row, 5, getColoredString((L["In Progress: %s"]):format(missionCount.inProgress), colors.lightGray))
+					--tooltip:SetCell(row, 6, getColoredString((L["Complete: %s"]):format(missionCount.complete), colors.lightGray))
+
+					tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_MISSION})
+					tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.missionsExpanded, Garrison.TYPE_MISSION})
+
+					AddEmptyLine(tooltip)
+					AddSeparator(tooltip)
 
 					if playerData.missionsExpanded and missionCount.total > 0 then
-						row = tooltip:AddLine(" ")
-						AddSeparator(tooltip)
 
 						AddEmptyLine(tooltip, colors.darkGray)
 
@@ -789,16 +816,16 @@ do
 									missionData.timeLeft,
 									getColoredString("("..formattedSeconds(missionData.duration)..")", colors.lightGray)
 								)
-								tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 3)
+								tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 1)
 							elseif (missionData.start == 0 or timeLeft < 0) then
-								tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 3)
+								tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 1)
 							else
 								local formattedTime = ("%s %s"):format(
 									formattedSeconds(timeLeft),
 									getColoredString("("..formattedSeconds(missionData.duration)..")", colors.lightGray)
 								)
 
-								tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 3)
+								tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 1)
 							end
 
 						end
@@ -817,12 +844,10 @@ do
 				realmNum = realmNum + 1
 
 				if realmNum > 1 then
-					row = tooltip:AddLine(" ")
-					AddSeparator(tooltip)	
 					row = tooltip:AddLine(" ")					
 				end
 
-				row = tooltip:AddLine()
+				row = tooltip:AddHeader()
 				tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 3)
 
 				row = tooltip:AddLine(" ")
@@ -835,26 +860,28 @@ do
 					row = tooltip:AddLine()
 
 					tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN)
-					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
-					tooltip:SetCell(row, 5, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), nil, "RIGHT", 4)
+					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)), nil, "LEFT", 3)
+					tooltip:SetCell(row, 5, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), nil, "RIGHT", 1)
 
 
-					tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, ("%s:%s"):format(realmName, playerName))
-					tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, playerData.buildingsExpanded)
+					tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_BUILDING})
+					tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.buildingsExpanded, Garrison.TYPE_BUILDING})
 
+					AddEmptyLine(tooltip)
+					AddSeparator(tooltip)
 
 					--row = tooltip:AddLine(" ")
 
 
 					if playerData.buildingsExpanded and buildingCount.building.total > 0 then
-						row = tooltip:AddLine(" ")
-						AddSeparator(tooltip)
+						--row = tooltip:AddLine(" ")
+						--AddSeparator(tooltip)
 						row = AddEmptyLine(tooltip, colors.darkGray)
 						
 						if not configDb.general.building.hideHeader then
 							row = AddEmptyLine(tooltip, colors.darkGray)
-							tooltip:SetCell(row, 4, getColoredString(L["Shipment"], colors.lightGray))
-							tooltip:SetCell(row, 5, getColoredString(L["Time"], colors.lightGray))
+							tooltip:SetCell(row, 4, getColoredString(L["SHIPMENT"], colors.lightGray), nil, "CENTER", 1)
+							tooltip:SetCell(row, 5, getColoredString(L["TIME"], colors.lightGray), nil, "CENTER", 1)
 							AddEmptyLine(tooltip, colors.darkGray)
 						end
 
@@ -880,8 +907,8 @@ do
 										
 										if not configDb.general.building.hideHeader then
 											row = AddEmptyLine(tooltip, colors.darkGray)
-											tooltip:SetCell(row, 4, getColoredString(L["Shipment"], colors.lightGray))
-											tooltip:SetCell(row, 5, getColoredString(L["Time"], colors.lightGray))
+											tooltip:SetCell(row, 4, getColoredString(L["SHIPMENT"], colors.lightGray), nil, "CENTER", 1)
+											tooltip:SetCell(row, 5, getColoredString(L["TIME"], colors.lightGray), nil, "CENTER", 1)
 											AddEmptyLine(tooltip, colors.darkGray)
 										end
 
@@ -921,10 +948,12 @@ do
 								end
 
 								if configDb.display.showIcon then
-									tooltip:SetCell(row, 1, getIconString(buildingData.icon, configDb.display.iconSize, false, true), nil, "LEFT", 1)
+									--tooltip:SetCell(row, 1, getIconString(, configDb.display.iconSize, false, false), nil, "LEFT", 1)
+
+									tooltip:SetCell(row, 2, "", nil, "LEFT", 1, Garrison.iconProvider, 0, 0, nil, nil, Garrison.GetIconPath(buildingData.icon), configDb.display.iconSize)
 								end
 
-								tooltip:SetCell(row, 2, ("%s %s"):format(buildingData.name, rank), nil, "LEFT", 1)
+								tooltip:SetCell(row, 3, ("%s %s"):format(buildingData.name, rank), nil, "LEFT", 1)
 
 								--tooltip:SetCell(row, 3, isBuildingIcon, nil, "LEFT", 1) 
 
@@ -937,7 +966,7 @@ do
 										followerTexture = "Interface\\Garrison\\Portraits\\FollowerPortrait_NoPortrait"
 									end
 
-									tooltip:SetCell(row, 3, "", nil, "LEFT", 1, Garrison.iconProvider, 0, 0, nil, nil, followerTexture, configDb.display.iconSize)
+									tooltip:SetCell(row, 1, "", nil, "LEFT", 1, Garrison.iconProvider, 0, 0, nil, nil, followerTexture, configDb.display.iconSize)
 								end
 
 								local timeLeftBuilding = 0
@@ -988,9 +1017,7 @@ do
 						end
 					
 						AddEmptyLine(tooltip, colors.darkGray)
-
 						AddSeparator(tooltip)
-
 					end
 				end
 			end

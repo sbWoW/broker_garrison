@@ -9,8 +9,10 @@ local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale(ADDON_NAME)
 Garrison.colors = {
 	green = {r=0, g=1, b=0, a=1},
 	white = {r=1, g=1, b=1, a=1},
-	lightGray = {r=0.25, g=0.25, b=0.25, a=1},
+	--lightGray = {r=0.25, g=0.25, b=0.25, a=1},
 	darkGray = {r=0.1, g=0.1, b=0.1, a=1},
+	lineGrey = {r=(82/255), g=(91/255), b=(97/255), a=1},
+	lightGray = {r=(82/255), g=(91/255), b=(97/255), a=1},
 }
 
 Garrison.GARRISON_CURRENCY = 824
@@ -38,17 +40,49 @@ Garrison.COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
 local mediaPath = "Interface\\AddOns\\Broker_Garrison\\Media\\"
 
 Garrison.ICON_REPLACEMENT = {
-	["Interface\\ICONS\\Garrison_Building_Armory.blp"] = mediaPath.."garrison_building_armory_2",
+	["Interface\\ICONS\\Garrison_Building_Armory.blp"] = mediaPath.."garrison_building_armory",
+	["Interface\\ICONS\\Garrison_Building_Stables.blp"] = mediaPath.."garrison_building_stables",
+	["Interface\\ICONS\\Garrison_Building_SparringArena.blp"] = mediaPath.."garrison_building_sparringarena",
+	["Interface\\ICONS\\Garrison_Building_SalvageYard.blp"] = mediaPath.."garrison_building_salvageyard",
+	["Interface\\ICONS\\Garrison_Building_Menagerie.blp"] = mediaPath.."garrison_building_menagerie",
+	["Interface\\ICONS\\Garrison_Building_MageTower.blp"] = mediaPath.."garrison_building_magetower",
+	["Interface\\ICONS\\Garrison_Building_Lumbermill.blp"] = mediaPath.."garrison_building_lumbermill",
+	["Interface\\ICONS\\Garrison_Building_Barracks.blp"] = mediaPath.."garrison_building_barracks",
+	["Interface\\ICONS\\Garrison_Building_Barn.blp"] = mediaPath.."garrison_building_barn",
+	["Interface\\ICONS\\Garrison_Building_Workshop.blp"] = mediaPath.."garrison_building_workshop",
+	["Interface\\ICONS\\Garrison_Building_TradingPost.blp"] = mediaPath.."garrison_building_tradingpost",
+	["Interface\\ICONS\\Garrison_Building_Storehouse.blp"] = mediaPath.."garrison_building_storehouse",
+	["Interface\\ICONS\\Trade_Tailoring.blp"] = mediaPath.."trade_tailoring",
+	["Interface\\ICONS\\Trade_Mining.blp"] = mediaPath.."trade_mining",
+	["Interface\\ICONS\\Trade_Fishing.blp"] = mediaPath.."trade_fishing",
+	["Interface\\ICONS\\Trade_Engraving.blp"] = mediaPath.."trade_engraving",
+	["Interface\\ICONS\\Trade_Engineering.blp"] = mediaPath.."trade_engineering",
+	["Interface\\ICONS\\Trade_Blacksmithing.blp"] = mediaPath.."trade_blacksmithing",
+	["Interface\\ICONS\\Trade_Alchemy.blp"] = mediaPath.."trade_alchemy",
+	
+	["Interface\\ICONS\\INV_Misc_Rune_01.blp"] = mediaPath.."inv_misc_rune_01",
+	["Interface\\ICONS\\INV_Misc_Herb_SansamRoot.blp"] = mediaPath.."inv_misc_herb_sansamroot",
+	["Interface\\ICONS\\INV_Misc_Gem_01.blp"] = mediaPath.."inv_misc_gem_01",
+	["Interface\\ICONS\\INV_Misc_Armorkit_17.blp"] = mediaPath.."inv_misc_armorkit_17",
+	["Interface\\ICONS\\INV_Inscription_Tradeskill01.blp"] = mediaPath.."inv_inscription_tradeskill01",
+
+
 }
 
 Garrison.ICON_PATH_CURRENCY = mediaPath.."Inv_Garrison_Resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS = mediaPath.."Inv_Apexis_Draenor"
+
+Garrison.ICON_PATH_CURRENCY_TOOLTIP = mediaPath.."bg_apexis_draenor_tooltip"
+Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP = mediaPath.."bg_garrison_resource_tooltip"
+
+
+
 Garrison.ICON_PATH_MISSION = mediaPath.."bg_missions"
 Garrison.ICON_PATH_BUILDING = mediaPath.."bg_buildings"
 
 
-Garrison.ICON_PATH_OPEN = mediaPath.."Open"
-Garrison.ICON_PATH_CLOSE = mediaPath.."Close"
+Garrison.ICON_PATH_OPEN = mediaPath.."arrow_open"
+Garrison.ICON_PATH_CLOSE = mediaPath.."arrow_close"
 
 Garrison.ICON_PATH_ARROW_UP = mediaPath.."arrow_up"
 Garrison.ICON_PATH_ARROW_UP_WAITING = mediaPath.."arrow_up_waiting"
@@ -60,6 +94,10 @@ Garrison.COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
 
 Garrison.ICON_CURRENCY = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY, 16, false)
 Garrison.ICON_CURRENCY_APEXIS = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS, 16, false)
+Garrison.ICON_CURRENCY_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TOOLTIP, 16, false)
+Garrison.ICON_CURRENCY_APEXIS_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP, 16, false)
+
+
 Garrison.ICON_MISSION = Garrison.getIconString(Garrison.ICON_PATH_MISSION, 16, false)
 Garrison.ICON_BUILDING = Garrison.getIconString(Garrison.ICON_PATH_BUILDING, 16, false)
 
@@ -71,8 +109,8 @@ Garrison.ICON_ARROW_UP_WAITING = Garrison.getIconString(Garrison.ICON_PATH_ARROW
 --Garrison.ICON_CURRENCY_APEXIS = string.format("\124TInterface\\Icons\\Inv_Apexis_Draenor:%d:%d:1:0\124t", 16, 16)
 
 
-Garrison.ICON_OPEN = Garrison.getIconString(Garrison.ICON_PATH_OPEN, 16, false)
-Garrison.ICON_CLOSE = Garrison.getIconString(Garrison.ICON_PATH_CLOSE, 16, false)
+Garrison.ICON_OPEN = Garrison.getIconString(Garrison.ICON_PATH_OPEN, 24, false)
+Garrison.ICON_CLOSE = Garrison.getIconString(Garrison.ICON_PATH_CLOSE, 24, false)
 --Garrison.ICON_OPEN = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Open:%d:%d:1:0\124t", 16, 16)
 --Garrison.ICON_CLOSE = string.format("\124TInterface\\AddOns\\Broker_Garrison\\Media\\Close:%d:%d:1:0\124t", 16, 16)
 
