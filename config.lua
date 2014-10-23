@@ -406,7 +406,7 @@ function Garrison:GetOptions()
 								desc = L["Don't play pulse/flash animations on Minimap-Button"],
 								get = function() return configDb.notification.mission.hideMinimapPulse end,
 								set = function(_,v) configDb.notification.mission.hideMinimapPulse = v end,
-								disabled = function() return configDb.ldbConfig.hideGarrisonMinimapButton end,
+								disabled = function() return configDb.general.hideGarrisonMinimapButton end,
 							},
 							playSound = {
 								order = 430,
@@ -534,7 +534,7 @@ function Garrison:GetOptions()
 								get = function() return configDb.notification.building.hideMinimapPulse end,
 								set = function(_,v) configDb.notification.building.hideMinimapPulse = v
 								end,
-								disabled = function() return configDb.ldbConfig.hideGarrisonMinimapButton end,
+								disabled = function() return configDb.general.hideGarrisonMinimapButton end,
 							},							
 							playSound = {
 								order = 430,
@@ -662,7 +662,7 @@ function Garrison:GetOptions()
 								get = function() return configDb.notification.shipment.hideMinimapPulse end,
 								set = function(_,v) configDb.notification.shipment.hideMinimapPulse = v
 								end,
-								disabled = function() return configDb.ldbConfig.hideGarrisonMinimapButton end,
+								disabled = function() return configDb.general.hideGarrisonMinimapButton end,
 							},
 							playSound = {
 								order = 430,
@@ -827,6 +827,7 @@ function Garrison:GetOptions()
 								set = function(_,v)
 									configDb.tooltip.mission.group[1].ascending = v
 								end,
+								disabled = function() return (configDb.tooltip.mission.group[1].value or "-") == "-" end,
 							},
 							groupOptionNewline = {
 								order = 202,
@@ -903,6 +904,7 @@ function Garrison:GetOptions()
 								set = function(_,v)
 									configDb.tooltip.building.group[1].ascending = v
 								end,
+								disabled = function() return (configDb.tooltip.building.group[1].value or "-") == "-" end,
 							},
 							groupOptionNewline = {
 								order = 202,

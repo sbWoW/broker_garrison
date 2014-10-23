@@ -437,20 +437,29 @@ function Garrison:GarrisonCapacitiveDisplayFrame_Update(obj, success, maxShipmen
 		--debugPrint(("numPending: %s"):format(Garrison.shipmentUpdate.numPending or "0"))
 	end
 
-	local numPending = C_Garrison.GetNumPendingShipments()
-
+	local numPending = C_Garrison.GetNumPendingShipments() or 0 -- TODO: Test and implement failsafe (~30second timeout) to prevent deadlock
 	
 	if Garrison.shipmentUpdate.success then
 		debugPrint(("numPending: %s"):format(numPending or "0"))
 
 		local buildingData = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[Garrison.shipmentUpdate.plotID]
-		if buildingData and buildingData.shipment then
-			if numPending >= buildingData.shipment.shipmentsTotal then
-				debugPrint(("Update Shipment (%s): %s"):format(buildingData.name, numPending))
-				buildingData.shipment.shipmentsTotal = numPending
 
+		if buildingData and buildingData.shipment then
+			if numPending ~= nil and buildingData.shipment.shipmentsTotal ~= nil then
+				if numPending >= buildingData.shipment.shipmentsTotal then
+					debugPrint(("Update Shipment (%s): %s"):format(buildingData.name, numPending))
+					buildingData.shipment.shipmentsTotal = numPending
+
+					Garrison.shipmentUpdate.success = false
+				end
+			else				
 				Garrison.shipmentUpdate.success = false
 			end
+		else
+			-- Data inconsistency - schedule full building update
+			Garrison.shipmentUpdate.success = false
+				
+			timers.full_update = Garrison:ScheduleTimer("FullUpdateBuilding", 5, Garrison.TYPE_BUILDING)	
 		end		
 	end
 end
