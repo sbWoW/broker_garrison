@@ -14,7 +14,10 @@ Garrison.iconProvider = iconProvider
 function iconCellPrototype:InitializeCell()
    if not self.icon then
       self.icon = self:CreateTexture()
-      self.icon:SetAllPoints(self)
+      --self.icon:SetAllPoints(self)
+
+      self.icon:SetPoint("TOPLEFT", self ,"TOPLEFT", 0, 0)
+
    end
 end
 
@@ -27,6 +30,8 @@ function iconCellPrototype:SetupCell(tooltip, value, justification, font, l_pad,
    else
       self.icon:SetTexture(texture)
    end
+
+   --Garrison.debugPrint(("%s, %s: %s"):format(self._line, self._column, self:GetWidth()))
 
    self.icon:SetWidth(size)
    self.icon:SetHeight(size)
