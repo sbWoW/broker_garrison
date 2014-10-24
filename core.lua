@@ -958,14 +958,16 @@ do
 
 								
 								if buildingData.hasFollowerSlot then
-									local followerTexture
+									local followerTexture, iconSize									
 									if buildingData.follower and buildingData.follower.followerName then
 										followerTexture = buildingData.follower.portraitIconID
+										iconSize = configDb.display.iconSize - 2
 									else
 										followerTexture = Garrison.ICON_PATH_FOLLOWER_NO_PORTRAIT
+										iconSize = configDb.display.iconSize
 									end
 
-									tooltip:SetCell(row, 1, "", nil, "LEFT", 1, Garrison.iconProvider, 0, 0, nil, nil, followerTexture, configDb.display.iconSize)
+									tooltip:SetCell(row, 1, "", nil, "LEFT", 1, Garrison.iconProvider, 0, 0, nil, nil, followerTexture, iconSize)
 								end
 
 								local timeLeftBuilding = 0
