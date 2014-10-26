@@ -43,7 +43,7 @@ Garrison.TYPE_SHIPMENT = TYPE_SHIPMENT
 local addonInitialized = false
 local delayedInit = false
 local dependencyLoaded = false
-local CONFIG_VERSION = 1
+local CONFIG_VERSION = 2
 
 local timers = {}
 Garrison.timers = timers
@@ -70,7 +70,7 @@ local DB_DEFAULTS = {
 				hideBuildingWithoutShipments = false,
 				hideHeader = false,
 				ldbTemplate = "B1",
-			},
+			},			
 			hideGarrisonMinimapButton = false,
 		},
 		tooltip = {
@@ -148,12 +148,11 @@ local DB_DEFAULTS = {
 		},
 		display = {
 			scale = 1,
-			autoHideDelay = 0.1,
+			autoHideDelay = 0.25,
 			iconSize = 16,
 			fontSize = 12,
 			showIcon = true,
 		},
-		configVersion = CONFIG_VERSION,
 		debugPrint = false,
 	},
 	global = {
@@ -706,7 +705,7 @@ do
 			end
 			tooltip:EnableMouse(true)
 			tooltip:SmartAnchorTo(anchor_frame)
-			tooltip:SetAutoHideDelay(configDb.display.autoHideDelay or 0.1, LDB_anchor)
+			tooltip:SetAutoHideDelay(configDb.display.autoHideDelay or 0.25, LDB_anchor)
 			tooltip:SetScale(configDb.display.scale or 1)
 			local font = LSM:Fetch("font", configDb.display.fontName or DEFAULT_FONT)
 			local fontSize = configDb.display.fontSize or 12
@@ -847,7 +846,7 @@ do
 				end
 
 				row = tooltip:AddHeader()
-				tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 3)
+				tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 4)
 
 				row = tooltip:AddLine(" ")
 				AddSeparator(tooltip)
@@ -858,10 +857,9 @@ do
 					row = tooltip:AddLine(" ")
 					row = tooltip:AddLine()
 
-					tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN)
+					tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN, nil, "LEFT", 1, nil, 0, 0, 20, 20)
 					tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)), nil, "LEFT", 3)
 					tooltip:SetCell(row, 5, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), nil, "RIGHT", 1)
-
 
 					tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_BUILDING})
 					tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.buildingsExpanded, Garrison.TYPE_BUILDING})
@@ -871,8 +869,18 @@ do
 
 					--row = tooltip:AddLine(" ")
 
+					if not (playerData.buildingsExpanded) then
+						tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)), nil, "LEFT", 2)						
 
-					if playerData.buildingsExpanded and buildingCount.building.total > 0 then
+						if (buildingCount.shipment.inProgress > 0 or buildingCount.shipment.ready > 0) then
+							local formattedShipment = ("%s/%s"):format(
+								buildingCount.shipment.inProgress,
+								getColoredString(buildingCount.shipment.ready, colors.green)
+
+							)
+							tooltip:SetCell(row, 4, formattedShipment, nil, "LEFT", 1)				
+						end
+					elseif playerData.buildingsExpanded and buildingCount.building.total > 0 then
 						--row = tooltip:AddLine(" ")
 						--AddSeparator(tooltip)
 						row = AddEmptyLine(tooltip, colors.darkGray)
@@ -1212,6 +1220,8 @@ function Garrison:OnInitialize()
 			buildingsExpanded = true,
 			info = charInfo,
 			currencyAmount = 0,
+			tooltipEnabled = true,
+			notificationEnabled = true,
 		}
 	end
 
@@ -1220,6 +1230,14 @@ function Garrison:OnInitialize()
 	end
 	if (not globalDb.data[charInfo.realmName][charInfo.playerName]["buildings"]) then
 		globalDb.data[charInfo.realmName][charInfo.playerName]["buildings"] = {}
+	end
+
+	-- Upgrade Code, 1 => 2
+	if not globalDb.data[charInfo.realmName][charInfo.playerName].configVersion then
+		globalDb.data[charInfo.realmName][charInfo.playerName].configVersion = CONFIG_VERSION
+
+		globalDb.data[charInfo.realmName][charInfo.playerName].tooltipEnabled = true
+		globalDb.data[charInfo.realmName][charInfo.playerName].notificationEnabled = true
 	end
 
 	self:InitHelper()

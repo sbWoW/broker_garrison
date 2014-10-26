@@ -20,9 +20,17 @@ local sounds = {}
 
 local prefixSortValue = "sortValue"
 local prefixSortAscending = "sortAscending"
+local prefixDataOptionTooltip = "dataOptionTooltip"
+local prefixdataOptionNotification = "dataOptionNotification"
 
 local lenPrefixSortValue = _G.strlen(prefixSortValue)
 local lenPrefixSortAscending = _G.strlen(prefixSortAscending)
+
+local lenPrefixDataOptionTooltip = _G.strlen(prefixDataOptionTooltip)
+local lenPrefixDataOptionNotification = _G.strlen(prefixdataOptionNotification)
+
+local charLookupTable = {}
+
 
 function Garrison:returnchars()
 	local a = {}
@@ -294,7 +302,7 @@ function Garrison:GetOptions()
 					deletechar = {
 						name = L["Delete char"],
 						desc = L["Delete the selected char"],
-						order = 201,
+						order = 10,
 						type = "select",
 						values = Garrison:returnchars(),
 						set = function(info, val) local t=Garrison:returnchars(); Garrison:deletechar(t[val]) end,
@@ -957,6 +965,31 @@ function Garrison:GetSortOptionAscending(info, ...)
 	return configDb.tooltip[info[2]].sort[tonumber(key)].ascending 
 end
 
+
+function Garrison:GetDataOptionTooltip(info, ...)
+	local key = strsub(info[#info], lenPrefixDataOptionTooltip + 1)
+	
+	local retVal = charLookupTable[tonumber(key)].tooltipEnabled
+	if retVal == nil then
+		charLookupTable[tonumber(key)].tooltipEnabled = true
+		retVal = true
+	end
+
+	return retVal
+end
+
+function Garrison:GetDataOptionNotification(info, ...)
+	local key = strsub(info[#info], lenPrefixDataOptionNotification + 1)
+	
+	local retVal = charLookupTable[tonumber(key)].notificationEnabled
+	if retVal == nil then
+		charLookupTable[tonumber(key)].notificationEnabled = true
+		retVal = true
+	end
+
+	return retVal
+end
+
 local function GetSortOptionTable(numOptions, paramType, baseOrder, sortTable)
 
 	local i 	
@@ -991,6 +1024,67 @@ local function GetSortOptionTable(numOptions, paramType, baseOrder, sortTable)
 	return sortTable
 end
 
+local function getDataOptionTable(dataTable)
+
+	local baseOrder = 100
+	local i = 0
+
+	charLookupTable = {}
+
+	--globalDb
+	for realmName,realmData in Garrison.pairsByKeys(globalDb.data) do
+
+		dataTable["dataRealmName"..baseOrder] = {
+			order = baseOrder,
+			type = "header",
+			name = realmName,
+			cmdHidden = true,
+		}
+
+		for playerName,playerData in Garrison.pairsByKeys(realmData) do
+			dataTable["dataCharName"..(baseOrder + i)] = {
+				order = baseOrder + (i * 10),
+				type = "description",
+				width = "normal",
+				name = Garrison.getColoredUnitName(playerData.info.playerName, playerData.info.playerClass),
+				cmdHidden = true,
+			}
+			dataTable[prefixDataOptionTooltip..(baseOrder + i)] = {
+				order = baseOrder + (i * 10) + 1,
+				type = "toggle",
+				name = L["Tooltip"],
+				get = "GetDataOptionTooltip",
+				--set = "SetSortOptionAscending",
+				cmdHidden = true,
+			}
+			dataTable[prefixdataOptionNotification..(baseOrder + i)] = {
+				order = baseOrder + (i * 10) + 2,
+				type = "toggle",
+				name = L["Notification"],
+				get = "GetDataOptionNotification",
+				--get = "GetSortOptionAscending",
+				--set = "SetSortOptionAscending",
+				cmdHidden = true,
+			}			
+			dataTable["dataNewline"..(baseOrder + i)] = {
+				order = baseOrder + (i * 10) + 3,
+				type = "description",
+				name = "",
+				width = "full",
+				cmdHidden = true,
+			}
+
+			charLookupTable[(baseOrder + i)] = playerData
+
+			i = i + 1
+		end
+
+		baseOrder = baseOrder + 100
+	end
+
+	return dataTable
+end
+
 function Garrison:SetupOptions()
 	garrisonDb = self.DB
 	configDb = garrisonDb.profile
@@ -1016,6 +1110,9 @@ function Garrison:SetupOptions()
 
 	options.args.tooltip.args.building.args = GetSortOptionTable(7, Garrison.TYPE_BUILDING, 400, options.args.tooltip.args.building.args)
 	options.args.tooltip.args.mission.args = GetSortOptionTable(7, Garrison.TYPE_MISSION, 400, options.args.tooltip.args.mission.args)
+
+
+	options.args.dataGroup.args = getDataOptionTable(options.args.dataGroup.args)
 
 	--local sortedOptions = Garrison.sort(options.args, "order,a")
 	--for k, v in sortedOptions do

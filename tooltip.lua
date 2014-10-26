@@ -29,13 +29,13 @@ function iconCellPrototype:SetupCell(tooltip, value, justification, font, l_pad,
       self.icon:SetToFileData(texture)
    else
       self.icon:SetTexture(texture)
-   end
-
-   --Garrison.debugPrint(("%s, %s: %s"):format(self._line, self._column, self:GetWidth()))
+   end   
 
    self.icon:SetWidth(size)
    self.icon:SetHeight(size)
    self.icon:Show()
+
+   Garrison.debugPrint(("%s, %s: %s (%s)"):format(self._line, self._column, self.icon:GetHeight(), texture))
 
    return size, size
 end
