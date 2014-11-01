@@ -35,7 +35,7 @@ function iconCellPrototype:SetupCell(tooltip, value, justification, font, l_pad,
    self.icon:SetHeight(size)
    self.icon:Show()
 
-   Garrison.debugPrint(("%s, %s: %s (%s)"):format(self._line, self._column, self.icon:GetHeight(), texture))
+   --Garrison.debugPrint(("%s, %s: %s (%s)"):format(self._line, self._column, self.icon:GetHeight(), texture))
 
    return size, size
 end

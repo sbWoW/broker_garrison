@@ -990,6 +990,18 @@ function Garrison:GetDataOptionNotification(info, ...)
 	return retVal
 end
 
+function Garrison:SetDataOptionTooltip(info, value)
+	local key = strsub(info[#info], lenPrefixDataOptionTooltip + 1)
+	
+	charLookupTable[tonumber(key)].tooltipEnabled = value
+end
+
+function Garrison:SetDataOptionNotification(info, value)
+	local key = strsub(info[#info], lenPrefixDataOptionNotification + 1)
+	
+	charLookupTable[tonumber(key)].notificationEnabled = value
+end
+
 local function GetSortOptionTable(numOptions, paramType, baseOrder, sortTable)
 
 	local i 	
@@ -1054,7 +1066,7 @@ local function getDataOptionTable(dataTable)
 				type = "toggle",
 				name = L["Tooltip"],
 				get = "GetDataOptionTooltip",
-				--set = "SetSortOptionAscending",
+				set = "SetDataOptionTooltip",
 				cmdHidden = true,
 			}
 			dataTable[prefixdataOptionNotification..(baseOrder + i)] = {
@@ -1062,8 +1074,7 @@ local function getDataOptionTable(dataTable)
 				type = "toggle",
 				name = L["Notification"],
 				get = "GetDataOptionNotification",
-				--get = "GetSortOptionAscending",
-				--set = "SetSortOptionAscending",
+				set = "SetDataOptionNotification",
 				cmdHidden = true,
 			}			
 			dataTable["dataNewline"..(baseOrder + i)] = {
