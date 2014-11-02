@@ -31,6 +31,8 @@ local lenPrefixDataOptionNotification = _G.strlen(prefixdataOptionNotification)
 
 local charLookupTable = {}
 
+local garrisonOptions
+
 
 function Garrison:returnchars()
 	local a = {}
@@ -137,7 +139,7 @@ function Garrison:deletechar(realm_and_character)
 		globalDb.data[realmName] = nil
 	end
 
-	debugPrint(("%s deleted."):format(realm_and_character))
+	debugPrint(("%s deleted."):format(realm_and_character))	
 end
 
 
@@ -299,16 +301,6 @@ function Garrison:GetOptions()
 				name = "Data",
 				cmdHidden = true,
 				args = {
-					deletechar = {
-						name = L["Delete char"],
-						desc = L["Delete the selected char"],
-						order = 10,
-						type = "select",
-						values = Garrison:returnchars(),
-						set = function(info, val) local t=Garrison:returnchars(); Garrison:deletechar(t[val]) end,
-						get = function(info) return nil end,
-						width = "double",
-					},
 				},
 			},
 			notificationGroup = {
@@ -1036,12 +1028,29 @@ local function GetSortOptionTable(numOptions, paramType, baseOrder, sortTable)
 	return sortTable
 end
 
-local function getDataOptionTable(dataTable)
+function Garrison.getDataOptionTable()
 
 	local baseOrder = 100
 	local i = 0
 
 	charLookupTable = {}
+
+	local dataTable = {}
+
+	dataTable.deletechar = {
+			name = L["Delete char"],
+			desc = L["Delete the selected char"],
+			order = 10,
+			type = "select",
+			values = Garrison:returnchars(),
+			set = function(info, val) 
+				local t=Garrison:returnchars(); 
+					Garrison:deletechar(t[val]) 
+					garrisonOptions.args.dataGroup.args = Garrison.getDataOptionTable()
+				end,
+				get = function(info) return nil end,
+				width = "double",
+	}
 
 	--globalDb
 	for realmName,realmData in Garrison.pairsByKeys(globalDb.data) do
@@ -1072,7 +1081,7 @@ local function getDataOptionTable(dataTable)
 			dataTable[prefixdataOptionNotification..(baseOrder + i)] = {
 				order = baseOrder + (i * 10) + 2,
 				type = "toggle",
-				name = L["Notification"],
+				name = L["Notifications"],
 				get = "GetDataOptionNotification",
 				set = "SetDataOptionNotification",
 				cmdHidden = true,
@@ -1102,6 +1111,7 @@ function Garrison:SetupOptions()
 	globalDb = garrisonDb.global
 
 	local options = Garrison:GetOptions()
+	garrisonOptions = options
 
 	AceConfigRegistry:RegisterOptionsTable(ADDON_NAME, options)	
 	Garrison.optionsFrame = AceConfigDialog:AddToBlizOptions(ADDON_NAME, Garrison.cleanName)
@@ -1120,10 +1130,9 @@ function Garrison:SetupOptions()
 
 
 	options.args.tooltip.args.building.args = GetSortOptionTable(7, Garrison.TYPE_BUILDING, 400, options.args.tooltip.args.building.args)
-	options.args.tooltip.args.mission.args = GetSortOptionTable(7, Garrison.TYPE_MISSION, 400, options.args.tooltip.args.mission.args)
+	options.args.tooltip.args.mission.args = GetSortOptionTable(7, Garrison.TYPE_MISSION, 400, options.args.tooltip.args.mission.args)	
 
-
-	options.args.dataGroup.args = getDataOptionTable(options.args.dataGroup.args)
+	options.args.dataGroup.args = Garrison.getDataOptionTable()
 
 	--local sortedOptions = Garrison.sort(options.args, "order,a")
 	--for k, v in sortedOptions do
