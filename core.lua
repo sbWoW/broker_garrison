@@ -879,16 +879,35 @@ do
 						--row = tooltip:AddLine(" ")
 
 						if not (playerData.buildingsExpanded) then
-							tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)), nil, "LEFT", 2)						
+							tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)), nil, "LEFT", 1)	
+
+							local formattedShipment = ""
+
+							if (buildingCount.building.complete > 0 or buildingCount.building.building > 0) then
+								local isBuildingIcon = ""
+								local displayCount = 0
+								if buildingCount.building.complete > 0 then
+									isBuildingIcon = Garrison.ICON_ARROW_UP
+									displayCount = "("..buildingCount.building.complete..")"
+								else
+									isBuildingIcon = Garrison.ICON_ARROW_UP_WAITING
+									displayCount = "("..buildingCount.building.building..")"
+								end
+
+								--formattedShipment = formattedShipment..isBuildingIcon
+								tooltip:SetCell(row, 3, ("%s %s"):format(isBuildingIcon, getColoredString(displayCount, colors.lightGray)), nil, "LEFT", 1)
+							end
 
 							if (buildingCount.shipment.inProgress > 0 or buildingCount.shipment.ready > 0) then
-								local formattedShipment = ("%s/%s"):format(
+								formattedShipment = formattedShipment..("%s/%s"):format(
 									buildingCount.shipment.inProgress,
 									getColoredString(buildingCount.shipment.ready, colors.green)
 
-								)
-								tooltip:SetCell(row, 4, formattedShipment, nil, "LEFT", 1)				
-							end
+								)							
+							end							
+
+							tooltip:SetCell(row, 4, formattedShipment, nil, "LEFT", 1)
+
 						elseif playerData.buildingsExpanded and buildingCount.building.total > 0 then
 							--row = tooltip:AddLine(" ")
 							--AddSeparator(tooltip)
@@ -948,9 +967,9 @@ do
 									if buildingData.isBuilding or buildingData.canActivate then
 
 										if buildingData.isBuilding then
-											isBuildingIcon = Garrison.ICON_ARROW_UP
+											isBuildingIcon = Garrison.ICON_ARROW_UP_WAITING
 										else
-											isBuildingIcon = Garrison.ICON_ARROW_UP_WAITING										
+											isBuildingIcon = Garrison.ICON_ARROW_UP
 										end
 
 										if buildingData.rank > 1 then

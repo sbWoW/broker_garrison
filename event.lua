@@ -331,7 +331,7 @@ function Garrison:BuildingUpdate(event, ...)
 
 	else
 		debugPrint(("BuildingUpdate (%s)"):format(_G.tostring(event)))
-		Garrison:FullUpdateBuilding()
+		Garrison:FullUpdateBuilding(Garrison.TYPE_BUILDING)
 	end
 end
 
