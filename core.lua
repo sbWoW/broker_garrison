@@ -67,12 +67,14 @@ local DB_DEFAULTS = {
 				ldbTemplate = "M1",
 				hideCharactersWithoutMissions = true,
 				ldbLabelText = L["Garrison: Missions"],
+				showOnlyCurrentRealm = false,
 			},
 			building = {
 				hideBuildingWithoutShipments = false,
 				hideHeader = false,
 				ldbTemplate = "B1",
 				ldbLabelText = L["Garrison: Buildings"],
+				showOnlyCurrentRealm = false,
 			},			
 			hideGarrisonMinimapButton = false,
 		},
@@ -804,7 +806,7 @@ do
 					end
 				end	
 
-				if playerCount > 0 then
+				if playerCount > 0 and not (configDb.general.mission.showOnlyCurrentRealm and realmName ~= charInfo.realmName) then
 
 					row = tooltip:AddHeader()
 					tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 3)
@@ -931,7 +933,7 @@ do
 					end
 				end
 
-				if playerCount > 0 then
+				if playerCount > 0 and not (configDb.general.building.showOnlyCurrentRealm and realmName ~= charInfo.realmName) then
 
 					if realmNum > 1 then
 						row = tooltip:AddLine(" ")									
@@ -1046,7 +1048,7 @@ do
 												end
 											end
 										end
-										
+
 
 										-- Display building and Workorder data								
 										row = AddEmptyLine(tooltip, colors.darkGray)

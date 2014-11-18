@@ -822,6 +822,17 @@ function Garrison:GetOptions()
 									Garrison:Update()
 								end,						
 							},	
+							showOnlyCurrentRealm = {
+								order = 60,
+								type = "toggle",
+								width = "full",
+								name = L["Show only current realm"],
+								desc = L["Show only current realm"],
+								get = function() return configDb.general.mission.showOnlyCurrentRealm end,
+								set = function(_,v) configDb.general.mission.showOnlyCurrentRealm = v
+									Garrison:Update()
+								end,						
+							},	
 							groupHeader = {
 								order = 100,
 								type = "header",
@@ -899,6 +910,17 @@ function Garrison:GetOptions()
 									Garrison:Update()
 								end,						
 							},	
+							showOnlyCurrentRealm = {
+								order = 60,
+								type = "toggle",
+								width = "full",
+								name = L["Show only current realm"],
+								desc = L["Show only current realm"],
+								get = function() return configDb.general.building.showOnlyCurrentRealm end,
+								set = function(_,v) configDb.general.building.showOnlyCurrentRealm = v
+									Garrison:Update()
+								end,						
+							},								
 							groupHeader = {
 								order = 100,
 								type = "header",
