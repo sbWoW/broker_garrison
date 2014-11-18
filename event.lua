@@ -73,7 +73,9 @@ function Garrison:GARRISON_MISSION_STARTED(event, missionID)
 					local missionModifier = Garrison.missionModifier[tmpAbility.id]
 					if missionModifier then
 						-- modified mission time
-						mission.durationOriginal = mission.duration 
+						if not mission.durationOriginal then
+							mission.durationOriginal = mission.duration 
+						end
 						mission.duration = math.floor((mission.duration * Garrison.missionModifier[tmpAbility.id] + 0.5))
 						debugPrint(("Mission modifier detected (%s): %s - duration: %s (old: %s)"):format(tmpAbility.name, tostring(missionModifier), tostring(mission.duration), tostring(mission.durationOriginal)))
 					end
