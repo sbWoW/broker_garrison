@@ -80,6 +80,7 @@ L["Building complete (%s): %s"] = true
 L["Character next mission"] = true
 L["Realm next mission"] = true
 L["LDB Text"] = true
+L["Label Text"] = true
 L["Hide Garrison Minimap-Button"] = true
 L["Ready: %sr% Next: %snt|-%"] = true
 L["Time until next mission"] = true
@@ -134,3 +135,6 @@ L["Apexis Crystals"] = true
 L["Apexis Crystals (Total)"] = true
 L["Icon: Apexis Crystal"] = true
 L["Hide column header"] = true
+
+L["Hide characters without missions"] = true
+L["Don't display characters without missions"] = true
