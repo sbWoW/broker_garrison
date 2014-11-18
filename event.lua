@@ -50,7 +50,7 @@ end
 function Garrison:GARRISON_MISSION_FINISHED(event, missionID)
 	if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then
 		debugPrint("Finished Mission: "..missionID)
-		if globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start == -1 then
+		if globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start ~= -1 then
 			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID].start = 0
 		end
 	else

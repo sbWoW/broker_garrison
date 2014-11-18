@@ -1161,7 +1161,7 @@ function Garrison:UpdateUnknownMissions(missionsLoaded)
 
 	for key,garrisonMission in pairs(C_Garrison.GetCompleteMissions()) do
 		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID]) then
-			if globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID].start == -1 then
+			if globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID].start ~= 0 then
 				debugPrint("Finished Mission (Loop): "..garrisonMission.missionID)
 				globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID].start = 0
 			end
