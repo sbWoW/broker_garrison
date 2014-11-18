@@ -28,7 +28,9 @@ Garrison.instanceId = {
 
 Garrison.missionModifier = {
 	[221] = 0.5,
-	
+	[222] = 0.75,
+	[95] = 0.75,
+	[96] = 0.5,
 }
 	
 
