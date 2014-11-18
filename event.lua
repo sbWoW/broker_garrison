@@ -38,9 +38,49 @@ function Garrison:GARRISON_MISSION_STARTED(event, missionID)
 				type = garrisonMission.type,
 				typeAtlas = garrisonMission.typeAtlas,
 				level = garrisonMission.level,
+				followers = {},
 			}
-			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
+			
 			debugPrint("Added Mission: "..missionID)
+
+			-- get followers
+			--local followers = {}
+   
+			for i = 1, #garrisonMission.followers do
+				local followerId = garrisonMission.followers[i]
+	      
+				local tmpAbilites = C_Garrison.GetFollowerAbilities(followerId)
+				local tmpFollower = C_Garrison.GetFollowerInfo(followerId)
+	      
+				local name, portraitIconID, classIcon = tmpFollower.name, tmpFollower.portraitIconID, tmpFollower.classAtlas
+	      
+				mission.followers[i] = {
+					id = followerId,
+					name = tmpFollower.name,
+					iconId = tmpFollower.portraitIconID,
+					classIcon = tmpFollower.classAtlas,
+					abilities = {},
+				}
+	      
+				for abilityNum,tmpAbility in pairs(tmpAbilites) do
+					local abilityId, abilityName, abilityIcon = tmpAbility.id, tmpAbility.name, tmpAbility.icon
+					mission.followers[i].abilities[abilityNum] = {
+						id = tmpAbility.id,
+						name = tmpAbility.name,
+						icon = tmpAbility.icon,
+					}
+
+					local missionModifier = Garrison.missionModifier[tmpAbility.id]
+					if missionModifier then
+						-- modified mission time
+						mission.durationOriginal = mission.duration 
+						mission.duration = math.floor((mission.duration * Garrison.missionModifier[tmpAbility.id] + 0.5))
+						debugPrint(("Mission modifier detected (%s): %s - duration: %s (old: %s)"):format(tmpAbility.name, tostring(missionModifier), tostring(mission.duration), tostring(mission.durationOriginal)))
+					end
+				end
+			end
+
+			globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
 		end
 	end
 

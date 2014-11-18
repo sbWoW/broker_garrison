@@ -25,6 +25,11 @@ Garrison.instanceId = {
 	[1158] = "AL1",
 	[1159] = "AL3",
 }
+
+Garrison.missionModifier = {
+	[221] = 0.5,
+	
+}
 	
 
 Garrison.STATE_BUILDING_ACTIVE = 0

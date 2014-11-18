@@ -617,6 +617,8 @@ function Garrison:UpdateConfig()
 	end
 end
 
+local updater
+
 local DrawTooltip
 do
 	local NUM_TOOLTIP_COLUMNS = 5
@@ -625,6 +627,38 @@ do
 	local tooltipType
 	local tooltip
 	local locked = false
+	local tooltipTypeNew
+
+    local last_update = 0
+
+    updater = _G.CreateFrame("Frame", nil, _G.UIParent)
+
+	updater:SetScript("OnUpdate",
+        function(self, elapsed)
+            last_update = last_update + elapsed
+
+            if last_update < 0.1 then
+                return
+            end
+
+            --tooltipRegistry[TYPE_BUILDING].tooltip
+           
+            if tooltip and tooltipType then            	
+            	--debugPrint("onupdate tooltip: "..tooltipType)
+                if tooltip:IsMouseOver() or (LDB_anchor and LDB_anchor:IsMouseOver()) then                                   	
+                	--debugPrint("mouseover")
+                	self.elapsed = (self.elapsed or 0) + last_update
+
+                    if self.elapsed >= 1 then
+                    	--debugPrint("redraw")
+                    	self.elapsed = 0
+                    	DrawTooltip(LDB_anchor, tooltipType)
+                    end
+                end
+            end
+
+            last_update = 0
+        end)	
 
 	local function ExpandButton_OnMouseUp(tooltip_cell, param, button)
 		local realm_and_character, paramType = unpack(param)
@@ -639,8 +673,6 @@ do
 			globalDb.data[realm][character_name].buildingsExpanded = not globalDb.data[realm][character_name].buildingsExpanded
 		end
 
-
-
 		DrawTooltip(tooltipRegistry[paramType].anchor, paramType)
 	end
 
@@ -652,18 +684,29 @@ do
 	end
 
 	local function Tooltip_OnRelease_Mission(arg)
-
 		tooltipRegistry[TYPE_MISSION].tooltip = nil
 		tooltipRegistry[TYPE_MISSION].anchor = nil
-		LDB_anchor = nil
-		tooltipType = nil		
+
+		if tooltipType == TYPE_MISSION then
+			LDB_anchor = nil
+			tooltipType = nil
+		else
+			debugPrint("OnReleaseDraw: "..tooltipType)
+			DrawTooltip(LDB_anchor, tooltipType)
+		end
 	end
 
 	local function Tooltip_OnRelease_Building(arg)
 		tooltipRegistry[TYPE_BUILDING].tooltip = nil
 		tooltipRegistry[TYPE_BUILDING].anchor = nil
-		LDB_anchor = nil
-		tooltipType = nil		
+
+		if tooltipType == TYPE_BUILDING then
+			LDB_anchor = nil
+			tooltipType = nil		
+		else
+			debugPrint("OnReleaseDraw: "..tooltipType)
+			DrawTooltip(LDB_anchor, tooltipType)
+		end
 	end
 
 
@@ -686,6 +729,13 @@ do
 			return
 		end
 		LDB_anchor = anchor_frame		
+
+		if tooltipType ~= paramTooltipType then
+			-- mission <> building switch
+			debugPrint("Switched tooltip")
+			tooltipTypeNew = paramTooltipType
+		end
+
 		tooltipType = paramTooltipType
 		if not tooltipRegistry[tooltipType] then
 			tooltipRegistry[tooltipType] = {}
@@ -1117,15 +1167,11 @@ do
 	end
 
 	function ldb_object_building:OnLeave()
-		
+		--updater.elapsed = 0
 	end
 
 	function ldb_object_mission:OnEnter()
 		DrawTooltip(self, TYPE_MISSION)
-	end
-
-	function ldb_object_mission:OnLeave()
-
 	end
 
 	local function onclick(button)
