@@ -160,12 +160,29 @@ function Garrison:GetShipmentData(buildingID)
 	return tmpShipment
 end
 
+function Garrison:UpdatePlotSize()
+	local plots = C_Garrison.GetPlots()
+
+	if plots and #plots > 0 then
+		for plotID, buildingData in pairs(globalDb.data[charInfo.realmName][charInfo.playerName].buildings) do
+
+			for k,v in pairs(plots) do
+				if v.id == plotID then
+					buildingData.plotSize = v.size
+					debugPrint(("[%s] found size %s"):format(buildingData.name, tostring(v.size)))
+					break
+				end
+			end
+		end
+	end
+end
+
 function Garrison:GetBuildingData(plotID)
 	local id, name, texPrefix, icon, rank, isBuilding, timeStart, buildTime, canActivate, canUpgrade, isPrebuilt = C_Garrison.GetOwnedBuildingInfoAbbrev(plotID)
 
 	local hasFollowerSlot = _G.select(17, C_Garrison.GetOwnedBuildingInfo(plotID))	
 
-	local plots = C_Garrison.GetPlots()
+	--local plots = C_Garrison.GetPlots()
 
 	local tmpBuilding = {
 		plotID = plotID,
@@ -180,13 +197,6 @@ function Garrison:GetBuildingData(plotID)
 		buildTime = buildTime,
 		hasFollowerSlot = hasFollowerSlot,
 	}
-
-	for k,v in pairs(plots) do
-		if v.id == plotID then
-			tmpBuilding.plotSize = v.size
-			break
-		end
-	end
 
 	return tmpBuilding
 end
@@ -212,10 +222,7 @@ function Garrison:GetFollowerData(plotID)
 	end
 
 	return tmpFollower
-
 end
-
-
 
 function Garrison:UpdateShipment(buildingID, shipmentData)	
 	Garrison.shipmentUpdate.success = false
@@ -252,6 +259,10 @@ function Garrison:UpdateBuilding(plotID)
 	if buildingData then
 		tmpBuilding.notificationDismissed = buildingData.notificationDismissed
 		tmpBuilding.notification = buildingData.notification
+
+		if buildingData.plotSize then
+			tmpBuilding.plotSize = buildingData.plotSize
+		end
 
 		shipmentData = buildingData.shipment
 	end
@@ -301,7 +312,9 @@ function Garrison:FullUpdateBuilding(updateType)
 
 	if updateType == Garrison.TYPE_BUILDING then
 		globalDb.data[charInfo.realmName][charInfo.playerName].buildings = tmpBuildings
-	end
+
+		Garrison:UpdatePlotSize()
+	end	
 
 	return true
 end
@@ -375,6 +388,8 @@ function Garrison:BuildingUpdate(event, ...)
 		debugPrint(("BuildingUpdate (%s)"):format(_G.tostring(event)))
 		Garrison:FullUpdateBuilding(Garrison.TYPE_BUILDING)
 	end
+
+	Garrison:UpdatePlotSize()
 end
 
 

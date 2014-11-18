@@ -1016,7 +1016,7 @@ do
 
 								for plotID, buildingData in sortedBuildingTable do
 
-									--debugPrint(("%s: %s => %s"):format(buildingData.name, groupByValue or '-', tostring(isGrouped)))
+									
 
 
 									if not configDb.general.building.hideBuildingWithoutShipments or 
@@ -1047,7 +1047,13 @@ do
 													lastGroupValue = groupByValue
 												end
 											end
+
+											--debugPrint("groupBy: "..tostring(unpack(groupBy)))
+											--debugPrint(("%s: %s => %s"):format(buildingData.name, groupByValue or '-', tostring(isGrouped)))
 										end
+
+										
+
 
 
 										-- Display building and Workorder data								
