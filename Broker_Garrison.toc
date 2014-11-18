@@ -34,6 +34,7 @@ Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 Locales\enUS.lua
 Locales\deDE.lua
 Locales\zhTW.lua
+Locales\zhCN.lua
 
 core.lua
 helper.lua
