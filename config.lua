@@ -785,6 +785,23 @@ function Garrison:GetOptions()
 						name = L["Mission"],
 						cmdHidden = true,
 						args = {
+							miscHeader = {
+								order = 10,
+								type = "header",
+								name = L["Misc"],
+								cmdHidden = true,
+							},
+							hideCharactersWithoutMissions = {
+								order = 50,
+								type = "toggle",
+								width = "full",
+								name = L["Hide characters without missions"],
+								desc = L["Don't display characters without missions"],
+								get = function() return configDb.general.mission.hideCharactersWithoutMissions end,
+								set = function(_,v) configDb.general.mission.hideCharactersWithoutMissions = v
+									Garrison:Update()
+								end,						
+							},	
 							groupHeader = {
 								order = 100,
 								type = "header",
