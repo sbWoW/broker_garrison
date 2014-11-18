@@ -66,11 +66,13 @@ local DB_DEFAULTS = {
 			mission = {
 				ldbTemplate = "M1",
 				hideCharactersWithoutMissions = true,
+				ldbLabelText = L["Garrison: Missions"],
 			},
 			building = {
 				hideBuildingWithoutShipments = false,
 				hideHeader = false,
 				ldbTemplate = "B1",
+				ldbLabelText = L["Garrison: Buildings"],
 			},			
 			hideGarrisonMinimapButton = false,
 		},
@@ -824,7 +826,7 @@ do
 							tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
 							--tooltip:SetCell(row, 3, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)))
 							
-									
+								
 
 							tooltip:SetCell(row, 3, getColoredString((L["Total: %s | In Progress: %s | Complete: %s"]):format(missionCount.total, missionCount.inProgress, missionCount.complete), colors.lightGray), nil, "RIGHT", 1)
 
@@ -1306,7 +1308,11 @@ function Garrison:UpdateLDB()
 
 
 	ldb_object_mission.text = Garrison.replaceVariables(Garrison:GetLDBText(Garrison.TYPE_MISSION), data)
+	ldb_object_mission.label = configDb.general.mission.ldbLabelText
+
 	ldb_object_building.text = Garrison.replaceVariables(Garrison:GetLDBText(Garrison.TYPE_BUILDING), data)
+	ldb_object_building.label = configDb.general.building.ldbLabelText
+
 
 end
 
@@ -1388,6 +1394,7 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("ZONE_CHANGED", "ZoneUpdate")
 
 	self:RegisterEvent("ADDON_LOADED", "CheckAddonLoaded")
+	--self:RegisterEvent("VIGNETTE_REMOVED", "VignetteEvent")	
 
 	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
 	self:RawHook("GarrisonBuildingAlertFrame_ShowAlert", true)

@@ -186,6 +186,16 @@ function Garrison:GetOptions()
 								name = L["LDB Display"],
 								cmdHidden = true,
 							},
+							ldbLabelText = {
+								order = 110,
+								type = "input",
+								width = "full",
+								name = L["Custom LDB Text"],
+								desc = L["Custom LDB Text"],
+								get = function() return configDb.general.mission.ldbLabelText end,
+								set = function(_,v) configDb.general.mission.ldbLabelText = v
+								end,							
+							},
 							ldbTemplateSelect = {
 								order = 120,
 								type = "select",
@@ -245,6 +255,16 @@ function Garrison:GetOptions()
 								name = L["LDB Display"],
 								cmdHidden = true,
 							},	
+							ldbLabelText = {
+								order = 110,
+								type = "input",
+								width = "full",
+								name = L["Label Text"],
+								desc = L["Label Text"],
+								get = function() return configDb.general.building.ldbLabelText end,
+								set = function(_,v) configDb.general.building.ldbLabelText = v
+								end,							
+							},							
 							ldbTemplateSelect = {
 								order = 120,
 								type = "select",

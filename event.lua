@@ -375,6 +375,14 @@ function Garrison:BuildingUpdate(event, ...)
 	end
 end
 
+
+function Garrison:VignetteEvent(event, ...)
+	if event == "VIGNETTE_REMOVED" then
+		local arg = ...
+		debugPrint(("VignetteRemoved: %s"):format(arg))
+	end
+end
+
 function Garrison:ShipmentStatusUpdate(event, shipmentStarted)
 	if shipmentStarted then
 		debugPrint("ShipmentStatusUpdate")
