@@ -962,15 +962,22 @@ do
 									-- Display building and Workorder data								
 									row = AddEmptyLine(tooltip, colors.darkGray)
 
+									local timeLeftBuilding = 0
+									if buildingData.isBuilding then
+										timeLeftBuilding = buildingData.buildTime - (now - buildingData.timeStart)
+									end
 
 									local rank, isBuildingIcon
-									if buildingData.isBuilding or buildingData.canActivate then
+									if buildingData.isBuilding or buildingData.canActivate then									
 
-										if buildingData.isBuilding then
+										if (buildingData.isBuilding and timeLeftBuilding > 0) then
 											isBuildingIcon = Garrison.ICON_ARROW_UP_WAITING
 										else
 											isBuildingIcon = Garrison.ICON_ARROW_UP
 										end
+
+										--debugPrint(("[%s] isBuilding: %s, timeLeftBuilding: %s"):format(buildingData.name, _G.tostring(buildingData.isBuilding), _G.tostring(timeLeftBuilding)))
+										--print(isBuildingIcon)
 
 										if buildingData.rank > 1 then
 											rank = getColoredString("("..(buildingData.rank - 1)..") "..isBuildingIcon, colors.lightGray)
@@ -1004,11 +1011,6 @@ do
 										end
 
 										tooltip:SetCell(row, 1, "", nil, "LEFT", 1, Garrison.iconProvider, 0, 0, nil, nil, followerTexture, iconSize)
-									end
-
-									local timeLeftBuilding = 0
-									if buildingData.isBuilding then
-										timeLeftBuilding = buildingData.buildTime - (now - buildingData.timeStart)
 									end
 
 									if ((buildingData.isBuilding and timeLeftBuilding <= 0) or buildingData.canActivate) then
