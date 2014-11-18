@@ -1014,38 +1014,39 @@ do
 
 								for plotID, buildingData in sortedBuildingTable do
 
-									if groupBy and #groupBy > 0 then
-										local groupByValue = Garrison.getTableValue(buildingData, unpack(groupBy))
-										
-
-										if lastGroupValue == nil then
-											lastGroupValue = groupByValue
-										else
-											if lastGroupValue == groupByValue then
-												-- OK
-											else 
-												AddEmptyLine(tooltip, colors.darkGray)
-												AddSeparator(tooltip)
-												row = AddEmptyLine(tooltip, colors.darkGray)
-												
-												if not configDb.general.building.hideHeader then
-													row = AddEmptyLine(tooltip, colors.darkGray)
-													tooltip:SetCell(row, 4, getColoredString(L["SHIPMENT"], colors.lightGray), nil, "CENTER", 1)
-													tooltip:SetCell(row, 5, getColoredString(L["TIME"], colors.lightGray), nil, "CENTER", 1)
-													AddEmptyLine(tooltip, colors.darkGray)
-												end
-
-												lastGroupValue = groupByValue
-											end
-										end
-									end
-
 									--debugPrint(("%s: %s => %s"):format(buildingData.name, groupByValue or '-', tostring(isGrouped)))
 
 
 									if not configDb.general.building.hideBuildingWithoutShipments or 
 										(buildingData.isBuilding or buildingData.canActivate) or
 										(buildingData.shipment and buildingData.shipment.shipmentCapacity) then 							
+
+										if groupBy and #groupBy > 0 then
+											local groupByValue = Garrison.getTableValue(buildingData, unpack(groupBy))
+											
+
+											if lastGroupValue == nil then
+												lastGroupValue = groupByValue
+											else
+												if lastGroupValue == groupByValue then
+													-- OK
+												else 
+													AddEmptyLine(tooltip, colors.darkGray)
+													AddSeparator(tooltip)
+													row = AddEmptyLine(tooltip, colors.darkGray)
+													
+													if not configDb.general.building.hideHeader then
+														row = AddEmptyLine(tooltip, colors.darkGray)
+														tooltip:SetCell(row, 4, getColoredString(L["SHIPMENT"], colors.lightGray), nil, "CENTER", 1)
+														tooltip:SetCell(row, 5, getColoredString(L["TIME"], colors.lightGray), nil, "CENTER", 1)
+														AddEmptyLine(tooltip, colors.darkGray)
+													end
+
+													lastGroupValue = groupByValue
+												end
+											end
+										end
+										
 
 										-- Display building and Workorder data								
 										row = AddEmptyLine(tooltip, colors.darkGray)
