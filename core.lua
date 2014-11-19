@@ -1018,9 +1018,6 @@ do
 
 								for plotID, buildingData in sortedBuildingTable do
 
-									
-
-
 									if not configDb.general.building.hideBuildingWithoutShipments or 
 										(buildingData.isBuilding or buildingData.canActivate) or
 										(buildingData.shipment and buildingData.shipment.shipmentCapacity) then 							
@@ -1418,19 +1415,19 @@ function Garrison:OnInitialize()
 	ldb_object_mission.icon = Garrison.ICON_PATH_MISSION
 	ldb_object_building.icon = Garrison.ICON_PATH_BUILDING
 
+	-- collapse other characters (if option is enabled)
 	for realmName, realmData in pairs(globalDb.data) do
 		for playerName, playerData in pairs(realmData) do
-			if not Garrison.isCurrentChar(playerData.info) then
-				if configDb.general.building.collapseOtherCharsOnLogin then
-					playerData.buildingsExpanded = false
-				end
-				if configDb.general.mission.collapseOtherCharsOnLogin then
-					playerData.missionsExpanded = false
-				end
+			local isCurrentChar = Garrison.isCurrentChar(playerData.info)
+			if configDb.general.building.collapseOtherCharsOnLogin then
+				playerData.buildingsExpanded = isCurrentChar
+			end
+			if configDb.general.mission.collapseOtherCharsOnLogin then
+				playerData.missionsExpanded = isCurrentChar
 			end
 		end
 	end	
-	
+
 end
 
 function Garrison:DelayedUpdate()
