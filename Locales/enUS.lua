@@ -140,3 +140,5 @@ L["Hide characters without missions"] = true
 L["Don't display characters without missions"] = true
 
 L["Show only current realm"] = true
+
+L["Collapse all other characters on login"] = true
