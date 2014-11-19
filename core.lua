@@ -68,6 +68,7 @@ local DB_DEFAULTS = {
 				hideCharactersWithoutMissions = true,
 				ldbLabelText = L["Garrison: Missions"],
 				showOnlyCurrentRealm = false,
+				collapseOtherCharsOnLogin = false,
 			},
 			building = {
 				hideBuildingWithoutShipments = false,
@@ -75,6 +76,7 @@ local DB_DEFAULTS = {
 				ldbTemplate = "B1",
 				ldbLabelText = L["Garrison: Buildings"],
 				showOnlyCurrentRealm = false,
+				collapseOtherCharsOnLogin = false,
 			},			
 			hideGarrisonMinimapButton = false,
 		},
@@ -1322,7 +1324,6 @@ function Garrison:UpdateLDB()
 	ldb_object_building.text = Garrison.replaceVariables(Garrison:GetLDBText(Garrison.TYPE_BUILDING), data)
 	ldb_object_building.label = configDb.general.building.ldbLabelText
 
-
 end
 
 
@@ -1416,8 +1417,21 @@ function Garrison:OnInitialize()
 
 	ldb_object_mission.icon = Garrison.ICON_PATH_MISSION
 	ldb_object_building.icon = Garrison.ICON_PATH_BUILDING
-end
 
+	for realmName, realmData in pairs(globalDb.data) do
+		for playerName, playerData in pairs(realmData) do
+			if not Garrison.isCurrentChar(playerData.info) then
+				if configDb.general.building.collapseOtherCharsOnLogin then
+					playerData.buildingsExpanded = false
+				end
+				if configDb.general.mission.collapseOtherCharsOnLogin then
+					playerData.missionsExpanded = false
+				end
+			end
+		end
+	end	
+	
+end
 
 function Garrison:DelayedUpdate()
 	Garrison:LoadDependencies()

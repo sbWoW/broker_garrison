@@ -832,7 +832,18 @@ function Garrison:GetOptions()
 								set = function(_,v) configDb.general.mission.showOnlyCurrentRealm = v
 									Garrison:Update()
 								end,						
-							},	
+							},
+							collapseOtherCharsOnLogin = {
+								order = 70,
+								type = "toggle",
+								width = "full",
+								name = L["Collapse all other characters on login"],
+								desc = L["Collapse all other characters on login"],
+								get = function() return configDb.general.mission.collapseOtherCharsOnLogin end,
+								set = function(_,v) configDb.general.mission.collapseOtherCharsOnLogin = v
+									Garrison:Update()
+								end,						
+							},							
 							groupHeader = {
 								order = 100,
 								type = "header",
@@ -918,6 +929,17 @@ function Garrison:GetOptions()
 								desc = L["Show only current realm"],
 								get = function() return configDb.general.building.showOnlyCurrentRealm end,
 								set = function(_,v) configDb.general.building.showOnlyCurrentRealm = v
+									Garrison:Update()
+								end,
+							},
+							collapseOtherCharsOnLogin = {
+								order = 70,
+								type = "toggle",
+								width = "full",
+								name = L["Collapse all other characters on login"],
+								desc = L["Collapse all other characters on login"],
+								get = function() return configDb.general.building.collapseOtherCharsOnLogin end,
+								set = function(_,v) configDb.general.building.collapseOtherCharsOnLogin = v
 									Garrison:Update()
 								end,						
 							},								
