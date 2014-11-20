@@ -693,10 +693,10 @@ do
 		tooltipRegistry[TYPE_MISSION].tooltip = nil
 		tooltipRegistry[TYPE_MISSION].anchor = nil
 
-		if tooltipType == TYPE_MISSION then
+		if tooltipType and tooltipType == TYPE_MISSION then
 			LDB_anchor = nil
 			tooltipType = nil
-		else
+		elseif tooltipType and tooltipType == TYPE_BUILDING then
 			debugPrint("OnReleaseDraw: "..tooltipType)
 			DrawTooltip(LDB_anchor, tooltipType)
 		end
@@ -706,10 +706,10 @@ do
 		tooltipRegistry[TYPE_BUILDING].tooltip = nil
 		tooltipRegistry[TYPE_BUILDING].anchor = nil
 
-		if tooltipType == TYPE_BUILDING then
+		if tooltipType and tooltipType == TYPE_BUILDING then
 			LDB_anchor = nil
 			tooltipType = nil		
-		else
+		elseif tooltipType and tooltipType == TYPE_MISSION then
 			debugPrint("OnReleaseDraw: "..tooltipType)
 			DrawTooltip(LDB_anchor, tooltipType)
 		end
