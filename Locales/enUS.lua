@@ -146,3 +146,5 @@ L["Collapse all other characters on login"] = true
 L["Compact Tooltip"] = true
 L["Don't show empty newlines in tooltip"] = true
 L["Show followers for each mission"] = true
+
+L["Compact Toast"] = true

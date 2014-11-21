@@ -399,6 +399,17 @@ function Garrison:GetOptions()
 														or not configDb.notification.mission.repeatOnLoad
 														 end,
 							},
+							compactToast = {
+								order = 340,
+								type = "toggle",
+								width = "full",
+								name = L["Compact Toast"],
+								desc = L["Compact Toast"],
+								get = function() return configDb.notification.mission.compactToast end,
+								set = function(_,v)
+									configDb.notification.mission.compactToast = v
+								end,
+							},							
 							miscHeader = {
 								order = 400,
 								type = "header",
@@ -526,6 +537,17 @@ function Garrison:GetOptions()
 														or not configDb.notification.building.repeatOnLoad
 														 end,
 							},
+							compactToast = {
+								order = 340,
+								type = "toggle",
+								width = "full",
+								name = L["Compact Toast"],
+								desc = L["Compact Toast"],
+								get = function() return configDb.notification.building.compactToast end,
+								set = function(_,v)
+									configDb.notification.building.compactToast = v
+								end,
+							},							
 							miscHeader = {
 								order = 400,
 								type = "header",
@@ -653,6 +675,17 @@ function Garrison:GetOptions()
 														or not configDb.notification.shipment.toastEnabled
 														or not configDb.notification.shipment.repeatOnLoad
 														 end,
+							},
+							compactToast = {
+								order = 340,
+								type = "toggle",
+								width = "full",
+								name = L["Compact Toast"],
+								desc = L["Compact Toast"],
+								get = function() return configDb.notification.shipment.compactToast end,
+								set = function(_,v)
+									configDb.notification.shipment.compactToast = v
+								end,
 							},
 							miscHeader = {
 								order = 400,

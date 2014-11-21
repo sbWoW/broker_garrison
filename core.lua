@@ -154,6 +154,7 @@ local DB_DEFAULTS = {
 				toastPersistent = false,
 				hideBlizzardNotification = true,
 				hideMinimapPulse = false,
+				compactToast = false,
 			}
 		},
 		display = {
@@ -328,7 +329,12 @@ function Garrison:SendNotification(paramCharInfo, data, notificationType)
 
 				local notificationText, toastName, toastText, soundName, toastEnabled, playSound
 
-				toastText = ("%s\n%s"):format(formatRealmPlayer(paramCharInfo, true), data.name)
+				if configDb.notification[notificationType].compactToast then
+					toastText = ("%s\n%s"):format(formatRealmPlayer(paramCharInfo, true), data.name)
+				else
+					toastText = ("%s\n\n%s"):format(formatRealmPlayer(paramCharInfo, true), data.name)
+				end
+
 				toastEnabled = configDb.notification[notificationType].toastEnabled
 				playSound = configDb.notification[notificationType].PlaySound
 				soundName = configDb.notification[notificationType].SoundName or "None"
