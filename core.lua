@@ -837,8 +837,7 @@ do
 							--tooltip:SetCell(row, 3, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)))
 							
 								
-
-							tooltip:SetCell(row, 3, getColoredString((L["Total: %s | In Progress: %s | Complete: %s"]):format(missionCount.total, missionCount.inProgress, missionCount.complete), colors.lightGray), nil, "RIGHT", 1)
+							tooltip:SetCell(row, 3, getColoredString((L["Total: %s | In Progress: %s | Complete: %s"]):format(missionCount.total, missionCount.inProgress, missionCount.complete), colors.lightGray), nil, "RIGHT", 2)
 
 						--	tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(missionCount.total), colors.lightGray))
 							--tooltip:SetCell(row, 5, getColoredString((L["In Progress: %s"]):format(missionCount.inProgress), colors.lightGray))
@@ -887,23 +886,23 @@ do
 									if configDb.display.showIcon then
 										tooltip:SetCell(row, 1, getIconString(missionData.typeAtlas, configDb.display.iconSize, true), nil, "LEFT", 1)
 									end
-									tooltip:SetCell(row, 2, missionData.name, nil, "LEFT", 1)
+									tooltip:SetCell(row, 2, missionData.name, nil, "LEFT", 2)
 
 									if (missionData.start == -1) then
 										local formattedTime = ("~%s %s"):format(
 											missionData.timeLeft,
 											getColoredString("("..formattedSeconds(missionData.duration)..")", colors.lightGray)
 										)
-										tooltip:SetCell(row, 3, formattedTime, nil, "RIGHT", 1)
+										tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 1)
 									elseif (missionData.start == 0 or timeLeft < 0) then
-										tooltip:SetCell(row, 3, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 1)
+										tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 1)
 									else
 										local formattedTime = ("%s %s"):format(
 											formattedSeconds(timeLeft),
 											getColoredString("("..formattedSeconds(missionData.duration)..")", colors.lightGray)
 										)
 
-										tooltip:SetCell(row, 3, formattedTime, nil, "RIGHT", 1)
+										tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 1)
 									end
 
 								end
