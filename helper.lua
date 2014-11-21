@@ -16,6 +16,8 @@ local GetAtlasInfo = _G.GetAtlasInfo
 local garrisonDb, globalDb, configDb
 local charInfo = Garrison.charInfo
 
+local dummyTextureFrame
+
 function Garrison.tableSize(T)
 	local count = 0
 	if T then
@@ -141,6 +143,23 @@ do
 		end
 		return sortByValue(t, cmp)
 	end
+end
+
+function Garrison.GetTextureForID(id, size)
+	if Garrison.iconCache[id] == nil then
+		dummyTextureFrame = _G.CreateFrame("Frame", nil, _G.UIParent)
+
+		local icon = dummyTextureFrame:CreateTexture()
+		icon:SetToFileData(id)
+
+		local texture = icon:GetTexture()
+
+		Garrison.iconCache[id] = Garrison.getIconString(texture, size, false)			
+
+		--debugPrint(id.." => "..texture.." => "..Garrison.iconCache[id])
+	end
+
+	return Garrison.iconCache[id]
 end
 
 function Garrison.GetIconPath(name) 

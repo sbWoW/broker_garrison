@@ -70,6 +70,7 @@ local DB_DEFAULTS = {
 				showOnlyCurrentRealm = false,
 				collapseOtherCharsOnLogin = false,
 				compactTooltip = false,
+				showFollowers = false,
 			},
 			building = {
 				hideBuildingWithoutShipments = false,
@@ -150,7 +151,7 @@ local DB_DEFAULTS = {
 				enabled = true,
 				repeatOnLoad = false,
 				toastEnabled = true,
-				toastPersistent = true,
+				toastPersistent = false,
 				hideBlizzardNotification = true,
 				hideMinimapPulse = false,
 			}
@@ -683,10 +684,10 @@ do
 	end
 
 	local function ExpandButton_OnMouseDown(tooltip_cell, param, button)
-		local is_expanded, paramType = unpack(param)
+		--local is_expanded, paramType = unpack(param)
 
-		local line, column = tooltip_cell:GetPosition()
-		tooltip:SetCell(line, column, is_expanded and Garrison.ICON_CLOSE_DOWN or Garrison.ICON_OPEN_DOWN)
+		--local line, column = tooltip_cell:GetPosition()
+		--tooltip:SetCell(line, column, is_expanded and Garrison.ICON_CLOSE_DOWN or Garrison.ICON_OPEN_DOWN)
 	end
 
 	local function Tooltip_OnRelease_Mission(arg)
@@ -772,6 +773,7 @@ do
 			tooltip:SmartAnchorTo(anchor_frame)
 			tooltip:SetAutoHideDelay(configDb.display.autoHideDelay or 0.25, LDB_anchor)
 			tooltip:SetScale(configDb.display.scale or 1)
+			tooltip:SetHighlightTexture(nil)
 			local font = LSM:Fetch("font", configDb.display.fontName or DEFAULT_FONT)
 			local fontSize = configDb.display.fontSize or 12
 			local headerFontSize = fontSize + 2
@@ -837,14 +839,16 @@ do
 							--tooltip:SetCell(row, 3, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)))
 							
 								
-							tooltip:SetCell(row, 3, getColoredString((L["Total: %s | In Progress: %s | Complete: %s"]):format(missionCount.total, missionCount.inProgress, missionCount.complete), colors.lightGray), nil, "RIGHT", 2)
+							tooltip:SetCell(row, 3, getColoredString((L["In Progress: %s | Complete: %s | Total: %s"]):format(missionCount.inProgress, missionCount.complete, missionCount.total), colors.lightGray), nil, "RIGHT", 2)
 
 						--	tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(missionCount.total), colors.lightGray))
 							--tooltip:SetCell(row, 5, getColoredString((L["In Progress: %s"]):format(missionCount.inProgress), colors.lightGray))
 							--tooltip:SetCell(row, 6, getColoredString((L["Complete: %s"]):format(missionCount.complete), colors.lightGray))
 
 							tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_MISSION})
-							tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.missionsExpanded, Garrison.TYPE_MISSION})
+							--tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.missionsExpanded, Garrison.TYPE_MISSION})
+							tooltip:SetCellScript(row, 2, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_MISSION})
+							--tooltip:SetCellScript(row, 2, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.missionsExpanded, Garrison.TYPE_MISSION})
 
 							AddEmptyRow(tooltip)
 							AddSeparator(tooltip)
@@ -905,6 +909,17 @@ do
 										tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 1)
 									end
 
+									if configDb.general.mission.showFollowers and missionData.followers and #missionData.followers > 0 then
+										row = AddRow(tooltip, colors.darkGray)
+										local followerString = ""
+										for followerNum = 1, #missionData.followers do
+											local followerData = missionData.followers[followerNum]
+
+											followerString = followerString..("%s %s  "):format(Garrison.GetTextureForID(followerData.iconId, configDb.display.iconSize), followerData.name)
+										end
+
+										tooltip:SetCell(row, 2, getColoredString(followerString, colors.lightGray), nil, "LEFT", 3)
+									end
 								end
 
 								AddEmptyRow(tooltip, colors.darkGray)
@@ -967,13 +982,17 @@ do
 							tooltip:SetCell(row, 5, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), nil, "RIGHT", 1)
 
 							tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_BUILDING})
-							tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.buildingsExpanded, Garrison.TYPE_BUILDING})
+							--tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.buildingsExpanded, Garrison.TYPE_BUILDING})
+							tooltip:SetCellScript(row, 2, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_BUILDING})
+							--tooltip:SetCellScript(row, 2, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.buildingsExpanded, Garrison.TYPE_BUILDING})							
 
 							AddEmptyRow(tooltip)
 							AddSeparator(tooltip)
 
 							if not (playerData.buildingsExpanded) then
-								tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)), nil, "LEFT", 1)	
+								
+
+								local playerBuildingUpgrade = ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass))
 
 								local formattedShipment = ""
 
@@ -989,7 +1008,8 @@ do
 									end
 
 									--formattedShipment = formattedShipment..isBuildingIcon
-									tooltip:SetCell(row, 3, ("%s %s"):format(isBuildingIcon, getColoredString(displayCount, colors.lightGray)), nil, "LEFT", 1)
+									--tooltip:SetCell(row, 3, ("%s %s"):format(isBuildingIcon, getColoredString(displayCount, colors.lightGray)), nil, "LEFT", 1)
+									playerBuildingUpgrade = playerBuildingUpgrade..("%s %s"):format(isBuildingIcon, getColoredString(displayCount, colors.lightGray))
 								end
 
 								if (buildingCount.shipment.inProgress > 0 or buildingCount.shipment.ready > 0) then
@@ -998,8 +1018,9 @@ do
 										getColoredString(buildingCount.shipment.ready, colors.green)
 
 									)							
-								end							
+								end	
 
+								tooltip:SetCell(row, 2, playerBuildingUpgrade, nil, "LEFT", 2)
 								tooltip:SetCell(row, 4, formattedShipment, nil, "LEFT", 1)
 
 							elseif playerData.buildingsExpanded and buildingCount.building.total > 0 then

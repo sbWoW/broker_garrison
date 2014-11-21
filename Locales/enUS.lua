@@ -43,7 +43,7 @@ L["In Progress: %s"] = true
 L["Font"] = true
 L["Auto-Hide delay"] = true
 L["Total: %s"] = true
-L["Total: %s | In Progress: %s | Complete: %s"] = true
+L["In Progress: %s | Complete: %s | Total: %s"] = true
 L["Tooltip Scale"] = true
 L["Complete: %s"] = true
 L["Display"] = true
@@ -145,3 +145,4 @@ L["Collapse all other characters on login"] = true
 
 L["Compact Tooltip"] = true
 L["Don't show empty newlines in tooltip"] = true
+L["Show followers for each mission"] = true

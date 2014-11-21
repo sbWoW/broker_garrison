@@ -693,7 +693,7 @@ function Garrison:GetOptions()
 								set = function(_,v)
 									configDb.notification.shipment.playSound = v
 								end,
-								disabled = function() return not configDb.notification.shipment.enabled end,								
+								disabled = function() return not configDb.notification.shipment.enabled end,
 							},
 							playSoundOnMissionCompleteName = {
 								order = 440,
@@ -856,6 +856,17 @@ function Garrison:GetOptions()
 									configDb.general.mission.compactTooltip = v
 								end,
 							},
+							showFollowers = {
+								order = 90,
+								type = "toggle",
+								width = "full",
+								name = L["Show followers for each mission"],
+								desc = L["Show followers for each mission"],
+								get = function() return configDb.general.mission.showFollowers end,
+								set = function(_,v)
+									configDb.general.mission.showFollowers = v
+								end,								
+							},							
 							groupHeader = {
 								order = 100,
 								type = "header",
