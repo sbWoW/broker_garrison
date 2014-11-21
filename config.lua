@@ -784,13 +784,14 @@ function Garrison:GetOptions()
 					showIcon = {
 						order = 150,
 						type = "toggle",
+						width = "full",
 						name = L["Show Icons"],
 						desc = L["Show Icons"],
 						get = function() return configDb.display.showIcon end,
 						set = function(_,v)
 							configDb.display.showIcon = v
 						end,
-					},					
+					},
 				},
 			},
 			tooltip = {
@@ -843,7 +844,18 @@ function Garrison:GetOptions()
 								set = function(_,v) configDb.general.mission.collapseOtherCharsOnLogin = v
 									Garrison:Update()
 								end,						
-							},							
+							},
+							compactTooltip = {
+								order = 80,
+								type = "toggle",
+								width = "full",
+								name = L["Compact Tooltip"],
+								desc = L["Don't show empty newlines in tooltip"],
+								get = function() return configDb.general.mission.compactTooltip end,
+								set = function(_,v)
+									configDb.general.mission.compactTooltip = v
+								end,
+							},
 							groupHeader = {
 								order = 100,
 								type = "header",
@@ -941,8 +953,19 @@ function Garrison:GetOptions()
 								get = function() return configDb.general.building.collapseOtherCharsOnLogin end,
 								set = function(_,v) configDb.general.building.collapseOtherCharsOnLogin = v
 									Garrison:Update()
-								end,						
-							},								
+								end,
+							},
+							compactTooltip = {
+								order = 80,
+								type = "toggle",
+								width = "full",
+								name = L["Compact Tooltip"],
+								desc = L["Don't show empty newlines in tooltip"],
+								get = function() return configDb.general.building.compactTooltip end,
+								set = function(_,v)
+									configDb.general.building.compactTooltip = v
+								end,
+							},							
 							groupHeader = {
 								order = 100,
 								type = "header",

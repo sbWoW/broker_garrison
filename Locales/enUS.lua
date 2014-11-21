@@ -27,7 +27,7 @@ L["Dismiss"] = true
 L["Shipments Ready + Time/Char to next shipment (All characters)"] = true
 L["Custom LDB Text"] = true
 L["Enable Notifications"] = true
-L["Garrison: Building complete"] = true
+L["Building complete"] = true
 L["Persistent Toasts"] = true
 L["Missions Complete + Time/Char to next completion (All characters)"] = true
 L["Shipments: In Progress"] = true
@@ -73,7 +73,7 @@ L["Missions: In Progress"] = true
 L["Delete char"] = true
 L["Shipments Ready + Time to next shipment (All characters)"] = true
 L["Misc"] = true
-L["Garrison: Mission complete"] = true
+L["Mission complete"] = true
 L["Play Sound"] = true
 L["Current Player Missions: Complete"] = true
 L["Building complete (%s): %s"] = true
@@ -142,3 +142,6 @@ L["Don't display characters without missions"] = true
 L["Show only current realm"] = true
 
 L["Collapse all other characters on login"] = true
+
+L["Compact Tooltip"] = true
+L["Don't show empty newlines in tooltip"] = true
