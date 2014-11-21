@@ -147,7 +147,7 @@ local DB_DEFAULTS = {
 		},
 		notification = {
 			sink = {},
-			['**'] = {
+			['*'] = {
 				enabled = true,
 				repeatOnLoad = false,
 				toastEnabled = true,
