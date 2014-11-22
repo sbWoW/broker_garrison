@@ -346,7 +346,13 @@ function Garrison:SendNotification(paramCharInfo, data, notificationType)
 					notificationText = (L["Building complete (%s): %s"]):format(formatRealmPlayer(paramCharInfo, false), data.name)
 					toastName = TOAST_BUILDING_COMPLETE
 				elseif (notificationType == TYPE_SHIPMENT) then
-					toastText = ("%s\n\n%s (%s / %s)"):format(formatRealmPlayer(paramCharInfo, true), data.name, data.shipmentsReadyEstimate, data.shipmentsTotal)
+
+					if configDb.notification[notificationType].compactToast then
+						toastText = ("%s\n%s (%s / %s)"):format(formatRealmPlayer(paramCharInfo, true), data.name, data.shipmentsReadyEstimate, data.shipmentsTotal)
+					else
+						toastText = ("%s\n\n%s (%s / %s)"):format(formatRealmPlayer(paramCharInfo, true), data.name, data.shipmentsReadyEstimate, data.shipmentsTotal)						
+					end
+					
 					notificationText = (L["Shipment complete (%s): %s (%s / %s)"]):format(formatRealmPlayer(paramCharInfo, false), data.name, data.shipmentsReadyEstimate, data.shipmentsTotal)
 					toastName = TOAST_SHIPMENT_COMPLETE
 
