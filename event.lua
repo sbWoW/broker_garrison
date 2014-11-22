@@ -114,6 +114,26 @@ function Garrison:GARRISON_MISSION_NPC_OPENED(...)
 	Garrison:UpdateUnknownMissions(true)
 end
 
+function Garrison:IsNearCache()
+	SetMapToCurrentZone()
+	local posX, posY = GetPlayerMapPosition("player");
+	local instanceMapID = _G.select(8, _G.GetInstanceInfo())
+
+	if Garrison.instanceId[instanceMapID] then	
+		local garrisonInfo = Garrison.instanceId[instanceMapID]
+		local distX = math.abs(garrisonInfo.x - posX)
+		local distY = math.abs(garrisonInfo.y - posY)
+
+		local nearCache = (distX < 0.015 and distY < 0.015)
+
+		debugPrint(("X %s Y %s => %s"):format(tostring(distX), tostring(distY), tostring(nearCache)))
+
+		return true
+	end
+
+	return false
+end
+
 function Garrison:IsInGarrison()
 	local mapName = _G.GetRealZoneText()
 
@@ -394,9 +414,30 @@ end
 
 
 function Garrison:VignetteEvent(event, ...)
-	if event == "VIGNETTE_REMOVED" then
-		local arg = ...
-		debugPrint(("VignetteRemoved: %s"):format(arg))
+	if Garrison.location.inGarrison then
+		if event == "VIGNETTE_ADDED" then
+			local vignetteInstanceId, arg2 = ...
+			local ofsX, ofsY, name, objectIcon = C_Vignettes.GetVignetteInfoFromInstanceID(vignetteInstanceId)
+			debugPrint(("VignetteAdded: %s %s %s %s %s"):format(vignetteInstanceId, tostring(ofsX), tostring(ofsX), name, objectIcon))
+		end
+		if event == "VIGNETTE_REMOVED" then
+			local arg = ...
+			debugPrint(("VignetteRemoved: %s"):format(arg))
+		end
+	end
+end
+
+function Garrison:LoatToastEvent(event, ...)
+	local typeIdentifier, itemLink, quantity = ...
+	if Garrison:IsNearCache() then
+		debugPrint(("Looted %s (amount: %s) of %s"):format(tostring(typeIdentifier), tostring(quantity), tostring(itemLink)))
+		if typeIdentifier == "currency" and itemLink then
+			local currencyType = string.match(itemLink, "currency:([%-?%d:]+)")
+
+			if currencyType ~= nil and currencyType == tostring(Garrison.GARRISON_CURRENCY) then
+				globalDb.data[charInfo.realmName][charInfo.playerName].garrisonCacheLastLooted = time()
+			end
+		end
 	end
 end
 

@@ -983,9 +983,21 @@ do
 							AddEmptyRow(tooltip)
 							row = AddRow(tooltip)
 
+							local estimatedCacheResourceAmount = ""
+
+							local tmpResources = Garrison.getResourceFromTimestamp(playerData.garrisonCacheLastLooted, now)
+							if tmpResources ~= nil and tmpResources >= 5 then
+								local resourceColor = colors.lightGray
+
+								if tmpResources >= 400 then
+									resourceColor = colors.red
+								end
+								estimatedCacheResourceAmount = getColoredString((" (%s)"):format(math.min(500, tmpResources)), resourceColor)
+							end
+
 							tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN, nil, "LEFT", 1, nil, 0, 0, 20, 20)
 							tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)), nil, "LEFT", 3)
-							tooltip:SetCell(row, 5, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), nil, "RIGHT", 1)
+							tooltip:SetCell(row, 5, ("%s %s%s %s %s"):format(Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), estimatedCacheResourceAmount, Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), nil, "RIGHT", 1)
 
 							tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_BUILDING})
 							--tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.buildingsExpanded, Garrison.TYPE_BUILDING})
@@ -1313,14 +1325,27 @@ function Garrison:UpdateLDB()
 	local currencyTotal, currencyAmount = 0, 0
 	local currencyApexisAmount, currencyApexisTotal = 0, 0
 
+	local resourceCacheAmount, resourceCacheAmountMax = 0, 0
+
+	local now = time()
+
 	for realmName, realmData in pairs(globalDb.data) do
 		for playerName, playerData in pairs(realmData) do
+			local tmpResourceCacheAmount = Garrison.getResourceFromTimestamp(playerData.garrisonCacheLastLooted, now)
+
 			if Garrison.isCurrentChar(playerData.info) then
 				currencyAmount = (playerData.currencyAmount or 0)
 				currencyApexisAmount = playerData.currencyApexisAmount or 0
+				
+				resourceCacheAmount = tmpResourceCacheAmount or 0
 			end
 			currencyTotal = currencyTotal + (playerData.currencyAmount or 0)
 			currencyApexisTotal = currencyApexisTotal + (playerData.currencyApexisAmount or 0)
+
+			
+			if tmpResourceCacheAmount then
+				resourceCacheAmountMax = math.max(resourceCacheAmountMax, tmpResourceCacheAmount)
+			end
 		end
 	end
 
@@ -1335,6 +1360,9 @@ function Garrison:UpdateLDB()
 		currencyTotal = currencyTotal,
 		currencyIcon = Garrison.ICON_CURRENCY,
 		currencyApexisIcon = Garrison.ICON_CURRENCY_APEXIS,
+
+		resourceCacheAmountMax = resourceCacheAmountMax,
+		resourceCacheAmount = resourceCacheAmount,
 	}
 
 
@@ -1424,7 +1452,9 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("ZONE_CHANGED", "ZoneUpdate")
 
 	self:RegisterEvent("ADDON_LOADED", "CheckAddonLoaded")
-	--self:RegisterEvent("VIGNETTE_REMOVED", "VignetteEvent")	
+	--self:RegisterEvent("VIGNETTE_REMOVED", "VignetteEvent")
+	--self:RegisterEvent("VIGNETTE_ADDED", "VignetteEvent")	
+	self:RegisterEvent("SHOW_LOOT_TOAST", "LoatToastEvent")
 
 	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
 	self:RawHook("GarrisonBuildingAlertFrame_ShowAlert", true)

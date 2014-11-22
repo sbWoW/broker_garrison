@@ -314,6 +314,19 @@ function Garrison.getTableValue(data, ...)
 	return nil
 end
 
+function Garrison.getResourceFromTimestamp(timestamp, ...)
+	if not timestamp then 
+		return nil
+	end
+
+	local now = ...
+	if not now then
+		now = time()
+	end
+	
+	return math.min(500, math.floor(((now - timestamp) / 60) / 10))
+end
+
 function Garrison.replaceVariables(text, data)
 	local returnText = ""
 	if text then

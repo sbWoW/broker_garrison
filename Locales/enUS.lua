@@ -85,7 +85,7 @@ L["Hide Garrison Minimap-Button"] = true
 L["Ready: %sr% Next: %snt|-%"] = true
 L["Time until next mission"] = true
 L["Broker Garrison"] = true
-L["Shipments Ready: %sr%"] = true
+L["Shipments Ready: %sr%%cachewarning%"] = true
 L["Missions: Total"] = true
 L["Sound"] = true
 L["Current Player Buildings: Complete"] = true
@@ -148,3 +148,7 @@ L["Don't show empty newlines in tooltip"] = true
 L["Show followers for each mission"] = true
 
 L["Compact Toast"] = true
+
+L["Resource Cache Warning Icon"] = true
+L["Current Player Resource Cache"] = true
+

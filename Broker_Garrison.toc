@@ -35,6 +35,7 @@ Locales\enUS.lua
 Locales\deDE.lua
 Locales\zhTW.lua
 Locales\zhCN.lua
+Locales\frFR.lua
 
 core.lua
 helper.lua
@@ -42,3 +43,4 @@ data.lua
 config.lua
 event.lua
 tooltip.lua
+

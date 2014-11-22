@@ -9,6 +9,7 @@ local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale(ADDON_NAME)
 Garrison.colors = {
 	green = {r=0, g=1, b=0, a=1},
 	white = {r=1, g=1, b=1, a=1},
+	red = {r=1, g=0, b=0, a=1},
 	--lightGray = {r=0.25, g=0.25, b=0.25, a=1},
 	darkGray = {r=0.1, g=0.1, b=0.1, a=1},
 	lineGrey = {r=(82/255), g=(91/255), b=(97/255), a=1},
@@ -19,11 +20,37 @@ Garrison.GARRISON_CURRENCY = 824
 Garrison.GARRISON_CURRENCY_APEXIS = 823
 
 Garrison.instanceId = {
-	[1153] = "HL3",
-	[1330] = "HL2",
-	[1331] = "AL2",
-	[1158] = "AL1",
-	[1159] = "AL3",
+	[1153] = {
+		-- chest location, 0.01 distance
+		x = 0.42065811157227,
+		y = 0.47422081232071,
+		type = "HL3",
+	},
+	[1330] = {
+		x = 0.41082060337067,
+		y = 0.48072397708893,
+		type = "HL2",
+	},
+	[1152] = {
+		x = 0.55034613609314,
+		y = 0.53083437681198,
+		type = "HL1",
+	},
+	[1331] = {
+		x = 0.37776511907578,
+		y = 0.31113547086716,
+		type = "AL2",
+	},
+	[1158] = {
+		x = 1,
+		y = 1,
+		type = "AL1",
+	},
+	[1159] = {
+		x = 0.37880980968475,
+		y = 0.31599986553192,
+		type = "AL3",
+	},
 }
 
 Garrison.missionModifier = {
@@ -88,14 +115,14 @@ Garrison.ICON_PATH_BUILDING = mediaPath.."bg_buildings"
 
 Garrison.ICON_PATH_FOLLOWER_NO_PORTRAIT = mediaPath.."follower_no_portrait"
 
-
-
 Garrison.ICON_PATH_OPEN = mediaPath.."arrow_open"
 Garrison.ICON_PATH_CLOSE = mediaPath.."arrow_close"
 
 Garrison.ICON_PATH_ARROW_UP = mediaPath.."arrow_up"
 Garrison.ICON_PATH_ARROW_UP_WAITING = mediaPath.."arrow_up_waiting"
 
+Garrison.ICON_PATH_CHECK = mediaPath.."check"
+Garrison.ICON_PATH_WARNING = mediaPath.."warning"
 
 
 Garrison.COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
@@ -113,6 +140,8 @@ Garrison.ICON_BUILDING = Garrison.getIconString(Garrison.ICON_PATH_BUILDING, 16,
 Garrison.ICON_ARROW_UP = Garrison.getIconString(Garrison.ICON_PATH_ARROW_UP, 16, false)
 Garrison.ICON_ARROW_UP_WAITING = Garrison.getIconString(Garrison.ICON_PATH_ARROW_UP_WAITING, 16, false)
 
+Garrison.ICON_CHECK = Garrison.getIconString(Garrison.ICON_PATH_CHECK, 16, false)
+Garrison.ICON_WARNING = Garrison.getIconString(Garrison.ICON_PATH_WARNING, 16, false)
 
 
 --Garrison.ICON_CURRENCY_APEXIS = string.format("\124TInterface\\Icons\\Inv_Apexis_Draenor:%d:%d:1:0\124t", 16, 16)
@@ -210,11 +239,11 @@ Garrison.tooltipConfig = {
 Garrison.ldbTemplate = {
 	["A1"] = {
 		name = L["Garrison Resources (Current char)"],
-		text = "%resfmt% %resicon%",
+		text = "%resfmt% %resicon%%cachewarning%",
 	},
 	["A1"] = {
 		name = L["Garrison Resources (No icon)"],
-		text = "%resfmt%",
+		text = "%resfmt%%cachewarning%",
 	},
 	["M1"] = {
 		name = L["Progress, Complete"],
@@ -233,7 +262,7 @@ Garrison.ldbTemplate = {
 	},	
 	["B1"] = {
 		name = L["Shipments Ready (All characters)"],
-		text = L["Shipments Ready: %sr%"],
+		text = L["Shipments Ready: %sr%%cachewarning%"],
 		type = Garrison.TYPE_BUILDING,
 	},
 	["B2"] = {
@@ -442,5 +471,13 @@ Garrison.ldbVars = {
 	["apexisicon"] = {
 		name = L["Icon: Apexis Crystal"],
 		data = function(data) return Garrison.ICON_CURRENCY_APEXIS end,
-	},	
+	},
+	["cachewarning"] = {
+		name = L["Resource Cache Warning Icon"],
+		data = function(data) return (Garrison.getTableValue(data, "resourceCacheAmountMax") or 0) > 400 and Garrison.ICON_WARNING or "" end,
+	},
+	["crescache"] = {
+		name = L["Current Player Resource Cache"],
+		data = function(data) return Garrison.getTableValue(data, "resourceCacheAmount") or 0 end,
+	},
 }
