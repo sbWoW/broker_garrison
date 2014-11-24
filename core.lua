@@ -224,7 +224,7 @@ function Garrison:RegisterEvents()
 	local fullUpdateRet = Garrison:FullUpdateBuilding(TYPE_BUILDING)	
 
 	timers.notify_update = Garrison:ScheduleRepeatingTimer("QuickUpdate", 5)
-	timers.ldb_update = Garrison:ScheduleRepeatingTimer("LDBUpdate", 1)	
+	--timers.ldb_update = Garrison:ScheduleRepeatingTimer("LDBUpdate", 5)	
 	timers.icon_update = Garrison:ScheduleRepeatingTimer("SlowUpdate", 60)	
 
 	self:RegisterEvent("GARRISON_BUILDING_PLACED", "BuildingUpdate")
@@ -450,8 +450,6 @@ function Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
 	local shipmentsAvailable = shipmentData.shipmentCapacity
 
 	if shipmentData and shipmentData.shipmentsTotal then
-		local openShipments = shipmentData.shipmentsTotal - shipmentData.shipmentsReady
-
 		local timeDiff = (now - shipmentData.creationTime)
 		local shipmentsReadyByTime = 0
 		if shipmentData.duration and shipmentData.duration > 0 then
@@ -465,7 +463,7 @@ function Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
 			shipmentsReady = math.min(shipmentData.shipmentsReady + shipmentsReadyByTime, shipmentData.shipmentsTotal)
 		--end
 		shipmentsInProgress = shipmentData.shipmentsTotal - shipmentsReady
-		shipmentsAvailable = shipmentData.shipmentCapacity - shipmentData.shipmentsTotal
+		shipmentsAvailable = math.max(0, shipmentData.shipmentCapacity - shipmentData.shipmentsTotal) -- thanks blizzard, api returns total > capacity sometimes.
 
 		timeLeftNext = shipmentData.duration - timeDiff
 
@@ -1166,6 +1164,10 @@ do
 
 											local shipmentsReady, shipmentsInProgress, shipmentsAvailable, timeLeftNext, timeLeftTotal = Garrison:DoShipmentMagic(shipmentData, playerData.info)
 
+											if shipmentData.shipmentCapacity and (shipmentsInProgress < math.floor(shipmentData.shipmentCapacity / 2) and shipmentsInProgress <= 5) then
+												shipmentsInProgress = getColoredString(shipmentsInProgress, colors.red)
+											end
+
 											local formattedShipment = ("%s/%s %s"):format(
 												shipmentsInProgress,
 												getColoredString(shipmentsReady, colors.green),
@@ -1206,6 +1208,7 @@ do
 			AddEmptyRow(tooltip)
 		end
 
+	  	tooltip:SetBackdropColor(0, 0, 0, 0.9)
 	  	tooltip:Show()
 
 	  	tooltip:UpdateScrolling()

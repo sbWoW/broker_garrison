@@ -258,7 +258,7 @@ function Garrison:UpdateShipment(buildingID, shipmentData)
 				tmpShipment.notificationDismissed = shipmentData.notificationDismissed or false
 				tmpShipment.notification = shipmentData.notification
 
-				if tmpShipment.notificationValue then
+				if tmpShipment.name and tmpShipment.notificationValue then
 					debugPrint(("Update Shipment (%s) - NotificationValue=%s"):format(tmpShipment.name, tmpShipment.notificationValue))
 				end
 			end
@@ -464,6 +464,8 @@ function Garrison:UpdateCurrency()
 end
 
 function Garrison:QuickUpdate()
+	Garrison:UpdateLDB()
+	
 	if Garrison.location.inGarrison then
 		-- in garrison - full update (quick)
 		Garrison:Update()
