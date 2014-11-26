@@ -1344,6 +1344,7 @@ function Garrison:UpdateLDB()
 	local currencyApexisAmount, currencyApexisTotal = 0, 0
 
 	local resourceCacheAmount, resourceCacheAmountMax = 0, 0
+	local resourceCacheAmountMaxChar = nil
 
 	local now = time()
 
@@ -1362,7 +1363,12 @@ function Garrison:UpdateLDB()
 
 			
 			if tmpResourceCacheAmount then
-				resourceCacheAmountMax = math.max(resourceCacheAmountMax, tmpResourceCacheAmount)
+				if tmpResourceCacheAmount > resourceCacheAmountMax then
+					resourceCacheAmountMax = tmpResourceCacheAmount
+					resourceCacheAmountMaxChar = playerData.info
+				end
+				--resourceCacheAmountMax = math.max(resourceCacheAmountMax, tmpResourceCacheAmount)
+
 			end
 		end
 	end
@@ -1380,6 +1386,7 @@ function Garrison:UpdateLDB()
 		currencyApexisIcon = Garrison.ICON_CURRENCY_APEXIS,
 
 		resourceCacheAmountMax = resourceCacheAmountMax,
+		resourceCacheAmountMaxChar = resourceCacheAmountMaxChar,
 		resourceCacheAmount = resourceCacheAmount,
 	}
 

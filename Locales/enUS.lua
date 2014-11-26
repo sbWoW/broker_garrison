@@ -157,3 +157,5 @@ L["High Accuracy"] = true
 L["Update LDB/Tooltip every second"] = true
 L["Show seconds in LDB/Tooltip"] = true
 
+L["Max Resource Cache"] = true
+L["Character Max Resource Cache"] = true

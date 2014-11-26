@@ -486,4 +486,14 @@ Garrison.ldbVars = {
 		name = L["Current Player Resource Cache"],
 		data = function(data) return Garrison.getTableValue(data, "resourceCacheAmount") or 0 end,
 	},
+	["rescachemax"] = {
+		name = L["Max Resource Cache"],
+		data = function(data) return Garrison.getTableValue(data, "resourceCacheAmountMax") or 0 end,
+	},
+	["rescachemaxchar"] = {
+		name = L["Character Max Resource Cache"],
+		data = function(data) 
+			return Garrison.getTableValue(data, "resourceCacheAmountMaxChar", "playerName")
+		end,
+	},		
 }
