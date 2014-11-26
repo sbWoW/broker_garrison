@@ -82,6 +82,8 @@ local DB_DEFAULTS = {
 				compactTooltip = false,
 			},			
 			hideGarrisonMinimapButton = false,
+			highAccuracy = true,
+			showSeconds = true,
 		},
 		tooltip = {
 			building = {
@@ -224,9 +226,9 @@ function Garrison:RegisterEvents()
 
 	local fullUpdateRet = Garrison:FullUpdateBuilding(TYPE_BUILDING)	
 
+	timers.ldb_update = Garrison:ScheduleRepeatingTimer("LDBUpdate", 1)
 	timers.notify_update = Garrison:ScheduleRepeatingTimer("QuickUpdate", 5)
-	--timers.ldb_update = Garrison:ScheduleRepeatingTimer("LDBUpdate", 5)	
-	timers.icon_update = Garrison:ScheduleRepeatingTimer("SlowUpdate", 60)	
+	timers.icon_update = Garrison:ScheduleRepeatingTimer("SlowUpdate", 30)	
 
 	self:RegisterEvent("GARRISON_BUILDING_PLACED", "BuildingUpdate")
 	self:RegisterEvent("GARRISON_BUILDING_REMOVED", "BuildingUpdate")
@@ -667,7 +669,7 @@ do
                 	--debugPrint("mouseover")
                 	self.elapsed = (self.elapsed or 0) + last_update
 
-                    if self.elapsed >= 1 then
+                    if (configDb.general.highAccuracy and self.elapsed >= 1) or self.elapsed > 30 then
                     	--debugPrint("redraw")
                     	self.elapsed = 0
                     	DrawTooltip(LDB_anchor, tooltipType)

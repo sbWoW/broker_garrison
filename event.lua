@@ -464,7 +464,11 @@ function Garrison:UpdateCurrency()
 end
 
 function Garrison:QuickUpdate()
-	Garrison:UpdateLDB()
+	if not configDb.general.highAccuracy then
+		if configDb.general.showSeconds then
+			Garrison:UpdateLDB()
+		end
+	end
 	
 	if Garrison.location.inGarrison then
 		-- in garrison - full update (quick)
@@ -473,10 +477,18 @@ function Garrison:QuickUpdate()
 end
 
 function Garrison:LDBUpdate()
-	Garrison:UpdateLDB()
+	if configDb.general.highAccuracy then
+		Garrison:UpdateLDB()
+	end
 end
 
 function Garrison:SlowUpdate()
+	if not configDb.general.highAccuracy then
+		if not configDb.general.showSeconds then
+			Garrison:UpdateLDB()
+		end
+	end	
+
 	if not Garrison.location.inGarrison then
 		-- not in garrison - full update (slow)
 		Garrison:Update()

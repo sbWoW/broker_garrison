@@ -174,8 +174,31 @@ function Garrison:GetOptions()
 							Garrison:UpdateConfig()
 						end,
 					},	
+					highAccuracy = {
+						order = 110,
+						type = "toggle",
+						width = "double",
+						name = L["High Accuracy"],
+						desc = L["Update LDB/Tooltip every second"],
+						get = function() return configDb.general.highAccuracy end,
+						set = function(_,v) configDb.general.highAccuracy = v
+							Garrison:UpdateLDB()
+						end,
+					},
+					showSeconds = {
+						order = 110,
+						type = "toggle",
+						width = "double",
+						name = L["Show seconds in LDB/Tooltip"],
+						desc = L["Show seconds in LDB/Tooltip"],
+						get = function() return configDb.general.showSeconds end,
+						set = function(_,v) configDb.general.showSeconds = v
+							Garrison:UpdateLDB()
+						end,
+						--disabled = function() return not configDb.general.highAccuracy end,
+					},					
 					missionGroup = {
-						order = 100,
+						order = 200,
 						type = "group",
 						name = L["Mission"],
 						cmdHidden = true,

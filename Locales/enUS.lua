@@ -152,3 +152,8 @@ L["Compact Toast"] = true
 L["Resource Cache Warning Icon"] = true
 L["Current Player Resource Cache"] = true
 
+L["Background Alpha"] = true
+L["High Accuracy"] = true
+L["Update LDB/Tooltip every second"] = true
+L["Show seconds in LDB/Tooltip"] = true
+

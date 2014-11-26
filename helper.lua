@@ -275,7 +275,11 @@ function Garrison.formattedSeconds(seconds)
 	elseif seconds >= SECONDS_PER_DAY then
 		return ("%s%d%s %d:%02d"):format(negative, seconds / SECONDS_PER_DAY, L_DAY_ONELETTER_ABBR, math.fmod(seconds / SECONDS_PER_HOUR, 24), math.fmod(seconds / 60, 60))
 	else
-		return ("%s%d:%02d:%02d"):format(negative, seconds / SECONDS_PER_HOUR, math.fmod(seconds / 60, 60), math.fmod(seconds, 60))
+		if configDb.general.showSeconds then
+			return ("%s%d:%02d:%02d"):format(negative, seconds / SECONDS_PER_HOUR, math.fmod(seconds / 60, 60), math.fmod(seconds, 60))
+		else
+			return ("%s%d:%02d"):format(negative, seconds / SECONDS_PER_HOUR, math.ceil(math.fmod(seconds / 60, 60)))
+		end
 	end
 end
 
