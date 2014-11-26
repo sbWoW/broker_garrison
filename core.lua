@@ -163,6 +163,7 @@ local DB_DEFAULTS = {
 			iconSize = 16,
 			fontSize = 12,
 			showIcon = true,
+			backgroundAlpha = 255,
 		},
 		debugPrint = false,
 	},
@@ -1164,8 +1165,12 @@ do
 
 											local shipmentsReady, shipmentsInProgress, shipmentsAvailable, timeLeftNext, timeLeftTotal = Garrison:DoShipmentMagic(shipmentData, playerData.info)
 
-											if shipmentData.shipmentCapacity and (shipmentsInProgress < math.floor(shipmentData.shipmentCapacity / 2) and shipmentsInProgress <= 5) then
-												shipmentsInProgress = getColoredString(shipmentsInProgress, colors.red)
+											if shipmentData.shipmentCapacity then											
+												if shipmentsInProgress <= math.ceil(shipmentData.shipmentCapacity * 0.15) then
+													shipmentsInProgress = getColoredString(shipmentsInProgress, colors.red)
+												elseif shipmentsInProgress <= math.ceil(shipmentData.shipmentCapacity * 0.3) then
+													shipmentsInProgress = getColoredString(shipmentsInProgress, colors.yellow)
+												end
 											end
 
 											local formattedShipment = ("%s/%s %s"):format(
@@ -1208,7 +1213,9 @@ do
 			AddEmptyRow(tooltip)
 		end
 
-	  	tooltip:SetBackdropColor(0, 0, 0, 0.9)
+		--debugPrint(("r: %s, g: %s, b: %s, a: %s"):format(configDb.display.backgroundColor.r, configDb.display.backgroundColor.g, configDb.display.backgroundColor.b, configDb.display.backgroundColor.a))
+
+	  	tooltip:SetBackdropColor(0, 0, 0, 255 / configDb.display.backgroundAlpha)
 	  	tooltip:Show()
 
 	  	tooltip:UpdateScrolling()

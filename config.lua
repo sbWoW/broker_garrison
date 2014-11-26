@@ -825,6 +825,20 @@ function Garrison:GetOptions()
 							configDb.display.showIcon = v
 						end,
 					},
+					backgroundColor = {
+						order = 160,
+						type = "range",
+						width = "full",
+						step = 1,
+						min = 0,
+						max = 255,
+						name = L["Background Alpha"],
+						desc = L["Background Alpha"],
+						get = function() return math.floor(configDb.display.backgroundAlpha * 255) end,
+						set = function(_,v)
+							configDb.display.backgroundAlpha = (v / 255)
+						end,
+					},					
 				},
 			},
 			tooltip = {
