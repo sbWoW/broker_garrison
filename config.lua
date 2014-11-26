@@ -803,7 +803,7 @@ function Garrison:GetOptions()
 					fontSize = {
 						order = 140,
 						type = "range",
-						min = 9,
+						min = 5,
 						max = 20,
 						step = 1,
 						width = "full",
