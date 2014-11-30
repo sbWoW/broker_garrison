@@ -52,6 +52,9 @@ Garrison.atlas = atlas
 local iconCache = {}
 Garrison.iconCache = iconCache
 
+local patternCache = {}
+Garrison.patternCache = patternCache
+
 -- Garrison Functions
 local debugPrint, pairsByKeys, formatRealmPlayer, tableSize, getColoredString, getColoredUnitName, formattedSeconds, getIconString
 
@@ -1062,7 +1065,7 @@ do
 
 									--formattedShipment = formattedShipment..isBuildingIcon
 									--tooltip:SetCell(row, 3, ("%s %s"):format(isBuildingIcon, getColoredString(displayCount, colors.lightGray)), nil, "LEFT", 1)
-									playerBuildingUpgrade = playerBuildingUpgrade..("%s %s"):format(isBuildingIcon, getColoredString(displayCount, colors.lightGray))
+									playerBuildingUpgrade = playerBuildingUpgrade..("%s"):format(isBuildingIcon)
 								end
 
 								if (buildingCount.shipment.inProgress > 0 or buildingCount.shipment.ready > 0) then
@@ -1134,26 +1137,27 @@ do
 											timeLeftBuilding = buildingData.buildTime - (now - buildingData.timeStart)
 										end
 
-										local rank, isBuildingIcon
+										local rank, buildingInfoIcon = "", ""
 										if buildingData.isBuilding or buildingData.canActivate then									
 
 											if (buildingData.isBuilding and timeLeftBuilding > 0) then
-												isBuildingIcon = Garrison.ICON_ARROW_UP_WAITING
+												buildingInfoIcon = Garrison.ICON_ARROW_UP_WAITING
 											else
-												isBuildingIcon = Garrison.ICON_ARROW_UP
+												buildingInfoIcon = Garrison.ICON_ARROW_UP
 											end
 
 											--debugPrint(("[%s] isBuilding: %s, timeLeftBuilding: %s"):format(buildingData.name, _G.tostring(buildingData.isBuilding), _G.tostring(timeLeftBuilding)))
 
 											if buildingData.rank > 1 then
-												rank = getColoredString("("..(buildingData.rank - 1)..") "..isBuildingIcon, colors.lightGray)
+												rank = getColoredString("("..(buildingData.rank - 1)..")", colors.lightGray)
 											else
-												rank = isBuildingIcon
+												rank = ""
 											end
 										else
-											isBuildingIcon = ""
 											rank = getColoredString("("..buildingData.rank..")", colors.lightGray)
 										end
+
+										buildingInfoIcon = buildingInfoIcon..Garrison:GetLootInfoForBuilding(playerData.lootedToday, buildingData.id)
 
 										if configDb.display.showIcon then
 											--tooltip:SetCell(row, 1, getIconString(, configDb.display.iconSize, false, false), nil, "LEFT", 1)
@@ -1161,7 +1165,7 @@ do
 											tooltip:SetCell(row, 2, "", nil, "LEFT", 1, Garrison.iconProvider, 0, 0, nil, nil, Garrison.GetIconPath(buildingData.icon), configDb.display.iconSize)
 										end
 
-										tooltip:SetCell(row, 3, ("%s %s"):format(buildingData.name, rank), nil, "LEFT", 1)
+										tooltip:SetCell(row, 3, ("%s %s %s"):format(buildingData.name, rank, buildingInfoIcon), nil, "LEFT", 1)
 
 										--tooltip:SetCell(row, 3, isBuildingIcon, nil, "LEFT", 1) 
 
@@ -1205,7 +1209,7 @@ do
 
 											local formattedShipment = ("%s/%s %s"):format(
 												shipmentsInProgress,
-												getColoredString(shipmentsReady, colors.green),
+												getColoredString(shipmentsReady, shipmentsReady == 0 and colors.white or colors.green),
 												getColoredString("("..shipmentsAvailable..")", colors.lightGray)
 												)
 
@@ -1508,7 +1512,7 @@ function Garrison:OnInitialize()
 	--self:RegisterEvent("VIGNETTE_REMOVED", "VignetteEvent")
 	--self:RegisterEvent("VIGNETTE_ADDED", "VignetteEvent")	
 	self:RegisterEvent("SHOW_LOOT_TOAST", "LootToastEvent")
-
+	self:RegisterEvent("CHAT_MSG_LOOT", "ChatLootEvent")
 
 	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
 	self:RawHook("GarrisonBuildingAlertFrame_ShowAlert", true)

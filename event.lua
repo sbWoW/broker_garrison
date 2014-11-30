@@ -472,6 +472,81 @@ function Garrison:LootToastEvent(event, ...)
 	end
 end
 
+function Garrison:DailyQuestHandling()
+	local lootedNextReset = globalDb.data[charInfo.realmName][charInfo.playerName].lootedNextReset
+
+	if not lootedNextReset or _G.time() >= lootedNextReset then
+		globalDb.data[charInfo.realmName][charInfo.playerName].lootedNextReset = Garrison.GetNextDailyResetTime()
+		globalDb.data[charInfo.realmName][charInfo.playerName].lootedToday = {}
+	end
+end
+
+function Garrison:ChatLootEvent(event, ...) 
+	local message = ...
+
+	if Garrison:IsInGarrison() then
+
+		debugPrint("Loot: IsInGarrison")
+
+		for _, lootData in pairs(Garrison.LOOT_PATTERN) do		
+
+			if not lootData.pattern then
+				lootData.pattern, lootData.captureIndices = Garrison.patternFromFormat(lootData.format)
+				debugPrint(("Pattern compile (%s): %s"):format(lootData.format, lootData.pattern))
+			end
+			
+			local _, _, lootedItemLink, lootedAmount = Garrison.superFind(message, lootData.pattern, lootData.captureIndices)
+			 
+			if lootedItemLink ~= nil then
+				local itemId = Garrison.itemIdFromLink(lootedItemLink)
+
+				if lootedAmount == nil then 
+					lootedAmount = 1
+				end
+
+				if itemId then
+					if not globalDb.data[charInfo.realmName][charInfo.playerName].lootedToday then 
+						globalDb.data[charInfo.realmName][charInfo.playerName].lootedToday = {}
+					end
+
+					for _, trackedItem in pairs(Garrison.GARRISON_TRACK_LOOT_ITEM) do
+						if trackedItem.itemId == itemId then
+							globalDb.data[charInfo.realmName][charInfo.playerName].lootedToday[itemId] = (globalDb.data[charInfo.realmName][charInfo.playerName].lootedToday[itemId] or 0) + lootedAmount
+							debugPrint(("Looted [%s] (%s) - Total Today: %s"):format(trackedItem.name, lootedAmount, globalDb.data[charInfo.realmName][charInfo.playerName].lootedToday[itemId]))
+						end
+					end			
+				end
+
+				break
+			end
+		end
+	end
+end
+
+function Garrison:GetLootInfoForBuilding(lootedToday, buildingId)
+	local retValue = ""
+
+	if lootedToday then
+		for buildingName, buildingInfo in pairs(Garrison.buildingInfo) do
+			if buildingInfo.level then
+				local buildingLevel = buildingInfo.level[buildingId]
+
+				if buildingLevel and buildingInfo.trackLootItemId ~= nil then
+					local lootedToday = lootedToday[buildingInfo.trackLootItemId] or 0
+					if buildingInfo.minLooted and lootedToday > buildingInfo.minLooted then
+						-- Show checkbox
+						retValue = " "..Garrison.ICON_CHECK
+					else
+						retValue = " "..Garrison.ICON_CHECK_WAITING
+					end
+				end
+			end
+		end
+	end
+
+	return retValue
+end
+
 function Garrison:ShipmentStatusUpdate(event, shipmentStarted)
 	if shipmentStarted then
 		debugPrint("ShipmentStatusUpdate")
@@ -495,6 +570,8 @@ function Garrison:UpdateCurrency()
 end
 
 function Garrison:QuickUpdate()
+	Garrison:DailyQuestHandling()
+
 	if not configDb.general.highAccuracy then
 		if configDb.general.showSeconds then
 			Garrison:UpdateLDB()

@@ -341,7 +341,7 @@ function Garrison:GetOptions()
 			dataGroup = {
 				order = 200,
 				type = "group",
-				name = "Data",
+				name = L["Data"],
 				cmdHidden = true,
 				args = {
 				},
@@ -1133,7 +1133,7 @@ function Garrison:GetOptions()
 			aboutGroup = {
 				order = 900,
 				type = "group",
-				name = "About",
+				name = L["About"],
 				cmdHidden = true,
 				args = {
 					aboutHeader = {

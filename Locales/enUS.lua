@@ -165,3 +165,6 @@ L["Disable Notifications in Raid"] = true
 L["Disable Notifications in PvP"] = true
 L["Disable Notifications in Battleground/arena"] = true
 L["General"] = true
+
+L["Data"] = true
+L["About"] = true

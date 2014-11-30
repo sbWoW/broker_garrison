@@ -14,7 +14,7 @@ Garrison.colors = {
 	lightGray = {r=(108/255), g=(115/255), b=(120/255), a=1},
 	green = {r=(32/255), g=(255/255), b=(32/255), a=1},
 	red = {r=(255/255), g=(25/255), b=(25/255), a=1},
-	yellow = {r=(255/255), g=(209/255), b=(0/255), a=1},
+	yellow = {r=(255/255), g=(228/255), b=(0/255), a=1},
 
 	--lightGray = {r=0.25, g=0.25, b=0.25, a=1},
 	darkGray = {r=0.1, g=0.1, b=0.1, a=1},
@@ -24,6 +24,53 @@ Garrison.colors = {
 
 Garrison.GARRISON_CURRENCY = 824
 Garrison.GARRISON_CURRENCY_APEXIS = 823
+
+Garrison.GARRISON_TRACK_LOOT_ITEM = {
+	{
+		itemId = 115508,
+		name = "Draenic Stone",
+	},
+	{
+		itemId = 116053,
+		name = "Draenic Seeds",
+	},
+}
+
+Garrison.LOOT_PATTERN = {
+	{
+		format = LOOT_ITEM_SELF_MULTIPLE,
+		numMatch = 2,
+		matchPlayer = nil,
+		matchCount = 2,
+	},
+	{
+		format = LOOT_ITEM_SELF,
+		numMatch = 1,
+		matchPlayer = nil,
+		matchCount = nil,
+	},
+}
+
+Garrison.buildingInfo = {
+	["Mine"] = {
+		trackLootItemId = 115508,
+		minLooted = 5,
+		["level"] = {
+			[61] = 1,
+			[62] = 2,
+			[63] = 3,
+		},
+	},
+	["Herb Garden"] = {
+		trackLootItemId = 116053,
+		minLooted = 5,
+		["level"] = {
+			[29] = 1,
+			[136] = 2,
+			[137] = 3,
+		},
+	}	
+}
 
 Garrison.instanceId = {
 	[1153] = {
@@ -128,6 +175,7 @@ Garrison.ICON_PATH_ARROW_UP = mediaPath.."arrow_up"
 Garrison.ICON_PATH_ARROW_UP_WAITING = mediaPath.."arrow_up_waiting"
 
 Garrison.ICON_PATH_CHECK = mediaPath.."check"
+Garrison.ICON_PATH_CHECK_WAITING = mediaPath.."check_waiting"
 Garrison.ICON_PATH_WARNING = mediaPath.."warning"
 
 
@@ -147,6 +195,7 @@ Garrison.ICON_ARROW_UP = Garrison.getIconString(Garrison.ICON_PATH_ARROW_UP, 16,
 Garrison.ICON_ARROW_UP_WAITING = Garrison.getIconString(Garrison.ICON_PATH_ARROW_UP_WAITING, 16, false)
 
 Garrison.ICON_CHECK = Garrison.getIconString(Garrison.ICON_PATH_CHECK, 16, false)
+Garrison.ICON_CHECK_WAITING = Garrison.getIconString(Garrison.ICON_PATH_CHECK_WAITING, 16, false)
 Garrison.ICON_WARNING = Garrison.getIconString(Garrison.ICON_PATH_WARNING, 16, false)
 
 
