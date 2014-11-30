@@ -149,7 +149,12 @@ local DB_DEFAULTS = {
 		},
 		notification = {
 			sink = {},
-			['*'] = {
+			general = {
+				disableInParty = true,
+				disableInRaid = true,
+				disableInPvP = true,
+			},
+			mission = {
 				enabled = true,
 				repeatOnLoad = false,
 				toastEnabled = true,
@@ -157,7 +162,25 @@ local DB_DEFAULTS = {
 				hideBlizzardNotification = true,
 				hideMinimapPulse = false,
 				compactToast = false,
-			}
+			},
+			building = {
+				enabled = true,
+				repeatOnLoad = false,
+				toastEnabled = true,
+				toastPersistent = false,
+				hideBlizzardNotification = true,
+				hideMinimapPulse = false,
+				compactToast = false,
+			},
+			shipment = {
+				enabled = true,
+				repeatOnLoad = false,
+				toastEnabled = true,
+				toastPersistent = false,
+				hideBlizzardNotification = true,
+				hideMinimapPulse = false,
+				compactToast = false,
+			},			
 		},
 		display = {
 			scale = 1,
@@ -330,53 +353,58 @@ function Garrison:SendNotification(paramCharInfo, data, notificationType)
 				(notificationType == TYPE_SHIPMENT and (not data.notificationValue or data.shipmentsReadyEstimate > data.notificationValue))
 			) then
 
-				local notificationText, toastName, toastText, soundName, toastEnabled, playSound
+				if not Garrison:DisableInInstance() then
 
-				if configDb.notification[notificationType].compactToast then
-					toastText = ("%s\n%s"):format(formatRealmPlayer(paramCharInfo, true), data.name)
-				else
-					toastText = ("%s\n\n%s"):format(formatRealmPlayer(paramCharInfo, true), data.name)
-				end
-
-				toastEnabled = configDb.notification[notificationType].toastEnabled
-				playSound = configDb.notification[notificationType].PlaySound
-				soundName = configDb.notification[notificationType].SoundName or "None"
-
-				if (notificationType == TYPE_MISSION) then
-					notificationText = (L["Mission complete (%s): %s"]):format(formatRealmPlayer(paramCharInfo, false), data.name)
-					toastName = TOAST_MISSION_COMPLETE
-				elseif (notificationType == TYPE_BUILDING) then
-					notificationText = (L["Building complete (%s): %s"]):format(formatRealmPlayer(paramCharInfo, false), data.name)
-					toastName = TOAST_BUILDING_COMPLETE
-				elseif (notificationType == TYPE_SHIPMENT) then
+					local notificationText, toastName, toastText, soundName, toastEnabled, playSound
 
 					if configDb.notification[notificationType].compactToast then
-						toastText = ("%s\n%s (%s / %s)"):format(formatRealmPlayer(paramCharInfo, true), data.name, data.shipmentsReadyEstimate, data.shipmentsTotal)
+						toastText = ("%s\n%s"):format(formatRealmPlayer(paramCharInfo, true), data.name)
 					else
-						toastText = ("%s\n\n%s (%s / %s)"):format(formatRealmPlayer(paramCharInfo, true), data.name, data.shipmentsReadyEstimate, data.shipmentsTotal)						
+						toastText = ("%s\n\n%s"):format(formatRealmPlayer(paramCharInfo, true), data.name)
 					end
-					
-					notificationText = (L["Shipment complete (%s): %s (%s / %s)"]):format(formatRealmPlayer(paramCharInfo, false), data.name, data.shipmentsReadyEstimate, data.shipmentsTotal)
-					toastName = TOAST_SHIPMENT_COMPLETE
 
-					data.notificationValue = data.shipmentsReadyEstimate
+					toastEnabled = configDb.notification[notificationType].toastEnabled
+					playSound = configDb.notification[notificationType].PlaySound
+					soundName = configDb.notification[notificationType].SoundName or "None"
+
+					if (notificationType == TYPE_MISSION) then
+						notificationText = (L["Mission complete (%s): %s"]):format(formatRealmPlayer(paramCharInfo, false), data.name)
+						toastName = TOAST_MISSION_COMPLETE
+					elseif (notificationType == TYPE_BUILDING) then
+						notificationText = (L["Building complete (%s): %s"]):format(formatRealmPlayer(paramCharInfo, false), data.name)
+						toastName = TOAST_BUILDING_COMPLETE
+					elseif (notificationType == TYPE_SHIPMENT) then
+
+						if configDb.notification[notificationType].compactToast then
+							toastText = ("%s\n%s (%s / %s)"):format(formatRealmPlayer(paramCharInfo, true), data.name, data.shipmentsReadyEstimate, data.shipmentsTotal)
+						else
+							toastText = ("%s\n\n%s (%s / %s)"):format(formatRealmPlayer(paramCharInfo, true), data.name, data.shipmentsReadyEstimate, data.shipmentsTotal)						
+						end
+						
+						notificationText = (L["Shipment complete (%s): %s (%s / %s)"]):format(formatRealmPlayer(paramCharInfo, false), data.name, data.shipmentsReadyEstimate, data.shipmentsTotal)
+						toastName = TOAST_SHIPMENT_COMPLETE
+
+						data.notificationValue = data.shipmentsReadyEstimate
+					end
+
+					debugPrint(notificationText)
+
+					self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
+
+					if toastEnabled then
+						Toast:Spawn(toastName, toastText, data)
+					end
+
+					if playSound then
+						PlaySoundFile(LSM:Fetch("sound", soundName))
+					end
+
+					data.notification = 1
+
+					retVal = true
+				else
+					debugPrint(("Notifaction (%s) hidden (%s)"):format(data.name, notificationType))
 				end
-
-				debugPrint(notificationText)
-
-				self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
-
-				if toastEnabled then
-					Toast:Spawn(toastName, toastText, data)
-				end
-
-				if playSound then
-					PlaySoundFile(LSM:Fetch("sound", soundName))
-				end
-
-				data.notification = 1
-
-				retVal = true
 			end
 		end
 	end
@@ -1479,7 +1507,8 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("ADDON_LOADED", "CheckAddonLoaded")
 	--self:RegisterEvent("VIGNETTE_REMOVED", "VignetteEvent")
 	--self:RegisterEvent("VIGNETTE_ADDED", "VignetteEvent")	
-	self:RegisterEvent("SHOW_LOOT_TOAST", "LoatToastEvent")
+	self:RegisterEvent("SHOW_LOOT_TOAST", "LootToastEvent")
+
 
 	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
 	self:RawHook("GarrisonBuildingAlertFrame_ShowAlert", true)

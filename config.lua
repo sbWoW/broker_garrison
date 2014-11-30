@@ -160,7 +160,7 @@ function Garrison:GetOptions()
 			general = {
 				order = 100,
 				type = "group",
-				name = "General",
+				name = L["General"],
 				cmdHidden = true,
 				args = {				
 					garrisonMinimapButton = {
@@ -346,12 +346,50 @@ function Garrison:GetOptions()
 				args = {
 				},
 			},
-			notificationGroup = {
+			notificationGroup = {			
 				order = 300,
 				type = "group",
 				name = L["Notifications"],
 				cmdHidden = true,
 				args = {
+					notificationGeneral = {
+						order = 10,
+						type = "group",
+						name = L["General"],
+						cmdHidden = true,
+						args = {
+							disableInParty = {
+								order = 100,
+								type = "toggle",
+								width = "full",
+								name = L["Disable Notifications in Dungeon/Scenario"],
+								desc = L["Disable Notifications in Dungeon/Scenario"],
+								get = function() return configDb.notification.general.disableInParty end,
+								set = function(_,v) configDb.notification.general.disableInParty = v
+								end,
+							},
+							disableInRaid = {
+								order = 200,
+								type = "toggle",
+								width = "full",
+								name = L["Disable Notifications in Raid"],
+								desc = L["Disable Notifications in Raid"],
+								get = function() return configDb.notification.general.disableInRaid end,
+								set = function(_,v) configDb.notification.general.disableInRaid = v
+								end,
+							},
+							disableInPvP = {
+								order = 300,
+								type = "toggle",
+								width = "full",
+								name = L["Disable Notifications in PvP"],
+								desc = L["Disable Notifications in Battleground/arena"],
+								get = function() return configDb.notification.general.disableInPvP end,
+								set = function(_,v) configDb.notification.general.disableInPvP = v
+								end,
+							},
+						},
+					},
 					notificationMissionGroup = {
 						order = 100,
 						type = "group",

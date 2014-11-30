@@ -159,3 +159,9 @@ L["Show seconds in LDB/Tooltip"] = true
 
 L["Max Resource Cache"] = true
 L["Character Max Resource Cache"] = true
+
+L["Disable Notifications in Dungeon/Scenario"] = true
+L["Disable Notifications in Raid"] = true
+L["Disable Notifications in PvP"] = true
+L["Disable Notifications in Battleground/arena"] = true
+L["General"] = true

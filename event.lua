@@ -150,6 +150,37 @@ function Garrison:IsInGarrison()
 	return false
 end
 
+function Garrison:DisableInInstance()
+	local inInstance, instanceType = _G.IsInInstance()
+
+	if inInstance then
+		if configDb.notification.general.disableInParty and 
+			(  instanceType == 'scenario'
+			or instanceType == 'party'			
+			) then
+			debugPrint(("InInstance (%s) - No Notifications"):format(instanceType))
+			return true
+		end
+
+		if configDb.notification.general.disableInRaid and 
+			(  instanceType == 'raid'
+			) then
+			debugPrint(("InInstance (%s) - No Notifications"):format(instanceType))
+			return true
+		end
+
+		if configDb.notification.general.disableInPvP and 
+			(  instanceType == 'scenario'
+			or instanceType == 'party'			
+			) then
+			debugPrint(("InInstance (%s) - No Notifications"):format(instanceType))
+			return true
+		end
+	end
+	
+	return false
+end
+
 function Garrison:UpdateLocation()
 	--Garrison.location.mapName = _G.GetRealZoneText()
 	Garrison.location.inGarrison = Garrison:IsInGarrison()
@@ -427,7 +458,7 @@ function Garrison:VignetteEvent(event, ...)
 	end
 end
 
-function Garrison:LoatToastEvent(event, ...)
+function Garrison:LootToastEvent(event, ...)
 	local typeIdentifier, itemLink, quantity = ...
 	if Garrison:IsNearCache() then
 		debugPrint(("Looted %s (amount: %s) of %s"):format(tostring(typeIdentifier), tostring(quantity), tostring(itemLink)))
