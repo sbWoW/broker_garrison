@@ -476,11 +476,12 @@ function Garrison:DailyQuestHandling()
 	for _, realmData in pairs(globalDb.data) do
 		for _, playerData in pairs(realmData) do
 
-		local lootedNextReset = playerData.lootedNextReset
+			local lootedNextReset = playerData.lootedNextReset
 
-		if not lootedNextReset or _G.time() >= lootedNextReset then
-			playerData.lootedNextReset = Garrison.GetNextDailyResetTime()
-			playerData.lootedToday = {}
+			if not lootedNextReset or _G.time() >= lootedNextReset then
+				playerData.lootedNextReset = Garrison.GetNextDailyResetTime()
+				playerData.lootedToday = {}
+			end
 		end
 	end
 end
