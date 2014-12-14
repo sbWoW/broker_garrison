@@ -883,16 +883,31 @@ do
 							--tooltip:SetCell(row, 3, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)))
 							
 								
-							tooltip:SetCell(row, 3, getColoredString((L["In Progress: %s | Complete: %s | Total: %s"]):format(missionCount.inProgress, missionCount.complete, missionCount.total), colors.lightGray), nil, "RIGHT", 2)
+							local textInProgress, textComplete, textTotal -- = L["In Progress: %s"], L["Complete: %s"], L["Total: %s"]
+							local colorInProgress, colorComplete
+							local textPlaceholder = getColoredString(" | ", colors.lightGray)
 
-						--	tooltip:SetCell(row, 4, getColoredString((L["Total: %s"]):format(missionCount.total), colors.lightGray))
-							--tooltip:SetCell(row, 5, getColoredString((L["In Progress: %s"]):format(missionCount.inProgress), colors.lightGray))
-							--tooltip:SetCell(row, 6, getColoredString((L["Complete: %s"]):format(missionCount.complete), colors.lightGray))
+							colorComplete = (missionCount.complete > 0) and colors.green or colors.white
+
+							if missionCount.inProgress > 3 then
+								colorInProgress = colors.white
+							elseif missionCount.inProgress >= 1 then
+								colorInProgress = colors.yellow
+							else
+								colorInProgress = colors.red
+							end
+
+							colorComplete = (missionCount.complete > 0) and colors.green or colors.white
+
+							textInProgress = (getColoredString(L["In Progress: %s"], colors.lightGray)):format(getColoredString(missionCount.inProgress, colorInProgress))
+							textComplete = (getColoredString(L["Complete: %s"], colors.lightGray)):format(getColoredString(missionCount.complete, colorComplete))
+							textTotal = (getColoredString(L["Total: %s"], colors.lightGray)):format(missionCount.total)
+
+
+							tooltip:SetCell(row, 3, ("%s%s%s%s%s"):format(textInProgress, textPlaceholder, textComplete, textPlaceholder, textTotal), nil, "RIGHT", 2)
 
 							tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_MISSION})
-							--tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.missionsExpanded, Garrison.TYPE_MISSION})
 							tooltip:SetCellScript(row, 2, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_MISSION})
-							--tooltip:SetCellScript(row, 2, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.missionsExpanded, Garrison.TYPE_MISSION})
 
 							AddEmptyRow(tooltip)
 							AddSeparator(tooltip)
