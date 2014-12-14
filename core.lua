@@ -74,6 +74,9 @@ local DB_DEFAULTS = {
 				collapseOtherCharsOnLogin = false,
 				compactTooltip = false,
 				showFollowers = false,
+				showRewards = true,
+				showRewardsAmount = false,
+				showRewardsXP = false,
 			},
 			building = {
 				hideBuildingWithoutShipments = false,
@@ -949,7 +952,36 @@ do
 									if configDb.display.showIcon then
 										tooltip:SetCell(row, 1, getIconString(missionData.typeAtlas, configDb.display.iconSize, true), nil, "LEFT", 1)
 									end
-									tooltip:SetCell(row, 2, missionData.name, nil, "LEFT", 2)
+
+									local rewardString = ""
+
+									if configDb.general.mission.showRewards and missionData.rewards ~= nil then
+										local showReward
+										for rewardId, rewardData in pairs(missionData.rewards) do
+											showReward = true
+
+											if rewardData.followerXP and not configDb.general.mission.showRewardsXP then
+												showReward = false
+											end 
+
+											if showReward then
+												rewardString = rewardString.." "..getIconString(rewardData.icon, configDb.display.iconSize, false, true)
+												if configDb.general.mission.showRewardsAmount then
+													local rewardAmount = rewardData.quantity or rewardData.followerXP
+
+													if rewardAmount ~= nil and rewardAmount > 1 then
+														if rewardData.currencyID == 0 then -- money
+															rewardAmount = math.floor(rewardAmount / 1000)
+														end
+
+														rewardString = rewardString.." "..getColoredString(("%s"):format(rewardAmount), colors.lightGray)
+													end
+												end
+											end
+										end
+									end
+
+									tooltip:SetCell(row, 2, missionData.name..rewardString, nil, "LEFT", 2)
 
 									if (missionData.start == -1) then
 										local formattedTime = ("~%s %s"):format(

@@ -974,6 +974,41 @@ function Garrison:GetOptions()
 								set = function(_,v)
 									configDb.general.mission.showFollowers = v
 								end,								
+							},			
+							showRewards = {
+								order = 91,
+								type = "toggle",
+								width = "full",
+								name = L["Show rewards for each mission"],
+								desc = L["Show rewards for each mission"],
+								get = function() return configDb.general.mission.showRewards end,
+								set = function(_,v)
+									configDb.general.mission.showRewards = v
+								end,
+							},
+							showRewardXP = {
+								order = 92,
+								type = "toggle",
+								width = "full",
+								name = L["Show follower XP rewards"],
+								desc = L["Show follower XP rewards"],
+								get = function() return configDb.general.mission.showRewardsXP end,
+								set = function(_,v)
+									configDb.general.mission.showRewardsXP = v
+								end,
+								disabled = function() return not configDb.general.mission.showRewards end,
+							},	
+							showRewardsAmount = {
+								order = 93,
+								type = "toggle",
+								width = "full",
+								name = L["Show reward amount"],
+								desc = L["Show reward amount"],
+								get = function() return configDb.general.mission.showRewardsAmount end,
+								set = function(_,v)
+									configDb.general.mission.showRewardsAmount = v
+								end,
+								disabled = function() return not configDb.general.mission.showRewards end,
 							},							
 							groupHeader = {
 								order = 100,

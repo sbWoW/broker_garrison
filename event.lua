@@ -39,6 +39,7 @@ function Garrison:GARRISON_MISSION_STARTED(event, missionID)
 				typeAtlas = garrisonMission.typeAtlas,
 				level = garrisonMission.level,
 				followers = {},
+				rewards = garrisonMission.rewards,
 			}
 			
 			debugPrint("Added Mission: "..missionID)

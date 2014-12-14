@@ -172,3 +172,7 @@ L["About"] = true
 L["Icon Buildings: Building"] = true
 L["Icon Buildings: Complete"] = true
 L["Icon Buildings"] = true
+
+L["Show rewards for each mission"] = true
+L["Show reward amount"] = true
+L["Show follower XP rewards"] = true
