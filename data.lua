@@ -409,6 +409,16 @@ Garrison.ldbVars = {
 		data = function(data) return Garrison.getTableValue(data, "buildingCount", "building", "active") end,
 		type = Garrison.TYPE_BUILDING,
 	},
+	["bbicon"] = {
+		name = L["Icon Buildings: Building"],
+		data = function(data) return (Garrison.getTableValue(data, "buildingCount", "building", "building") or 0) > 0 and Garrison.ICON_ARROW_UP_WAITING or "" end,
+		type = Garrison.TYPE_BUILDING,
+	},
+	["bcicon"] = {
+		name = L["Icon Buildings: Complete"],
+		data = function(data) return (Garrison.getTableValue(data, "buildingCount", "building", "complete") or 0) > 0 and Garrison.ICON_ARROW_UP or "" end,
+		type = Garrison.TYPE_BUILDING,
+	},
 	["st"] = {
 		name = L["Shipments: Total"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCount", "shipment", "total") end,
@@ -469,7 +479,7 @@ Garrison.ldbVars = {
 		name = L["Current Player Buildings: Complete"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCountCurrent", "building", "complete") end,
 		type = Garrison.TYPE_BUILDING,
-	},
+	},	
 	["cba"] = {
 		name = L["Current Player Buildings: Active"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCountCurrent", "building", "active") end,
