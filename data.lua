@@ -419,6 +419,19 @@ Garrison.ldbVars = {
 		data = function(data) return (Garrison.getTableValue(data, "buildingCount", "building", "complete") or 0) > 0 and Garrison.ICON_ARROW_UP or "" end,
 		type = Garrison.TYPE_BUILDING,
 	},
+	["bicon"] = {
+		name = L["Icon Buildings"],
+		data = function(data) 
+			if (Garrison.getTableValue(data, "buildingCount", "building", "complete") or 0) > 0 then
+				return Garrison.ICON_ARROW_UP
+			elseif (Garrison.getTableValue(data, "buildingCount", "building", "building") or 0) > 0 then
+				return Garrison.ICON_ARROW_UP_WAITING
+			else
+				return ""
+			end
+		end,
+		type = Garrison.TYPE_BUILDING,
+	},	
 	["st"] = {
 		name = L["Shipments: Total"],
 		data = function(data) return Garrison.getTableValue(data, "buildingCount", "shipment", "total") end,
