@@ -367,8 +367,8 @@ function Garrison:SendNotification(paramCharInfo, data, notificationType)
 					end
 
 					toastEnabled = configDb.notification[notificationType].toastEnabled
-					playSound = configDb.notification[notificationType].PlaySound
-					soundName = configDb.notification[notificationType].SoundName or "None"
+					playSound = configDb.notification[notificationType].playSound
+					soundName = configDb.notification[notificationType].soundName or "None"
 
 					if (notificationType == TYPE_MISSION) then
 						notificationText = (L["Mission complete (%s): %s"]):format(formatRealmPlayer(paramCharInfo, false), data.name)
