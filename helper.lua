@@ -218,10 +218,10 @@ function Garrison.getIconString(name, size, isAtlas, ...)
 	return icon
 end
 
-function Garrison.getColoredUnitName (name, class)
+function Garrison.getColoredUnitName (name, class, realm)
 	local colorUnitName
 
-	if(not unitColor[name]) then
+	if(not unitColor[realm..name]) then
 		local classColor = Garrison.COLOR_TABLE[class]
 
 		if not classColor then
@@ -230,9 +230,9 @@ function Garrison.getColoredUnitName (name, class)
 
 		colorUnitName = string.format("|cff%02x%02x%02x%s|r",classColor.r*255,classColor.g*255,classColor.b*255,name)
 
-		unitColor[name] = colorUnitName
+		unitColor[realm..name] = colorUnitName
 	else
-		colorUnitName = unitColor[name]
+		colorUnitName = unitColor[realm..name]
 	end
 	return colorUnitName
 end
@@ -287,7 +287,7 @@ function Garrison.formatRealmPlayer(paramCharInfo, colored)
 	if not paramCharInfo then return "" end
 
 	if colored then
-		return ("%s (%s)"):format(Garrison.getColoredUnitName(paramCharInfo.playerName, paramCharInfo.playerClass), paramCharInfo.realmName)
+		return ("%s (%s)"):format(Garrison.getColoredUnitName(paramCharInfo.playerName, paramCharInfo.playerClass, paramCharInfo.realmName), paramCharInfo.realmName)
 	else
 		return ("%s-%s"):format(paramCharInfo.playerName, paramCharInfo.realmName)
 	end

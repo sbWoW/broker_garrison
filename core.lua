@@ -879,7 +879,7 @@ do
 							row = AddRow(tooltip)
 
 							tooltip:SetCell(row, 1, playerData.missionsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN)
-							tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)))
+							tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName)))
 							--tooltip:SetCell(row, 3, ("%s %s %s %s"):format(Garrison.ICON_CURRENCY, BreakUpLargeNumbers(playerData.currencyAmount or 0), Garrison.ICON_CURRENCY_APEXIS, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)))
 							
 								
@@ -1049,7 +1049,7 @@ do
 							end
 
 							tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN, nil, "LEFT", 1, nil, 0, 0, 20, 20)
-							tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass)), nil, "LEFT", 3)
+							tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName)), nil, "LEFT", 3)
 							tooltip:SetCell(row, 5, ("%s %s%s %s %s"):format(Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), estimatedCacheResourceAmount, Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), nil, "RIGHT", 1)
 
 							tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_BUILDING})
@@ -1063,7 +1063,7 @@ do
 							if not (playerData.buildingsExpanded) then
 								
 
-								local playerBuildingUpgrade = ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass))
+								local playerBuildingUpgrade = ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName))
 
 								local formattedShipment = ""
 

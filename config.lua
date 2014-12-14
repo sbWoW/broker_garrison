@@ -1151,7 +1151,7 @@ function Garrison:GetOptions()
 					about = {
 						order = 300,
 						type = "description",
-						name = ("Author: %s <EU-Khaz'Goroth>\nLayout: %s <EU-Khaz'Goroth>"):format(Garrison.getColoredUnitName("Smb","PRIEST"), Garrison.getColoredUnitName("Hotaruby","DRUID")),
+						name = ("Author: %s <EU-Khaz'Goroth>\nLayout: %s <EU-Khaz'Goroth>"):format(Garrison.getColoredUnitName("Smb","PRIEST", "EU-Khaz'Goroth"), Garrison.getColoredUnitName("Hotaruby","DRUID", "EU-Khaz'Goroth")),
 						cmdHidden = true,
 					},
 				},
@@ -1290,7 +1290,7 @@ function Garrison.getDataOptionTable()
 				order = baseOrder + (i * 10),
 				type = "description",
 				width = "normal",
-				name = Garrison.getColoredUnitName(playerData.info.playerName, playerData.info.playerClass),
+				name = Garrison.getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName),
 				cmdHidden = true,
 			}
 			dataTable[prefixDataOptionTooltip..(baseOrder + i)] = {
