@@ -278,7 +278,7 @@ end
 function Garrison:UpdateShipment(buildingID, shipmentData)	
 	Garrison.shipmentUpdate.success = false
 
-	local tmpShipment = nil
+	local tmpShipment = {}
 	if buildingID then
 		tmpShipment = Garrison:GetShipmentData(buildingID)
 
