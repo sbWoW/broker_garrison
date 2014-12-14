@@ -1144,7 +1144,7 @@ do
 
 									if not configDb.general.building.hideBuildingWithoutShipments or 
 										(buildingData.isBuilding or buildingData.canActivate) or
-										(buildingData.shipment and buildingData.shipment.shipmentCapacity) then 							
+										(buildingData.shipment and buildingData.shipment.shipmentCapacity ~= nil and buildingData.shipment.shipmentCapacity > 0) then 							
 
 										if groupBy and #groupBy > 0 then
 											local groupByValue = Garrison.getTableValue(buildingData, unpack(groupBy))
@@ -1241,7 +1241,7 @@ do
 
 											tooltip:SetCell(row, 5, formattedTime, nil, "LEFT", 1)
 
-										elseif buildingData.shipment and buildingData.shipment.name then
+										elseif buildingData.shipment and buildingData.shipment.name and (buildingData.shipment.shipmentCapacity ~= nil and buildingData.shipment.shipmentCapacity > 0) then
 											local shipmentData = buildingData.shipment
 
 											local shipmentsReady, shipmentsInProgress, shipmentsAvailable, timeLeftNext, timeLeftTotal = Garrison:DoShipmentMagic(shipmentData, playerData.info)
