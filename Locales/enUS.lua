@@ -168,3 +168,7 @@ L["General"] = true
 
 L["Data"] = true
 L["About"] = true
+
+L["Icon Buildings: Building"] = true
+L["Icon Buildings: Complete"] = true
+L["Icon Buildings"] = true
