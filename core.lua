@@ -965,7 +965,10 @@ do
 											end 
 
 											if showReward then
-												rewardString = rewardString.." "..getIconString(rewardData.icon, configDb.display.iconSize, false, true)
+												if rewardData.icon or rewardData.itemID then
+													rewardString = rewardString.." "..getIconString(rewardData.icon or rewardData.itemID, configDb.display.iconSize, false, true)
+												end
+
 												if configDb.general.mission.showRewardsAmount then
 													local rewardAmount = rewardData.quantity or rewardData.followerXP
 

@@ -200,6 +200,13 @@ function Garrison.getIconString(name, size, isAtlas, ...)
 
 			else				
 				local iconZoom = ...
+
+				if type(name) == 'number' then
+					local _, _, _, _, _, _, _, _, _, itemTexture, _ = GetItemInfo(name)
+					name = itemTexture
+				end
+
+
 				if iconZoom then			
 					Garrison.iconCache[key] = string.format("\124T%s:%d:%d:1:0:64:64:4:60:4:60\124t", Garrison.GetIconPath(name), size, size)
 				else
