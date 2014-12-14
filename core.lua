@@ -971,7 +971,7 @@ do
 
 													if rewardAmount ~= nil and rewardAmount > 1 then
 														if rewardData.currencyID == 0 then -- money
-															rewardAmount = math.floor(rewardAmount / 1000)
+															rewardAmount = math.floor(rewardAmount / 10000)
 														end
 
 														rewardString = rewardString.." "..getColoredString(("%s"):format(rewardAmount), colors.lightGray)
