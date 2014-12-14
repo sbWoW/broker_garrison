@@ -284,11 +284,11 @@ local function toastCallback (callbackType, mouseButton, buttonDown, payload)
 	local missionData = payload[1]
 
 	if callbackType == "primary" then
-		debugPrint("OK: "..payload[1].id.." ("..payload[1].name..")")
+		debugPrint("OK: "..payload[1].name)
 	end
 	if callbackType == "secondary" then
-		debugPrint("Dismiss: "..payload[1].id.." ("..payload[1].name..")")
-		missionData.notification = 2 -- Mission dismissed, never show again
+		debugPrint("Dismiss: "..payload[1].name)
+		--missionData.notification = 2 -- Mission dismissed, never show again
 		missionData.notificationDismissed = true
 	end
 end

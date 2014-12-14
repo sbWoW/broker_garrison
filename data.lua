@@ -329,7 +329,7 @@ Garrison.ldbTemplate = {
 		name = L["Shipments Ready + Time/Char to next shipment (All characters)"],
 		text = L["Ready: %sr% Next: %snt|-% (%snc|-%)"],
 		type = Garrison.TYPE_BUILDING,
-	},		
+	},
 }
 
 Garrison.ldbVars = {
