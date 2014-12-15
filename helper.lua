@@ -202,10 +202,11 @@ function Garrison.getIconString(name, size, isAtlas, ...)
 				local iconZoom = ...
 
 				if type(name) == 'number' then
-					local _, _, _, _, _, _, _, _, _, itemTexture, _ = GetItemInfo(name)
+					local _, _, _, _, _, _, _, _, _, itemTexture, _ = _G.GetItemInfo(name)
                     if itemTexture == nil then
     					return ""
                     end
+                    name = itemTexture
 				end
 
 
