@@ -203,7 +203,9 @@ function Garrison.getIconString(name, size, isAtlas, ...)
 
 				if type(name) == 'number' then
 					local _, _, _, _, _, _, _, _, _, itemTexture, _ = GetItemInfo(name)
-					name = itemTexture
+                    if itemTexture == nil then
+    					return ""
+                    end
 				end
 
 
