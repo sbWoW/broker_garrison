@@ -594,7 +594,9 @@ function Garrison:QuickUpdate()
 end
 
 function Garrison:LDBUpdate()
-	if configDb.general.highAccuracy then
+	Garrison:HandleNotificationQueue()
+	
+	if configDb.general.highAccuracy then		
 		Garrison:UpdateLDB()
 	end
 end

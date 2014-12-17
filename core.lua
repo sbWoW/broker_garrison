@@ -55,6 +55,10 @@ Garrison.iconCache = iconCache
 local patternCache = {}
 Garrison.patternCache = patternCache
 
+local notificationQueue = {}
+Garrison.notificationQueue = notificationQueue
+local notificationQueueEnabled = true
+
 -- Garrison Functions
 local debugPrint, pairsByKeys, formatRealmPlayer, tableSize, getColoredString, getColoredUnitName, formattedSeconds, getIconString
 
@@ -344,6 +348,46 @@ local function toastShipmentComplete (toast, text, shipmentData)
 	end
 end
 
+function Garrison:HandleNotificationQueue()
+	if notificationQueue ~= nil and (time() - notificationQueue.lastUpdate) > 5 then
+		-- send notification queue and delete
+		local notificationCopy = notificationQueue
+		notificationQueue = nil
+
+		for notificationKey,data in pairs(notificationCopy.data) do
+			for key,value in pairs(data) do
+				debugPrint(("[%s] HandleNotificationQueue (%s): %s"):format(notificationKey, key, value))
+			end
+		end
+	end
+end
+
+
+function Garrison:AddNotificationToQueue(notificationType, paramCharInfo) 
+	local key = formatRealmPlayer(paramCharInfo, true)
+
+	if notificationQueue == nil or notificationQueue.data == nil then
+		notificationQueue = {
+			firstUpdate = time(),
+			data = {}
+		}
+	end
+
+	notificationQueue.lastUpdate = time()
+
+	if notificationQueue.data[notificationType] == nil then
+		notificationQueue.data[notificationType] = {}
+	end
+
+	if notificationQueue.data[notificationType][key] == nil then
+		notificationQueue.data[notificationType][key] = 1
+	else
+		notificationQueue.data[notificationType][key] = notificationQueue.data[notificationType][key] + 1
+	end
+
+	debugPrint(("[%s] AddNotificationToQueue (%s): %s"):format(notificationType, key, notificationQueue.data[notificationType][key]))
+end
+
 
 function Garrison:SendNotification(paramCharInfo, data, notificationType)
 
@@ -389,20 +433,24 @@ function Garrison:SendNotification(paramCharInfo, data, notificationType)
 						
 						notificationText = (L["Shipment complete (%s): %s (%s / %s)"]):format(formatRealmPlayer(paramCharInfo, false), data.name, data.shipmentsReadyEstimate, data.shipmentsTotal)
 						toastName = TOAST_SHIPMENT_COMPLETE
-
 						data.notificationValue = data.shipmentsReadyEstimate
 					end
 
-					debugPrint(notificationText)
+					if notificationQueueEnabled then
+						-- don't display notifications, just save them and prepare for later output
+						Garrison:AddNotificationToQueue(notificationType, paramCharInfo)
+					else
+						debugPrint(notificationText)
 
-					self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
+						self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
 
-					if toastEnabled then
-						Toast:Spawn(toastName, toastText, data)
-					end
+						if toastEnabled then
+							Toast:Spawn(toastName, toastText, data)
+						end
 
-					if playSound then
-						PlaySoundFile(LSM:Fetch("sound", soundName))
+						if playSound then
+							PlaySoundFile(LSM:Fetch("sound", soundName))
+						end
 					end
 
 					data.notification = 1
