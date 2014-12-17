@@ -300,6 +300,18 @@ local function toastCallback (callbackType, mouseButton, buttonDown, payload)
 	end
 end
 
+local function toastSummary (toast, text, data)
+	local notificationType = nil
+
+	if configDb.notification[notificationType].toastPersistent then
+		toast:MakePersistent()
+	end
+
+	toast:SetFormattedText(getColoredString(text, colors.green))
+	toast:SetIconTexture(Garrison.Icon[notificationType])
+end
+
+
 local function toastMissionComplete (toast, text, missionData)
 	if configDb.notification.mission.toastPersistent then
 		toast:MakePersistent()
