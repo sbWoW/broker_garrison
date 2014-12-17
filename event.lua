@@ -116,8 +116,8 @@ function Garrison:GARRISON_MISSION_NPC_OPENED(...)
 end
 
 function Garrison:IsNearCache()
-	SetMapToCurrentZone()
-	local posX, posY = GetPlayerMapPosition("player");
+	_G.SetMapToCurrentZone()
+	local posX, posY = _G.GetPlayerMapPosition("player");
 	local instanceMapID = _G.select(8, _G.GetInstanceInfo())
 
 	if Garrison.instanceId[instanceMapID] then	
@@ -543,10 +543,19 @@ function Garrison:GetLootInfoForBuilding(lootedToday, buildingId)
 				if buildingLevel and buildingInfo.trackLootItemId ~= nil then
 					local lootedToday = lootedToday[buildingInfo.trackLootItemId] or 0
 					if buildingInfo.minLooted and lootedToday > buildingInfo.minLooted then
-						-- Show checkbox
 						retValue = " "..Garrison.ICON_CHECK
 					else
 						retValue = " "..Garrison.ICON_CHECK_WAITING
+					end
+				end
+
+				if buildingLevel and buildingInfo.trackQuestId ~= nil then
+					if buildingInfo.minLevel and buildingLevel >= buildingInfo.minLevel then
+						if _G.IsQuestFlaggedCompleted(buildingInfo.trackQuestId) then
+							retValue = " "..Garrison.ICON_CHECK
+						else
+							retValue = " "..Garrison.ICON_CHECK_WAITING
+						end
 					end
 				end
 			end

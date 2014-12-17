@@ -69,7 +69,16 @@ Garrison.buildingInfo = {
 			[136] = 2,
 			[137] = 3,
 		},
-	}	
+	},
+	["War Mill"] = {
+		trackQuestId = 36058,
+		minLevel = 3,
+		["level"] = {
+			[8] = 1,
+			[9] = 2,
+			[10] = 3,
+		},
+	},
 }
 
 Garrison.instanceId = {
@@ -159,6 +168,7 @@ Garrison.ICON_REPLACEMENT = {
 
 Garrison.ICON_PATH_CURRENCY = mediaPath.."Inv_Garrison_Resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS = mediaPath.."Inv_Apexis_Draenor"
+Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE = mediaPath.."TemperedFate"
 
 Garrison.ICON_PATH_CURRENCY_TOOLTIP = mediaPath.."bg_garrison_resource_tooltip"
 Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP = mediaPath.."bg_apexis_draenor_tooltip"
@@ -178,6 +188,7 @@ Garrison.ICON_PATH_CHECK = mediaPath.."check"
 Garrison.ICON_PATH_CHECK_WAITING = mediaPath.."check_waiting"
 Garrison.ICON_PATH_WARNING = mediaPath.."warning"
 
+Garrison.ICON_PATH_INVASION = mediaPath.."invasion"
 
 Garrison.COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
 --Garrison.ICON_CURRENCY = string.format("\124T%s\\%s:%d:%d:1:0\124t", mediaPath, name, 16, 16)
@@ -186,6 +197,7 @@ Garrison.ICON_CURRENCY = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY, 16,
 Garrison.ICON_CURRENCY_APEXIS = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS, 16, false)
 Garrison.ICON_CURRENCY_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TOOLTIP, 16, false)
 Garrison.ICON_CURRENCY_APEXIS_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP, 16, false)
+Garrison.ICON_CURRENCY_TEMPERED_FATE = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE, 16, false)
 
 
 Garrison.ICON_MISSION = Garrison.getIconString(Garrison.ICON_PATH_MISSION, 16, false)
@@ -197,6 +209,7 @@ Garrison.ICON_ARROW_UP_WAITING = Garrison.getIconString(Garrison.ICON_PATH_ARROW
 Garrison.ICON_CHECK = Garrison.getIconString(Garrison.ICON_PATH_CHECK, 16, false)
 Garrison.ICON_CHECK_WAITING = Garrison.getIconString(Garrison.ICON_PATH_CHECK_WAITING, 16, false)
 Garrison.ICON_WARNING = Garrison.getIconString(Garrison.ICON_PATH_WARNING, 16, false)
+Garrison.ICON_INVASION = Garrison.getIconString(Garrison.ICON_PATH_INVASION, 16, false)
 
 
 --Garrison.ICON_CURRENCY_APEXIS = string.format("\124TInterface\\Icons\\Inv_Apexis_Draenor:%d:%d:1:0\124t", 16, 16)
