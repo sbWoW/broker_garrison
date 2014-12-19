@@ -22,6 +22,17 @@ Garrison.colors = {
 	--lightGray = {r=(82/255), g=(91/255), b=(97/255), a=1},
 }
 
+local resets = {
+	[1] = 3, -- US, Tuesday
+	[2] = 5, -- Korea, Thursday
+	[3] = 4, -- Europe(Russia), Wednesday
+	[4] = 5, -- Taiwan, Thursday
+	[5] = 5, -- China, Thursday
+}
+
+Garrison.REGION = _G.GetCurrentRegion()
+Garrison.WeeklyResetDay = resets[Garrison.REGION]
+
 Garrison.GARRISON_CURRENCY = 824
 Garrison.GARRISON_CURRENCY_APEXIS = 823
 
@@ -131,7 +142,6 @@ Garrison.STATE_MISSION_COMPLETE = 0
 Garrison.STATE_MISSION_INPROGRESS = 1
 
 Garrison.COLOR_TABLE = _G.CUSTOM_CLASS_COLORS or _G.RAID_CLASS_COLORS
-
 
 local mediaPath = "Interface\\AddOns\\Broker_Garrison\\Media\\"
 

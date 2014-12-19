@@ -473,18 +473,26 @@ function Garrison:LootToastEvent(event, ...)
 	end
 end
 
-function Garrison:DailyQuestHandling()
+
+function Garrison:QuestHandling()
 	for _, realmData in pairs(globalDb.data) do
 		for playerName, playerData in pairs(realmData) do
 
 			local lootedNextReset = playerData.lootedNextReset
+			local weeklyNextReset = playerData.weeklyNextReset
 
+			local now = _G.time()
 			--debugPrint(playerName)
 			--debugPrint(lootedNextReset)
 
-			if not lootedNextReset or _G.time() >= lootedNextReset then
+			if not lootedNextReset or now >= lootedNextReset then
 				playerData.lootedNextReset = Garrison.GetNextDailyResetTime()
 				playerData.lootedToday = {}
+			end
+
+			if not weeklyNextReset or now >= weeklyNextReset then
+				playerData.weeklyNextReset = Garrison.GetNextWeeklyResetTime()
+				playerData.questWeekly = {}
 			end
 		end
 	end
