@@ -183,4 +183,4 @@ L["Current Player Invasion Available"] = true
 	
 L["Seal of Tempered Fate"] = true
 L["Icon: Seal of Tempered Fate"] = true
-L"%s - Summary"] = true
+L["%s - Summary"] = true

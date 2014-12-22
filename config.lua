@@ -434,6 +434,18 @@ function Garrison:GetOptions()
 								end,
 								disabled = function() return not configDb.notification.mission.enabled end,
 							},
+							notificationQueueEnabled = {
+								order = 315,
+								type = "toggle",
+								width = "full",
+								name = L["Summary on login"],
+								desc = L["Summary on login"],
+								get = function() return configDb.notification.mission.notificationQueueEnabled end,
+								set = function(_,v) configDb.notification.mission.notificationQueueEnabled = v
+								end,
+								disabled = function() return not configDb.notification.mission.enabled
+														or not configDb.notification.mission.toastEnabled end,
+							},
 							toastPersistent = {
 								order = 320,
 								type = "toggle",
@@ -572,6 +584,18 @@ function Garrison:GetOptions()
 								end,
 								disabled = function() return not configDb.notification.building.enabled end,
 							},
+							notificationQueueEnabled = {
+								order = 315,
+								type = "toggle",
+								width = "full",
+								name = L["Summary on login"],
+								desc = L["Summary on login"],
+								get = function() return configDb.notification.building.notificationQueueEnabled end,
+								set = function(_,v) configDb.notification.building.notificationQueueEnabled = v
+								end,
+								disabled = function() return not configDb.notification.building.enabled
+														or not configDb.notification.building.toastEnabled end,
+							},							
 							toastPersistent = {
 								order = 320,
 								type = "toggle",
@@ -711,6 +735,18 @@ function Garrison:GetOptions()
 								end,
 								disabled = function() return not configDb.notification.shipment.enabled end,
 							},
+							notificationQueueEnabled = {
+								order = 315,
+								type = "toggle",
+								width = "full",
+								name = L["Summary on login"],
+								desc = L["Summary on login"],
+								get = function() return configDb.notification.shipment.notificationQueueEnabled end,
+								set = function(_,v) configDb.notification.shipment.notificationQueueEnabled = v
+								end,
+								disabled = function() return not configDb.notification.shipment.enabled
+														or not configDb.notification.shipment.toastEnabled end,
+							},							
 							toastPersistent = {
 								order = 320,
 								type = "toggle",

@@ -36,6 +36,10 @@ Locales\deDE.lua
 Locales\zhTW.lua
 Locales\zhCN.lua
 Locales\frFR.lua
+Locales\esES.lua
+Locales\esMX.lua
+Locales\koKR.lua
+Locales\ruRU.lua
 
 core.lua
 helper.lua

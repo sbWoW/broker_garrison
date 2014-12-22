@@ -248,6 +248,19 @@ Garrison.ICON_CLOSE = Garrison.getIconString(Garrison.ICON_PATH_CLOSE, 16, false
 Garrison.ICON_OPEN_DOWN = Garrison.ICON_OPEN
 Garrison.ICON_CLOSE_DOWN = Garrison.ICON_CLOSE
 
+Garrison.Icon = {
+	[Garrison.TYPE_MISSION] = Garrison.ICON_PATH_MISSION,
+	[Garrison.TYPE_SHIPMENT] = Garrison.ICON_PATH_BUILDING,
+	[Garrison.TYPE_BUILDING] = Garrison.ICON_PATH_BUILDING,
+}
+
+Garrison.NotificationTitle = {
+	[Garrison.TYPE_BUILDING] = L["Building"],
+	[Garrison.TYPE_MISSION] = L["Mission"],
+	[Garrison.TYPE_SHIPMENT] = L["Shipment"],	
+}
+
+
 Garrison.tooltipConfig = {
 	["-"] = {
 		name = " - ",
@@ -355,7 +368,7 @@ Garrison.ldbTemplate = {
 	},	
 	["B1"] = {
 		name = L["Shipments Ready (All characters)"],
-		text = L["Shipments Ready: %sr%%cachewarning%"],
+		text = L["Shipments Ready: %sr%%cachewarning%"].."%cinvasion%",
 		type = Garrison.TYPE_BUILDING,
 	},
 	["B2"] = {
@@ -580,6 +593,14 @@ Garrison.ldbVars = {
 		name = L["Apexis Crystals"],
 		data = function(data) return Garrison.getTableValue(data, "currencyApexisAmount") or 0 end,
 	},
+	["sotf"] = {
+		name = L["Seal of Tempered Fate"],
+		data = function(data) return Garrison.getTableValue(data, "currencySealOfTemperedFateAmount") or 0 end,
+	},	
+	["sotficon"] = {
+		name = L["Icon: Seal of Tempered Fate"],
+		data = function(data) return Garrison.ICON_CURRENCY_TEMPERED_FATE end,
+	},	
 	["tapexis"] = {
 		name = L["Apexis Crystals (Total)"],
 		data = function(data) return Garrison.getTableValue(data, "currencyApexisTotal") or 0 end,
@@ -608,7 +629,11 @@ Garrison.ldbVars = {
 	},
 	["cinvasion"] = {
 		name = L["Current Player Invasion Available"],
-		data = function(data) return (Garrison.getTableValue(data, "invasionAvailable") and Garrison.ICON_INVASION or "") end,
+		data = function(data) return (Garrison.getTableValue(data, "invasionAvailableCurrent") and Garrison.ICON_INVASION or "") end,
 	},
+	["invasion"] = {
+		name = L["Invasion Available"],
+		data = function(data) return (Garrison.getTableValue(data, "invasionAvailable") and Garrison.ICON_INVASION or "") end,
+	},	
 }
 
