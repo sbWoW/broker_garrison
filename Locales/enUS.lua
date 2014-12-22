@@ -180,6 +180,7 @@ L["Show follower XP rewards"] = true
 L["Summary on login"] = true
 
 L["Current Player Invasion Available"] = true
+L["Invasion Available"] = true
 	
 L["Seal of Tempered Fate"] = true
 L["Icon: Seal of Tempered Fate"] = true
