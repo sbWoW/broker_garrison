@@ -424,13 +424,13 @@ end
 
 
 function Garrison.GetNextWeeklyResetTime()
-	local nextDailyReset = GetNextDailyReset()
+	local nextDailyReset = Garrison.GetNextDailyResetTime()
 	if (nextDailyReset == nil) then
 		return nil
 	end
 
 	local dayOfNextReset = date("*t", nextDailyReset).wday
-	local daysToWeeklyReset = fmod(7 + Garrison.WeeklyResetDay - dayOfNextReset, 7)
+	local daysToWeeklyReset = math.fmod(7 + Garrison.WeeklyResetDay - dayOfNextReset, 7)
 	local nextWeeklyReset = nextDailyReset + (daysToWeeklyReset * 86400) -- 86400 is number of seconds in a day (24 * 60 * 60)
  
 	return nextWeeklyReset

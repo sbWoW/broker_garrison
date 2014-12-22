@@ -221,7 +221,7 @@ function Garrison:UpdatePlotSize()
 			for k,v in pairs(plots) do
 				if v.id == plotID then
 					buildingData.plotSize = v.size
-					debugPrint(("[%s] found size %s"):format(buildingData.name, tostring(v.size)))
+					debugPrint(("[%s] found size %s"):format(buildingData.name, _G.tostring(v.size)))
 					break
 				end
 			end
@@ -473,6 +473,38 @@ function Garrison:LootToastEvent(event, ...)
 	end
 end
 
+function Garrison:CheckInvasionAvailable()
+	if not globalDb.data[charInfo.realmName][charInfo.playerName].invasion then
+		globalDb.data[charInfo.realmName][charInfo.playerName].invasion = { available = false }
+	end
+
+	globalDb.data[charInfo.realmName][charInfo.playerName].invasion.available = C_Garrison.IsInvasionAvailable()	
+end
+
+
+function Garrison:CheckBuildingInfo()
+	if Garrison.buildingInfo then
+		for buildingName, buildingInfo in pairs(Garrison.buildingInfo) do
+
+			if buildingInfo.trackCustomId then
+				local result = buildingInfo.trackCustom()
+				debugPrint(("BuildingInfo (%s): %s"):format(buildingName, tostring(result)))
+
+				if buildingInfo.weekly then
+					if not globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly then
+						globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly = {}
+					end
+					globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly[buildingInfo.trackCustomId] = result
+				elseif buildingInfo.daily then
+					if not globalDb.data[charInfo.realmName][charInfo.playerName].trackDaily then
+						globalDb.data[charInfo.realmName][charInfo.playerName].trackDaily = {}
+					end					
+					globalDb.data[charInfo.realmName][charInfo.playerName].trackDaily[buildingInfo.trackCustomId] = result					
+				end				
+			end
+		end
+	end
+end
 
 function Garrison:QuestHandling()
 	for _, realmData in pairs(globalDb.data) do
@@ -488,11 +520,13 @@ function Garrison:QuestHandling()
 			if not lootedNextReset or now >= lootedNextReset then
 				playerData.lootedNextReset = Garrison.GetNextDailyResetTime()
 				playerData.lootedToday = {}
+				playerData.trackDaily = {}
 			end
 
 			if not weeklyNextReset or now >= weeklyNextReset then
 				playerData.weeklyNextReset = Garrison.GetNextWeeklyResetTime()
-				playerData.questWeekly = {}
+				playerData.trackWeekly = {}
+				playerData.invasion = {}
 			end
 		end
 	end
@@ -540,30 +574,33 @@ function Garrison:ChatLootEvent(event, ...)
 	end
 end
 
-function Garrison:GetLootInfoForBuilding(lootedToday, buildingId)
+function Garrison:GetLootInfoForBuilding(playerData, buildingId)
 	local retValue = ""
+	
+	for buildingName, buildingInfo in pairs(Garrison.buildingInfo) do
+		if buildingInfo.level then
+			local buildingLevel = buildingInfo.level[buildingId]
+			if buildingLevel and buildingInfo.trackLootItemId ~= nil and playerData.lootedToday then 
+			local lootedToday = playerData.lootedToday[buildingInfo.trackLootItemId] or 0
+				if buildingInfo.minLooted and lootedToday > buildingInfo.minLooted then
+					retValue = " "..Garrison.ICON_CHECK
+				else
+					retValue = " "..Garrison.ICON_CHECK_WAITING
+				end
+			end
 
-	if lootedToday then
-		for buildingName, buildingInfo in pairs(Garrison.buildingInfo) do
-			if buildingInfo.level then
-				local buildingLevel = buildingInfo.level[buildingId]
+			if not playerData.trackWeekly then
+				playerData.trackWeekly = {}
+			end
 
-				if buildingLevel and buildingInfo.trackLootItemId ~= nil then
-					local lootedToday = lootedToday[buildingInfo.trackLootItemId] or 0
-					if buildingInfo.minLooted and lootedToday > buildingInfo.minLooted then
+			if buildingLevel and buildingInfo.trackCustomId ~= nil and playerData.trackWeekly then
+				if buildingInfo.minLevel and buildingLevel >= buildingInfo.minLevel then					
+					local complete = playerData.trackWeekly[buildingInfo.trackCustomId]
+
+					if complete then							
 						retValue = " "..Garrison.ICON_CHECK
 					else
 						retValue = " "..Garrison.ICON_CHECK_WAITING
-					end
-				end
-
-				if buildingLevel and buildingInfo.trackQuestId ~= nil then
-					if buildingInfo.minLevel and buildingLevel >= buildingInfo.minLevel then
-						if _G.IsQuestFlaggedCompleted(buildingInfo.trackQuestId) then
-							retValue = " "..Garrison.ICON_CHECK
-						else
-							retValue = " "..Garrison.ICON_CHECK_WAITING
-						end
 					end
 				end
 			end
@@ -587,16 +624,20 @@ end
 function Garrison:UpdateCurrency()
 	local _, amount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY)
 	local _, amountApexis, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_APEXIS)
+	local _, amountSealOfTemperedFateAmount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE)
+
+	
 
 	
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencyApexisAmount = amountApexis
+	globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfTemperedFateAmount = amountSealOfTemperedFateAmount
 
 	Garrison:Update()
 end
 
 function Garrison:QuickUpdate()
-	Garrison:DailyQuestHandling()
+	Garrison:QuestHandling()
 
 	if not configDb.general.highAccuracy then
 		if configDb.general.showSeconds then
@@ -624,6 +665,9 @@ function Garrison:SlowUpdate()
 			Garrison:UpdateLDB()
 		end
 	end	
+
+	Garrison:CheckInvasionAvailable()
+	Garrison:CheckBuildingInfo()
 
 	if not Garrison.location.inGarrison then
 		-- not in garrison - full update (slow)

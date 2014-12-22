@@ -35,6 +35,7 @@ Garrison.WeeklyResetDay = resets[Garrison.REGION]
 
 Garrison.GARRISON_CURRENCY = 824
 Garrison.GARRISON_CURRENCY_APEXIS = 823
+Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE = 994
 
 Garrison.GARRISON_TRACK_LOOT_ITEM = {
 	{
@@ -82,12 +83,26 @@ Garrison.buildingInfo = {
 		},
 	},
 	["War Mill"] = {
-		trackQuestId = 36058,
+		--trackQuestId = 36058,
+		trackCustom = function() return _G.IsQuestFlaggedCompleted(36058) end,
+		trackCustomId = "WARMILL",
 		minLevel = 3,
+		weekly = true,
 		["level"] = {
 			[8] = 1,
 			[9] = 2,
 			[10] = 3,
+		},
+	},
+	["Inn"] = {
+		trackCustom = function() return not (C_Garrison.CanGenerateRecruits() and C_Garrison.CanSetRecruitmentPreference()) end,
+		trackCustomId = "INN",
+		minLevel = 2,
+		weekly = true,
+		["level"] = {
+			[34] = 1,
+			[35] = 2,
+			[36] = 3,
 		},
 	},
 }
@@ -590,5 +605,10 @@ Garrison.ldbVars = {
 		data = function(data) 
 			return Garrison.getTableValue(data, "resourceCacheAmountMaxChar", "playerName")
 		end,
-	},		
+	},
+	["cinvasion"] = {
+		name = L["Current Player Invasion Available"],
+		data = function(data) return (Garrison.getTableValue(data, "invasionAvailable") and Garrison.ICON_INVASION or "") end,
+	},
 }
+

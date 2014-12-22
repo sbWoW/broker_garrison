@@ -59,6 +59,8 @@ local notificationQueue = {}
 Garrison.notificationQueue = notificationQueue
 local notificationQueueEnabled = true
 
+Garrison.data = {}
+
 -- Garrison Functions
 local debugPrint, pairsByKeys, formatRealmPlayer, tableSize, getColoredString, getColoredUnitName, formattedSeconds, getIconString
 
@@ -269,6 +271,9 @@ function Garrison:RegisterEvents()
 	self:RegisterEvent("GARRISON_BUILDING_ACTIVATED", "BuildingUpdate")
 	self:RegisterEvent("GARRISON_UPDATE", "BuildingUpdate")
 	self:RegisterEvent("SHIPMENT_UPDATE", "ShipmentStatusUpdate")
+
+	Garrison:CheckInvasionAvailable()
+	Garrison:CheckBuildingInfo()
 
 end
 
@@ -1143,9 +1148,18 @@ do
 								estimatedCacheResourceAmount = getColoredString((" (%s)"):format(math.min(500, tmpResources)), resourceColor)
 							end
 
+							local invasionAvailable = ""
+
+							if playerData.invasion and playerData.invasion.available then
+								invasionAvailable = Garrison.ICON_INVASION
+							end
+
 							tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN, nil, "LEFT", 1, nil, 0, 0, 20, 20)
-							tooltip:SetCell(row, 2, ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName)), nil, "LEFT", 3)
-							tooltip:SetCell(row, 5, ("%s %s%s %s %s"):format(Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), estimatedCacheResourceAmount, Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), nil, "RIGHT", 1)
+							tooltip:SetCell(row, 2, ("%s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), invasionAvailable), nil, "LEFT", 3)
+							tooltip:SetCell(row, 5, ("%s %s %s %s%s %s %s"):format(Garrison.ICON_CURRENCY_TEMPERED_FATE, BreakUpLargeNumbers(playerData.currencySealOfTemperedFateAmount or 0), 
+								Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), estimatedCacheResourceAmount, 
+								Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), 
+							nil, "RIGHT", 1)
 
 							tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_BUILDING})
 							--tooltip:SetCellScript(row, 1, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.buildingsExpanded, Garrison.TYPE_BUILDING})
@@ -1267,7 +1281,7 @@ do
 											rank = getColoredString("("..buildingData.rank..")", colors.lightGray)
 										end
 
-										buildingInfoIcon = buildingInfoIcon..Garrison:GetLootInfoForBuilding(playerData.lootedToday, buildingData.id)
+										buildingInfoIcon = buildingInfoIcon..Garrison:GetLootInfoForBuilding(playerData, buildingData.id)
 
 										if configDb.display.showIcon then
 											--tooltip:SetCell(row, 1, getIconString(, configDb.display.iconSize, false, false), nil, "LEFT", 1)
@@ -1484,11 +1498,14 @@ function Garrison:UpdateLDB()
 
 	local currencyTotal, currencyAmount = 0, 0
 	local currencyApexisAmount, currencyApexisTotal = 0, 0
+	local currencySealOfTemperedFateAmount = 0
 
 	local resourceCacheAmount, resourceCacheAmountMax = 0, 0
 	local resourceCacheAmountMaxChar = nil
 
 	local now = time()
+
+	local invasionAvailable
 
 	for realmName, realmData in pairs(globalDb.data) do
 		for playerName, playerData in pairs(realmData) do
@@ -1497,13 +1514,17 @@ function Garrison:UpdateLDB()
 			if Garrison.isCurrentChar(playerData.info) then
 				currencyAmount = (playerData.currencyAmount or 0)
 				currencyApexisAmount = playerData.currencyApexisAmount or 0
+				currencySealOfTemperedFateAmount = playerData.currencySealOfTemperedFateAmount or 0
 				
 				resourceCacheAmount = tmpResourceCacheAmount or 0
+
+				if playerData.invasion and playerData.invasion.available then
+					invasionAvailable = true
+				end
 			end
 			currencyTotal = currencyTotal + (playerData.currencyAmount or 0)
-			currencyApexisTotal = currencyApexisTotal + (playerData.currencyApexisAmount or 0)
+			currencyApexisTotal = currencyApexisTotal + (playerData.currencyApexisAmount or 0)			
 
-			
 			if tmpResourceCacheAmount then
 				if tmpResourceCacheAmount > resourceCacheAmountMax then
 					resourceCacheAmountMax = tmpResourceCacheAmount
@@ -1522,6 +1543,7 @@ function Garrison:UpdateLDB()
 		buildingCountCurrent = buildingCountCurrent,		
 		currencyAmount = currencyAmount,
 		currencyApexisAmount = currencyApexisAmount,
+		currencySealOfTemperedFateAmount = currencySealOfTemperedFateAmount,
 		currencyApexisTotal = currencyApexisTotal,
 		currencyTotal = currencyTotal,
 		currencyIcon = Garrison.ICON_CURRENCY,
@@ -1530,7 +1552,9 @@ function Garrison:UpdateLDB()
 		resourceCacheAmountMax = resourceCacheAmountMax,
 		resourceCacheAmountMaxChar = resourceCacheAmountMaxChar,
 		resourceCacheAmount = resourceCacheAmount,
+		invasionAvailable = invasionAvailable,
 	}
+	Garrison.data = data
 
 
 	ldb_object_mission.text = Garrison.replaceVariables(Garrison:GetLDBText(Garrison.TYPE_MISSION), data)
