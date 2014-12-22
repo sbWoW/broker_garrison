@@ -63,6 +63,53 @@ Garrison.LOOT_PATTERN = {
 	},
 }
 
+Garrison.DURATION_PATTERN = {
+	{
+		format = GARRISON_DURATION_DAYS_HOURS,
+		numMatch = 2,
+		factor = {
+			[0] = 86400,
+			[1] = 3600,
+		},
+	},	
+	{
+		format = GARRISON_DURATION_DAYS,
+		numMatch = 1,
+		factor =  {
+			[0] = 86400,
+		},
+	},
+	{
+		format = GARRISON_DURATION_HOURS_MINUTES,
+		numMatch = 2,
+		factor = {
+			[0] = 3600,
+			[1] = 60,
+		},
+	},
+	{
+		format = GARRISON_DURATION_HOURS,
+		numMatch = 1,
+		factor = {
+			[0] = 3600,
+		},
+	},
+	{
+		format = GARRISON_DURATION_MINUTES,
+		numMatch = 1,
+		factor = {
+			[0] = 60,
+		},
+	},
+	{
+		format = GARRISON_DURATION_SECONDS,
+		numMatch = 1,
+		factor = {
+			[0] = 1,
+		},
+	}
+}
+
 Garrison.buildingInfo = {
 	["Mine"] = {
 		trackLootItemId = 115508,
@@ -186,9 +233,6 @@ Garrison.ICON_REPLACEMENT = {
 	["Interface\\ICONS\\INV_Misc_Gem_01.blp"] = mediaPath.."inv_misc_gem_01",
 	["Interface\\ICONS\\INV_Misc_Armorkit_17.blp"] = mediaPath.."inv_misc_armorkit_17",
 	["Interface\\ICONS\\INV_Inscription_Tradeskill01.blp"] = mediaPath.."inv_inscription_tradeskill01",
-
-
-
 }
 
 Garrison.ICON_PATH_CURRENCY = mediaPath.."Inv_Garrison_Resource"

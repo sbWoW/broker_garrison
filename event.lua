@@ -24,14 +24,20 @@ function Garrison:GARRISON_MISSION_COMPLETE_RESPONSE(event, missionID, canComple
 	Garrison:Update()
 end
 
-function Garrison:GARRISON_MISSION_STARTED(event, missionID)
+function Garrison:GARRISON_MISSION_STARTED(event, missionID, start)
+
+	local startTime = time()
+
+	if start ~= nil then
+		startTime = start		
+	end
 
 	for key,garrisonMission in pairs(C_Garrison.GetInProgressMissions()) do
 		if (garrisonMission.missionID == missionID) then
 			local mission = {
 				id = garrisonMission.missionID,
 				name = garrisonMission.name,
-				start = time(),
+				start = startTime,
 				duration = garrisonMission.durationSeconds,
 				notification = 0,
 				timeLeft = garrisonMission.timeLeft,
@@ -72,7 +78,7 @@ function Garrison:GARRISON_MISSION_STARTED(event, missionID)
 					}
 
 					local missionModifier = Garrison.missionModifier[tmpAbility.id]
-					if missionModifier then
+					if start == nil and missionModifier then
 						-- modified mission time
 						if not mission.durationOriginal then
 							mission.durationOriginal = mission.duration 
@@ -530,6 +536,47 @@ function Garrison:QuestHandling()
 			end
 		end
 	end
+end
+
+function Garrison:GetParsedStartTime(missionTime, duration)
+	local missionTime = Garrison:ParseMissionTime(missionTime)
+
+	return _G.time() - (duration - missionTime)
+end
+
+function Garrison:ParseMissionTime(missionTime)
+	for _, durationData in pairs(Garrison.DURATION_PATTERN) do		
+
+		if not durationData.pattern then
+			durationData.pattern, durationData.captureIndices = Garrison.patternFromFormat(durationData.format)
+			debugPrint(("Pattern compile (%s): %s"):format(durationData.format, durationData.pattern))
+		end
+
+		local result1, result2 = nil, nil
+
+		local retVal = 0
+
+		local result0, result1, result2, result3 = Garrison.superFind(missionTime, durationData.pattern, durationData.captureIndices)
+
+		debugPrint(("%s (%s): %s, %s, %s, %s"):format(missionTime, durationData.pattern, tostring(result0), tostring(result1), tostring(result2), tostring(result3)))
+
+		if result2 ~= nil and durationData.factor[0] then
+
+			retVal = retVal + (result2 * durationData.factor[0])
+			debugPrint(("Calc1: %s * %s = %s"):format(result2, durationData.factor[0], (result2 * durationData.factor[0])))
+		end
+
+		if result3 ~= nil and durationData.factor[1] then
+			retVal = retVal + (result3 * durationData.factor[1])
+			debugPrint(("Calc2: %s * %s = %s"):format(result3, durationData.factor[1], (result3 * durationData.factor[1])))
+		end	
+
+		if retVal ~= 0 then
+			return retVal
+		end
+	end
+
+	return 0
 end
 
 function Garrison:ChatLootEvent(event, ...) 

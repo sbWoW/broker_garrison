@@ -1068,8 +1068,10 @@ do
 									tooltip:SetCell(row, 2, missionData.name..rewardString, nil, "LEFT", 2)
 
 									if (missionData.start == -1) then
+										local parsedTime = Garrison:GetParsedStartTime(missionData.timeLeft, missionData.duration)
+										
 										local formattedTime = ("~%s %s"):format(
-											missionData.timeLeft,
+											parsedTime or "~"..missionData.timeLeft,
 											getColoredString("("..formattedSeconds(missionData.duration)..")", colors.lightGray)
 										)
 										tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 1)
@@ -1452,6 +1454,12 @@ function Garrison:UpdateUnknownMissions(missionsLoaded)
 		-- Mission not found in Database
 		if not globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID]
 			or globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID].start == -1 then
+
+			local parsedTime = Garrison:GetParsedStartTime(garrisonMission.timeLeft, garrisonMission.durationSeconds)
+			--debugPrint(("Parse Duration: %s => %s"):format(garrisonMission.timeLeft, parsedTime))
+
+			Garrison:GARRISON_MISSION_STARTED("manual", garrisonMission.missionID, parsedTime)
+
 			local mission = {
 				id = garrisonMission.missionID,
 				name = garrisonMission.name,
@@ -1463,7 +1471,7 @@ function Garrison:UpdateUnknownMissions(missionsLoaded)
 				typeAtlas = garrisonMission.typeAtlas,
 				level = garrisonMission.level,
 			}
-			globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID] = mission
+			--globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID] = mission
 
 			-- debugPrint("Update untracked Mission: "..garrisonMission.missionID)
 		end
@@ -1536,7 +1544,7 @@ function Garrison:UpdateLDB()
 				resourceCacheAmount = tmpResourceCacheAmount or 0
 
 				if playerData.invasion and playerData.invasion.available then
-					debugPrint("invasionAvailableCurrent!!!!!")
+					--debugPrint("invasionAvailableCurrent!!!!!")
 					invasionAvailableCurrent = true
 				end
 			end
