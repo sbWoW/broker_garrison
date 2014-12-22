@@ -176,3 +176,11 @@ L["Icon Buildings"] = true
 L["Show rewards for each mission"] = true
 L["Show reward amount"] = true
 L["Show follower XP rewards"] = true
+
+L["Summary on login"] = true
+
+L["Current Player Invasion Available"] = true
+	
+L["Seal of Tempered Fate"] = true
+L["Icon: Seal of Tempered Fate"] = true
+L"%s - Summary"] = true
