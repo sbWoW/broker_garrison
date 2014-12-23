@@ -425,18 +425,20 @@ function Garrison:SendNotification(paramCharInfo, data, notificationType)
 	local retVal = false
 
 	local playerNotificationEnabled = globalDb.data[paramCharInfo.realmName][paramCharInfo.playerName].notificationEnabled
+	local notificationQueueEnabled = configDb.notification[notificationType].notificationQueueEnabled
+	local repeatOnLoad = configDb.notification[notificationType].repeatOnLoad
 
 	if delayedInit then
 		if configDb.notification[notificationType].enabled and (playerNotificationEnabled == nil or playerNotificationEnabled) then
 			if  (not data.notification or
 				(data.notification == 0) or
-				(not addonInitialized and configDb.notification[notificationType].repeatOnLoad and not data.notificationDismissed) or
+				(not addonInitialized and (repeatOnLoad or notificationQueueEnabled) and not data.notificationDismissed) or
 				(notificationType == TYPE_SHIPMENT and (not data.notificationValue or data.shipmentsReadyEstimate > data.notificationValue))
 			) then
 
 				if not Garrison:DisableInInstance() then
 
-					local notificationText, toastName, toastText, soundName, toastEnabled, playSound, notificationTitle, notificationQueueEnabled
+					local notificationText, toastName, toastText, soundName, toastEnabled, playSound, notificationTitle
 
 					if configDb.notification[notificationType].compactToast then
 						toastText = ("%s\n%s"):format(formatRealmPlayer(paramCharInfo, true), data.name)
@@ -446,8 +448,7 @@ function Garrison:SendNotification(paramCharInfo, data, notificationType)
 
 					toastEnabled = configDb.notification[notificationType].toastEnabled
 					playSound = configDb.notification[notificationType].playSound
-					soundName = configDb.notification[notificationType].soundName or "None"
-					notificationQueueEnabled = configDb.notification[notificationType].notificationQueueEnabled
+					soundName = configDb.notification[notificationType].soundName or "None"					
 
 
 					if (notificationType == TYPE_MISSION) then
@@ -1174,7 +1175,7 @@ do
 
 							tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN, nil, "LEFT", 1, nil, 0, 0, 20, 20)
 							tooltip:SetCell(row, 2, ("%s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), invasionAvailable), nil, "LEFT", 3)
-							tooltip:SetCell(row, 5, ("%s %s %s %s%s %s %s"):format(Garrison.ICON_CURRENCY_TEMPERED_FATE, BreakUpLargeNumbers(playerData.currencySealOfTemperedFateAmount or 0), 
+							tooltip:SetCell(row, 5, ("%s %s %s %s%s %s %s"):format(Garrison.ICON_CURRENCY_TEMPERED_FATE_TOOLTIP, BreakUpLargeNumbers(playerData.currencySealOfTemperedFateAmount or 0), 
 								Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), estimatedCacheResourceAmount, 
 								Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), 
 							nil, "RIGHT", 1)

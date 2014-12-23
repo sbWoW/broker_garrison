@@ -237,10 +237,11 @@ Garrison.ICON_REPLACEMENT = {
 
 Garrison.ICON_PATH_CURRENCY = mediaPath.."Inv_Garrison_Resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS = mediaPath.."Inv_Apexis_Draenor"
-Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE = mediaPath.."TemperedFate"
+
 
 Garrison.ICON_PATH_CURRENCY_TOOLTIP = mediaPath.."bg_garrison_resource_tooltip"
 Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP = mediaPath.."bg_apexis_draenor_tooltip"
+Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE_TOOLTIP = mediaPath.."bg_garrison_sealoftemperedfate_tooltip"
 
 Garrison.ICON_PATH_MISSION = mediaPath.."bg_missions"
 Garrison.ICON_PATH_BUILDING = mediaPath.."bg_buildings"
@@ -266,7 +267,7 @@ Garrison.ICON_CURRENCY = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY, 16,
 Garrison.ICON_CURRENCY_APEXIS = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS, 16, false)
 Garrison.ICON_CURRENCY_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TOOLTIP, 16, false)
 Garrison.ICON_CURRENCY_APEXIS_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP, 16, false)
-Garrison.ICON_CURRENCY_TEMPERED_FATE = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE, 16, false)
+Garrison.ICON_CURRENCY_TEMPERED_FATE_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE_TOOLTIP, 16, false)
 
 
 Garrison.ICON_MISSION = Garrison.getIconString(Garrison.ICON_PATH_MISSION, 16, false)
@@ -643,7 +644,7 @@ Garrison.ldbVars = {
 	},	
 	["sotficon"] = {
 		name = L["Icon: Seal of Tempered Fate"],
-		data = function(data) return Garrison.ICON_CURRENCY_TEMPERED_FATE end,
+		data = function(data) return Garrison.ICON_CURRENCY_TEMPERED_FATE_TOOLTIP end,
 	},	
 	["tapexis"] = {
 		name = L["Apexis Crystals (Total)"],
