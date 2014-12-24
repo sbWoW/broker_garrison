@@ -1415,7 +1415,7 @@ function Garrison:SetupOptions()
 	options.args.notificationGroup.args.notificationLibSink.order = 600
 	options.args.notificationGroup.args.notificationLibSink.inline = true
 	options.args.notificationGroup.args.notificationLibSink.name = ""
-	options.args.notificationGroup.args.notificationLibSink.disabled = function() return not configDb.notification.enabled end
+	--options.args.notificationGroup.args.notificationLibSink.disabled = function() return not configDb.notification.enabled end
 
 	options.plugins["profiles"] = {
 		--profiles = AceDBOptions:GetOptionsTable(garrisonDb)
