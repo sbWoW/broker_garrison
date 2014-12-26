@@ -1300,7 +1300,7 @@ do
 											rank = getColoredString("("..buildingData.rank..")", colors.lightGray)
 										end
 
-										buildingInfoIcon = buildingInfoIcon..Garrison:GetLootInfoForBuilding(playerData, buildingData.id)
+										buildingInfoIcon = buildingInfoIcon..Garrison:GetLootInfoForBuilding(playerData, buildingData)
 
 										if configDb.display.showIcon then
 											--tooltip:SetCell(row, 1, getIconString(, configDb.display.iconSize, false, false), nil, "LEFT", 1)
@@ -1685,7 +1685,9 @@ function Garrison:OnInitialize()
 
 	self:RawHook("GarrisonMinimapBuilding_ShowPulse", true)
 	self:RawHook("GarrisonMinimapShipmentCreated_ShowPulse", true)
-	self:RawHook("GarrisonMinimapMission_ShowPulse", true)			
+	self:RawHook("GarrisonMinimapMission_ShowPulse", true)	
+
+	self:SecureHook(C_Garrison, "RecruitFollower", "RecruitFollower")
 
 	timers.init_update = Garrison:ScheduleTimer("DelayedUpdate", 5)	
 

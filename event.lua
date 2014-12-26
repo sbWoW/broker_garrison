@@ -492,7 +492,7 @@ function Garrison:CheckBuildingInfo()
 	if Garrison.buildingInfo then
 		for buildingName, buildingInfo in pairs(Garrison.buildingInfo) do
 
-			if buildingInfo.trackCustomId then
+			if buildingInfo.trackCustomId and buildingInfo.trackCustom ~= nil then
 				local result = buildingInfo.trackCustom()
 				debugPrint(("BuildingInfo (%s): %s"):format(buildingName, tostring(result)))
 
@@ -621,12 +621,12 @@ function Garrison:ChatLootEvent(event, ...)
 	end
 end
 
-function Garrison:GetLootInfoForBuilding(playerData, buildingId)
+function Garrison:GetLootInfoForBuilding(playerData, buildingData)
 	local retValue = ""
 	
 	for buildingName, buildingInfo in pairs(Garrison.buildingInfo) do
 		if buildingInfo.level then
-			local buildingLevel = buildingInfo.level[buildingId]
+			local buildingLevel = buildingInfo.level[buildingData.id]
 			if buildingLevel and buildingInfo.trackLootItemId ~= nil and playerData.lootedToday then 
 			local lootedToday = playerData.lootedToday[buildingInfo.trackLootItemId] or 0
 				if buildingInfo.minLooted and lootedToday > buildingInfo.minLooted then
@@ -641,7 +641,9 @@ function Garrison:GetLootInfoForBuilding(playerData, buildingId)
 			end
 
 			if buildingLevel and buildingInfo.trackCustomId ~= nil and playerData.trackWeekly then
-				if buildingInfo.minLevel and buildingLevel >= buildingInfo.minLevel then					
+				if buildingInfo.minLevel and ((buildingLevel > buildingInfo.minLevel)
+					or (not (buildingData.isBuilding or buildingData.canActivate) and buildingLevel == buildingInfo.minLevel))
+				then					
 					local complete = playerData.trackWeekly[buildingInfo.trackCustomId]
 
 					if complete then							
@@ -772,6 +774,13 @@ function Garrison:GarrisonMinimapMission_ShowPulse()
 		debugPrint("Play Pulse (Mission)")
 		self.hooks.GarrisonMinimapMission_ShowPulse(_G.GarrisonLandingPageMinimapButton)
 	end
+end
+
+function Garrison:RecruitFollower(...)
+	local tmp = ...
+	debugPrint("RecruitFollower"..tostring(tmp))
+
+	globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly["INN"] = true
 end
 
 --function Garrison:GarrisonCapacitiveDisplayFrame_Update()

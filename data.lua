@@ -142,10 +142,8 @@ Garrison.buildingInfo = {
 		},
 	},
 	["Inn"] = {
-		trackCustom = function() return not (C_Garrison.CanGenerateRecruits() and C_Garrison.CanSetRecruitmentPreference()) end,
 		trackCustomId = "INN",
 		minLevel = 2,
-		weekly = true,
 		["level"] = {
 			[34] = 1,
 			[35] = 2,
