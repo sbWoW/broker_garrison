@@ -1393,7 +1393,7 @@ function Garrison.getDataOptionTable()
 			i = i + 1
 		end
 
-		baseOrder = baseOrder + 100
+		baseOrder = baseOrder + 200
 	end
 
 	return dataTable
