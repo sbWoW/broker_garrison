@@ -344,7 +344,17 @@ end
 function Garrison.replaceVariables(text, data)
 	local returnText = ""
 	if text then
-		returnText = text:gsub("%%(%w+)|?([^%%]*)%%", function (s, default)
+		returnText = text:gsub("=(%x%x)(%x%x)(%x%x)=", 
+		   function (r, g, b)
+		      return ("|cff%s%s%s"):format(r, g, b)
+		end)
+
+		returnText = returnText:gsub("==", 
+		   function (r, g, b)
+		      return "|r"
+		end)
+
+		returnText = returnText:gsub("%%(%w+)|?([^%%]*)%%", function (s, default)
 			local key = tostring(s)
 			local textFun = Garrison.ldbVars[key]
 

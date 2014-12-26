@@ -242,6 +242,7 @@ function Garrison:GetOptions()
 							ldbText = {
 								order = 130,
 								type = "input",
+								multiline = 5,
 								width = "full",
 								name = L["Custom LDB Text"],
 								desc = L["Custom LDB Text"],
@@ -313,6 +314,7 @@ function Garrison:GetOptions()
 								order = 130,
 								type = "input",
 								width = "full",
+								multiline = 5,
 								name = L["Custom LDB Text"],
 								desc = L["Custom LDB Text"],
 								get = function() return configDb.general.building.ldbText end,
