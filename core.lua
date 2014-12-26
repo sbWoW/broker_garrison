@@ -1191,7 +1191,7 @@ do
 							if not (playerData.buildingsExpanded) then
 								
 
-								local playerBuildingUpgrade = ("%s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName))
+								local playerBuildingUpgrade = ("%s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), invasionAvailable)
 
 								local formattedShipment = ""
 
