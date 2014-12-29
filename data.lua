@@ -233,30 +233,31 @@ Garrison.ICON_REPLACEMENT = {
 	["Interface\\ICONS\\INV_Inscription_Tradeskill01.blp"] = mediaPath.."inv_inscription_tradeskill01",
 }
 
-Garrison.ICON_PATH_CURRENCY = mediaPath.."Inv_Garrison_Resource"
-Garrison.ICON_PATH_CURRENCY_APEXIS = mediaPath.."Inv_Apexis_Draenor"
+Garrison.ICON_PATH_CURRENCY = mediaPath.."bg_garrison_toolbar_resource"
+Garrison.ICON_PATH_CURRENCY_APEXIS = mediaPath.."bg_garrison_toolbar_apexis"
+Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE = mediaPath.."bg_garrison_toolbar_fate"
 
 
 Garrison.ICON_PATH_CURRENCY_TOOLTIP = mediaPath.."bg_garrison_tooltip_resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP = mediaPath.."bg_garrison_tooltip_apexis"
 Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE_TOOLTIP = mediaPath.."bg_garrison_tooltip_fate"
 
-Garrison.ICON_PATH_MISSION = mediaPath.."bg_missions"
-Garrison.ICON_PATH_BUILDING = mediaPath.."bg_buildings"
+Garrison.ICON_PATH_MISSION = mediaPath.."bg_garrison_toolbar_missions"
+Garrison.ICON_PATH_BUILDING = mediaPath.."bg_garrison_toolbar_buildings"
 
-Garrison.ICON_PATH_FOLLOWER_NO_PORTRAIT = mediaPath.."follower_no_portrait"
+Garrison.ICON_PATH_FOLLOWER_NO_PORTRAIT = mediaPath.."bg_garrison_tooltip_follower"
 
-Garrison.ICON_PATH_OPEN = mediaPath.."arrow_open"
-Garrison.ICON_PATH_CLOSE = mediaPath.."arrow_close"
+Garrison.ICON_PATH_OPEN = mediaPath.."bg_garrison_tooltip_arrow_open"
+Garrison.ICON_PATH_CLOSE = mediaPath.."bg_garrison_tooltip_arrow_close"
 
-Garrison.ICON_PATH_ARROW_UP = mediaPath.."arrow_up"
-Garrison.ICON_PATH_ARROW_UP_WAITING = mediaPath.."arrow_up_waiting"
+Garrison.ICON_PATH_ARROW_UP = mediaPath.."bg_garrison_tooltip_buildings_active"
+Garrison.ICON_PATH_ARROW_UP_WAITING = mediaPath.."bg_garrison_tooltip_buildings_waiting"
 
-Garrison.ICON_PATH_CHECK = mediaPath.."check"
-Garrison.ICON_PATH_CHECK_WAITING = mediaPath.."check_waiting"
-Garrison.ICON_PATH_WARNING = mediaPath.."warning"
+Garrison.ICON_PATH_CHECK = mediaPath.."bg_garrison_tooltip_check_active"
+Garrison.ICON_PATH_CHECK_WAITING = mediaPath.."bg_garrison_tooltip_check_waiting"
+Garrison.ICON_PATH_WARNING = mediaPath.."bg_garrison_toolbar_warning"
 
-Garrison.ICON_PATH_INVASION = mediaPath.."invasion"
+Garrison.ICON_PATH_INVASION = mediaPath.."bg_garrison_toolbar_invasion"
 
 Garrison.COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
 --Garrison.ICON_CURRENCY = string.format("\124T%s\\%s:%d:%d:1:0\124t", mediaPath, name, 16, 16)
@@ -264,6 +265,7 @@ Garrison.COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
 Garrison.ICON_CURRENCY = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY, 16, false)
 Garrison.ICON_CURRENCY_APEXIS = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS, 16, false)
 Garrison.ICON_CURRENCY_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TOOLTIP, 16, false)
+Garrison.ICON_CURRENCY_TEMPERED_FATE = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE, 16, false)
 Garrison.ICON_CURRENCY_APEXIS_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP, 16, false)
 Garrison.ICON_CURRENCY_TEMPERED_FATE_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE_TOOLTIP, 16, false)
 
@@ -278,9 +280,6 @@ Garrison.ICON_CHECK = Garrison.getIconString(Garrison.ICON_PATH_CHECK, 16, false
 Garrison.ICON_CHECK_WAITING = Garrison.getIconString(Garrison.ICON_PATH_CHECK_WAITING, 16, false)
 Garrison.ICON_WARNING = Garrison.getIconString(Garrison.ICON_PATH_WARNING, 16, false)
 Garrison.ICON_INVASION = Garrison.getIconString(Garrison.ICON_PATH_INVASION, 16, false)
-
-
---Garrison.ICON_CURRENCY_APEXIS = string.format("\124TInterface\\Icons\\Inv_Apexis_Draenor:%d:%d:1:0\124t", 16, 16)
 
 
 Garrison.ICON_OPEN = Garrison.getIconString(Garrison.ICON_PATH_OPEN, 16, false)
@@ -642,7 +641,7 @@ Garrison.ldbVars = {
 	},	
 	["sotficon"] = {
 		name = L["Icon: Seal of Tempered Fate"],
-		data = function(data) return Garrison.ICON_CURRENCY_TEMPERED_FATE_TOOLTIP end,
+		data = function(data) return Garrison.ICON_CURRENCY_TEMPERED_FATE end,
 	},	
 	["tapexis"] = {
 		name = L["Apexis Crystals (Total)"],
@@ -680,3 +679,4 @@ Garrison.ldbVars = {
 	},	
 }
 
+_G["BrokerGarrison"].ldbVars = Garrison.ldbVars
