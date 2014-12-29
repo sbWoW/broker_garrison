@@ -238,7 +238,7 @@ function Garrison.getColoredUnitName (name, class, realm)
 			classColor = Garrison.colors.white
 		end
 
-		colorUnitName = string.format("|cff%02x%02x%02x%s|r",classColor.r*255,classColor.g*255,classColor.b*255,name)
+		colorUnitName = Garrison.getColoredString(name, classColor)
 
 		unitColor[realm..name] = colorUnitName
 	else
@@ -252,7 +252,7 @@ function Garrison.getColoredTooltipString(text, conditionTable)
 
 	for name, val in pairs(conditionTable) do
 		if (val.condition) then
-			retText = string.format("|cff%02x%02x%02x%s|r",val.color.r*255,val.color.g*255,val.color.b*255, text)
+			retText = Garrison.getColoredString(text, val.color)
 		end
 	end
 
@@ -288,7 +288,15 @@ function Garrison.formattedSeconds(seconds)
 		if configDb.general.showSeconds then
 			return ("%s%d:%02d:%02d"):format(negative, seconds / SECONDS_PER_HOUR, math.fmod(seconds / 60, 60), math.fmod(seconds, 60))
 		else
-			return ("%s%d:%02d"):format(negative, seconds / SECONDS_PER_HOUR, math.ceil(math.fmod(seconds / 60, 60)))
+			local minutes = math.ceil(math.fmod(seconds / 60, 60))
+			local hours = seconds / SECONDS_PER_HOUR
+
+			--if minutes == 60 then
+			--	minutes = 0
+			--	hours = hours + 1
+			--end
+
+			return ("%s%d:%02d"):format(negative, hours, minutes)
 		end
 	end
 end

@@ -186,7 +186,7 @@ function Garrison:GetOptions()
 						end,
 					},
 					showSeconds = {
-						order = 110,
+						order = 115,
 						type = "toggle",
 						width = "double",
 						name = L["Show seconds in LDB/Tooltip"],
@@ -196,7 +196,21 @@ function Garrison:GetOptions()
 							Garrison:UpdateLDB()
 						end,
 						--disabled = function() return not configDb.general.highAccuracy end,
-					},					
+					},
+					updateInCombat = {
+						order = 120,
+						type = "toggle",
+						width = "double",
+						name = L["Run updates (LDB, data queries) in combat"],
+						desc = L["Run updates (LDB, data queries) in combat"],
+						get = function() return configDb.general.updateInCombat end,
+						set = function(_,v) configDb.general.updateInCombat = v
+							Garrison:UpdateLDB()
+						end,
+						--disabled = function() return not configDb.general.highAccuracy end,
+					},
+
+
 					missionGroup = {
 						order = 200,
 						type = "group",

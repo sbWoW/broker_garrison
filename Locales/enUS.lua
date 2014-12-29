@@ -185,3 +185,4 @@ L["Invasion Available"] = true
 L["Seal of Tempered Fate"] = true
 L["Icon: Seal of Tempered Fate"] = true
 L["%s - Summary"] = true
+L["Run updates (LDB, data queries) in combat"] = true

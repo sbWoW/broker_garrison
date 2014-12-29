@@ -686,41 +686,49 @@ function Garrison:UpdateCurrency()
 end
 
 function Garrison:QuickUpdate()
-	Garrison:QuestHandling()
+	if configDb.general.updateInCombat or not InCombatLockdown() then
+		Garrison:QuestHandling()
 
-	if not configDb.general.highAccuracy then
-		if configDb.general.showSeconds then
-			Garrison:UpdateLDB()
+		if not configDb.general.highAccuracy then
+			if configDb.general.showSeconds then
+				Garrison:UpdateLDB()
+			end
 		end
-	end
-	
-	if Garrison.location.inGarrison then
-		-- in garrison - full update (quick)
-		Garrison:Update()
+		
+		if Garrison.location.inGarrison then
+			-- in garrison - full update (quick)
+			Garrison:Update()
+		end
 	end
 end
 
 function Garrison:LDBUpdate()
-	Garrison:HandleNotificationQueue()
+	if configDb.general.updateInCombat or not InCombatLockdown() then
+
+		Garrison:HandleNotificationQueue()
 	
-	if configDb.general.highAccuracy then		
-		Garrison:UpdateLDB()
+		if configDb.general.highAccuracy then		
+			Garrison:UpdateLDB()
+		end
 	end
 end
 
 function Garrison:SlowUpdate()
-	if not configDb.general.highAccuracy then
-		if not configDb.general.showSeconds then
-			Garrison:UpdateLDB()
+	if configDb.general.updateInCombat or not InCombatLockdown() then
+
+		if not configDb.general.highAccuracy then
+			if not configDb.general.showSeconds then
+				Garrison:UpdateLDB()
+			end
+		end	
+
+		Garrison:CheckInvasionAvailable()
+		Garrison:CheckBuildingInfo()
+
+		if not Garrison.location.inGarrison then
+			-- not in garrison - full update (slow)
+			Garrison:Update()
 		end
-	end	
-
-	Garrison:CheckInvasionAvailable()
-	Garrison:CheckBuildingInfo()
-
-	if not Garrison.location.inGarrison then
-		-- not in garrison - full update (slow)
-		Garrison:Update()
 	end
 end
 
