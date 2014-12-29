@@ -678,5 +678,3 @@ Garrison.ldbVars = {
 		data = function(data) return (Garrison.getTableValue(data, "invasionAvailable") and Garrison.ICON_INVASION or "") end,
 	},	
 }
-
-_G["BrokerGarrison"].ldbVars = Garrison.ldbVars

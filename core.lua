@@ -477,6 +477,8 @@ function Garrison:SendNotification(paramCharInfo, data, notificationType)
 						-- don't display notifications, just save them and prepare for later output
 						Garrison:AddNotificationToQueue(notificationType, paramCharInfo, notificationTitle)
 					else
+						Garrison.fireEvent(notificationType, paramCharInfo, data)
+
 						debugPrint(notificationText)
 
 						self:Pour(notificationText, colors.green.r, colors.green.g, colors.green.b)
@@ -554,7 +556,7 @@ function Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, missions)
 
 			missionData.timeLeftCalc = math.max(0, timeLeft)
 
-			if (timeLeft < 0 and missionData.start >= 0) then
+			if (timeLeft < 0 and missionData.start >= 0) then				
 				Garrison:SendNotification(paramCharInfo, missionData, TYPE_MISSION)
 			end
 		end
@@ -1589,7 +1591,7 @@ function Garrison:UpdateLDB()
 		invasionAvailableCurrent = invasionAvailableCurrent,
 	}
 	Garrison.data = data
-	_G["BrokerGarrison"].data = Garrison.data
+	--_G["BrokerGarrison"].data = Garrison.data
 
 
 	ldb_object_mission.text = Garrison.replaceVariables(Garrison:GetLDBText(Garrison.TYPE_MISSION), data)
@@ -1658,6 +1660,7 @@ function Garrison:OnInitialize()
 	colors = Garrison.colors
 
 	self:SetupOptions()
+	self:SetupAPI()
 
 	Garrison:SetSinkStorage(configDb.notification.sink)
 
