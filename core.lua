@@ -11,6 +11,8 @@ _G["BrokerGarrison"] = {}
 Garrison.versionString = GetAddOnMetadata(ADDON_NAME, "Version");
 Garrison.cleanName = "Broker Garrison"
 
+Garrison.detachframe = {}
+
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
 local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale(ADDON_NAME)
 local LibQTip = LibStub('LibQTip-1.0')
@@ -759,11 +761,12 @@ function Garrison:UpdateConfig()
 end
 
 local updater
+local tooltipRegistry = {}	
 
 local DrawTooltip
 do
 	local NUM_TOOLTIP_COLUMNS = 5
-	local tooltipRegistry = {}	
+	
 	local LDB_anchor
 	local tooltipType
 	local tooltip
@@ -894,6 +897,8 @@ do
 
 		locked = true
 
+		local detached = Garrison:IsDetached(tooltipType)
+
 		if not tooltip then
 			tooltipRegistry[tooltipType].tooltip = LibQTip:Acquire("BrokerGarrisonTooltip-"..paramTooltipType, NUM_TOOLTIP_COLUMNS, "LEFT", "LEFT", "LEFT", "LEFT", "LEFT")
 			tooltip = tooltipRegistry[tooltipType].tooltip
@@ -904,8 +909,17 @@ do
 				tooltip.OnRelease = Tooltip_OnRelease_Building
 			end
 			tooltip:EnableMouse(true)
-			tooltip:SmartAnchorTo(anchor_frame)
-			tooltip:SetAutoHideDelay(configDb.display.autoHideDelay or 0.25, LDB_anchor)
+
+		   if detached then
+	        	LDB_anchor = UIParent
+	        	tooltipRegistry[tooltipType].anchor = LDB_anchor
+	        	tooltip:SmartAnchorTo(UIParent)
+				tooltip:SetAutoHideDelay(nil, UIParent)
+			else
+				tooltip:SmartAnchorTo(anchor_frame)
+				tooltip:SetAutoHideDelay(configDb.display.autoHideDelay or 0.25, LDB_anchor)
+			end
+
 			tooltip:SetScale(configDb.display.scale or 1)
 			tooltip:SetHighlightTexture(nil)
 			local font = LSM:Fetch("font", configDb.display.fontName or DEFAULT_FONT)
@@ -1397,10 +1411,19 @@ do
 
 		--debugPrint(("r: %s, g: %s, b: %s, a: %s"):format(configDb.display.backgroundColor.r, configDb.display.backgroundColor.g, configDb.display.backgroundColor.b, configDb.display.backgroundColor.a))
 
-	  	tooltip:SetBackdropColor(0, 0, 0, 255 / configDb.display.backgroundAlpha)
-	  	tooltip:Show()
+	  	tooltip:SetBackdropColor(0, 0, 0, 255 / configDb.display.backgroundAlpha)  		
+
+  		tooltip:Show()
 
 	  	tooltip:UpdateScrolling()
+
+		if detached then
+        	tooltip:SmartAnchorTo(UIParent)
+			tooltip:SetAutoHideDelay(nil, UIParent)
+		else
+			tooltip:SmartAnchorTo(anchor_frame)
+			tooltip:SetAutoHideDelay(configDb.display.autoHideDelay or 0.25, LDB_anchor)
+		end
 
 	  	locked = false
 	end
@@ -1417,17 +1440,21 @@ do
 		DrawTooltip(self, TYPE_MISSION)
 	end
 
-	local function onclick(button)
+	local function onclick(button, paramType)
 		if button == "LeftButton" then
 			Garrison:LoadDependencies()
 
-			if GarrisonLandingPage then
-				if (not GarrisonLandingPage:IsShown()) then
-					ShowUIPanel(GarrisonLandingPage)
-				else
-					HideUIPanel(GarrisonLandingPage)
+			if IsShiftKeyDown() then
+				Garrison:ToggleDetached(paramType)
+			else
+				if GarrisonLandingPage then
+					if (not GarrisonLandingPage:IsShown()) then
+						ShowUIPanel(GarrisonLandingPage)
+					else
+						HideUIPanel(GarrisonLandingPage)
+					end
 				end
-			end
+			end				
 		else
 			for i, button in ipairs(InterfaceOptionsFrameAddOns.buttons) do
 				if button.element and button.element.name == ADDON_NAME and button.element.collapsed then
@@ -1443,14 +1470,97 @@ do
 	end
 
 	function ldb_object_mission:OnClick(button)
-		onclick(button)
+		onclick(button, TYPE_MISSION)
 	end
 
 	function ldb_object_building:OnClick(button)
-		onclick(button)
+		onclick(button, TYPE_BUILDING)
 	end
 end
 
+function Garrison:IsDetached(paramType)
+  return Garrison.detachframe[paramType] and Garrison.detachframe[paramType]:IsShown()
+end
+function Garrison:HideDetached(paramType)
+  Garrison.detachframe[paramType]:Hide()
+end
+function Garrison:ToggleDetached(paramType)
+   if Garrison:IsDetached(paramType) then
+     Garrison:HideDetached(paramType)
+   else
+     Garrison:ShowDetached(paramType)
+   end
+end
+
+local posx, posy
+
+function Garrison:ShowDetached(paramType)
+	local tooltip = tooltipRegistry[paramType] and tooltipRegistry[paramType].tooltip or nil
+
+	if not Garrison.detachframe[paramType] then
+		local f = _G.CreateFrame("Frame", "BrokerGarrisonFrame"..paramType, _G.UIParent, "BasicFrameTemplate")
+
+
+	    f:SetMovable(true)
+	    f:SetFrameStrata("TOOLTIP")
+	    f:SetClampedToScreen(true)
+	    f:EnableMouse(true)
+	    f:SetUserPlaced(true)
+	    f.type = paramType
+      	
+      	if false and posx and posy then
+        	f:SetPoint("TOPLEFT",posx,-posy)
+    	else
+	        f:SetPoint("CENTER")
+      	end
+      	f:SetScript("OnMouseDown", function() 
+      		f:StartMoving() 
+      	end)
+
+      	f:SetScript("OnMouseUp", function() 
+      		f:StopMovingOrSizing()
+            posx = f:GetLeft()
+        	posy = UIParent:GetTop() - (f:GetTop()*f:GetScale())
+        end)
+
+		f:SetScript("OnHide", function() 
+			if tooltipRegistry[f.type] and tooltipRegistry[f.type].tooltip then 					
+				LibQTip:Release(tooltipRegistry[f.type].tooltip); 				
+			end 
+		end)
+
+		f:SetScript("OnUpdate", function(self)
+			local tooltip = tooltipRegistry[f.type] and tooltipRegistry[f.type].tooltip or nil
+			if not tooltip then f:Hide(); return end		
+			local w,h = tooltip:GetSize()
+			self:SetSize(w*tooltip:GetScale(),(h+20)*tooltip:GetScale())
+			tooltip:ClearAllPoints()
+			tooltip:SetPoint("BOTTOMLEFT", Garrison.detachframe[f.type])
+			tooltip:SetFrameLevel(Garrison.detachframe[f.type]:GetFrameLevel()+1)
+		    tooltip:Show()			
+		end)
+
+		f:SetScript("OnKeyDown", function(self,key) 
+        	if key == "ESCAPE" then 
+	   			f:SetPropagateKeyboardInput(false)
+	   			f:Hide(); 
+			end
+		end)
+
+    	f:EnableKeyboard(true)
+    	Garrison.detachframe[paramType] = f
+	end
+
+    local f = Garrison.detachframe[paramType]    
+    f:SetPropagateKeyboardInput(true)
+    
+    if tooltipRegistry[paramType] and tooltipRegistry[paramType].tooltip then tooltipRegistry[paramType].tooltip:Hide() end
+
+    f:Show()
+
+	DrawTooltip(f, paramType)
+
+end
 
 function Garrison:UpdateUnknownMissions(missionsLoaded)
 	local activeMissions = {}

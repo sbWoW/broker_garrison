@@ -1232,13 +1232,21 @@ function Garrison:GetOptions()
 					version = {				
 						order = 200,
 						type = "description",
+						fontSize = "medium",
 						name = ("Version: %s\n"):format(Garrison.versionString),
 						cmdHidden = true,
 					},
 					about = {
 						order = 300,
 						type = "description",
-						name = ("Author: %s <EU-Khaz'Goroth>\nLayout: %s <EU-Khaz'Goroth>"):format(Garrison.getColoredUnitName("Smb","PRIEST", "EU-Khaz'Goroth"), Garrison.getColoredUnitName("Hotaruby","DRUID", "EU-Khaz'Goroth")),
+						fontSize = "medium",
+						name = ("Author: %s <EU-Khaz'Goroth>\n\nLayout: %s %s / %s <EU-Khaz'Goroth> %s\n\nThanks to:\n\n%s"):format(Garrison.getColoredUnitName("Smb","PRIEST", "EU-Khaz'Goroth"), 
+																										 Garrison.getIconString(Garrison.ICON_PATH_ABOUT1, 20, false, false),
+																										 Garrison.getColoredUnitName("Jarves","ROGUE", "EU-Khaz'Goroth"),
+																										 Garrison.getColoredUnitName("Hotaruby","DRUID", "EU-Khaz'Goroth"),
+																										 Garrison.getIconString(Garrison.ICON_PATH_ABOUT1, 20, false, false),
+																										 "znf (Ideas)\nStanzilla (Ideas)\nTorhal (Ideas, LibQTip, Toaster, ...)\nMegalon (AILO, Lockouts)"
+																										 ),
 						cmdHidden = true,
 					},
 				},

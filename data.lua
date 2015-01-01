@@ -263,6 +263,7 @@ Garrison.ICON_PATH_CURRENCY = mediaPath.."bg_garrison_toolbar_resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS = mediaPath.."bg_garrison_toolbar_apexis"
 Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE = mediaPath.."bg_garrison_toolbar_fate"
 
+Garrison.ICON_PATH_ABOUT1 = mediaPath.."bg_garrison_about_h1"
 
 Garrison.ICON_PATH_CURRENCY_TOOLTIP = mediaPath.."bg_garrison_tooltip_resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP = mediaPath.."bg_garrison_tooltip_apexis"
