@@ -35,7 +35,7 @@ end
 
 local function fireEvent(event, paramCharInfo, data)
 	local dataCopy = Garrison.deepcopy(data)
-	if events and events[event] then
+	if events and events[event] ~= nil then
 		debugPrint(("fireEvent [%s] (%s-%s): %s"):format(event, paramCharInfo.realmName, paramCharInfo.playerName, tostring(data)))
 		for _, callable in pairs(events[event]) do			
 			callable(paramCharInfo, dataCopy)

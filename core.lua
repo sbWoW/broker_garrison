@@ -1053,7 +1053,7 @@ do
 
 											if showReward then
 												if rewardData.icon or rewardData.itemID then
-													rewardString = rewardString.." "..getIconString(rewardData.icon or rewardData.itemID, configDb.display.iconSize, false, true)
+													rewardString = rewardString.." "..getIconString(rewardData.icon or rewardData.itemID, configDb.display.iconSize, false, false)
 												end
 
 												if configDb.general.mission.showRewardsAmount then
@@ -1064,7 +1064,7 @@ do
 															rewardAmount = math.floor(rewardAmount / 10000)
 														end
 
-														rewardString = rewardString.." "..getColoredString(("%s"):format(rewardAmount), colors.lightGray)
+														rewardString = rewardString.." "..getColoredString(("(%s)"):format(rewardAmount), colors.lightGray)
 													end
 												end
 											end
@@ -1098,7 +1098,7 @@ do
 										for followerNum = 1, #missionData.followers do
 											local followerData = missionData.followers[followerNum]
 
-											followerString = followerString..("%s %s  "):format(Garrison.GetTextureForID(followerData.iconId, configDb.display.iconSize), followerData.name)
+											followerString = followerString..("%s %s  "):format(Garrison.GetTextureForID(followerData.iconId, configDb.display.iconSize - 4), followerData.name)
 										end
 
 										tooltip:SetCell(row, 2, getColoredString(followerString, colors.lightGray), nil, "LEFT", 3)

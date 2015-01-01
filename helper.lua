@@ -163,7 +163,12 @@ function Garrison.GetTextureForID(id, size)
 end
 
 function Garrison.GetIconPath(name) 
-	local iconPath = Garrison.ICON_REPLACEMENT[name]
+
+	local rawName = _G.strlower(name:gsub(".blp", ""):gsub("\\\\", "\\"))
+
+	local iconPath = Garrison.ICON_REPLACEMENT[rawName]
+
+	-- Garrison.debugPrint(("%s => %s"):format(rawName, tostring(iconPath)))
 
 	if iconPath ~= nil then
 		return iconPath
@@ -208,7 +213,6 @@ function Garrison.getIconString(name, size, isAtlas, ...)
                     end
                     name = itemTexture
 				end
-
 
 				if iconZoom then			
 					Garrison.iconCache[key] = string.format("\124T%s:%d:%d:1:0:64:64:4:60:4:60\124t", Garrison.GetIconPath(name), size, size)
