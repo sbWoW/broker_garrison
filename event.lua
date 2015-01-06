@@ -7,11 +7,9 @@ local garrisonDb, globalDb, configDb
 
 local _G = getfenv(0)
 
-local pairs, time, C_Garrison, GetCurrencyInfo = _G.pairs, _G.time, _G.C_Garrison, _G.GetCurrencyInfo
-
+local pairs, time, C_Garrison, GetCurrencyInfo, tostring, math, C_Vignettes, InCombatLockdown = _G.pairs, _G.time, _G.C_Garrison, _G.GetCurrencyInfo, _G.tostring, _G.math, _G.C_Vignettes, _G.InCombatLockdown 
 
 Garrison.shipmentUpdate = {}
-
 
 function Garrison:GARRISON_MISSION_COMPLETE_RESPONSE(event, missionID, canComplete, succeeded)
 	if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID]) then
@@ -484,7 +482,7 @@ function Garrison:CheckInvasionAvailable()
 		globalDb.data[charInfo.realmName][charInfo.playerName].invasion = { available = false }
 	end
 
-	globalDb.data[charInfo.realmName][charInfo.playerName].invasion.available = C_Garrison.IsInvasionAvailable()	
+	globalDb.data[charInfo.realmName][charInfo.playerName].invasion.available = C_Garrison.IsInvasionAvailable() and not _G.IsQuestFlaggedCompleted(37640) -- Available and not completed gold invasion quest
 end
 
 
