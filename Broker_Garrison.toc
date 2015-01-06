@@ -48,3 +48,5 @@ config.lua
 event.lua
 tooltip.lua
 api.lua
+qrencode.lua
+qrexport.lua

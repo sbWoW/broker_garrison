@@ -804,6 +804,12 @@ do
             last_update = 0
         end)	
 
+	local function QRButton_OnMouseUp(tooltip_cell, param, button)
+		local playerData, paramType = unpack(param)
+
+		Garrison.showQR(playerData)
+	end
+
 	local function ExpandButton_OnMouseUp(tooltip_cell, param, button)
 		local realm_and_character, paramType = unpack(param)
 
@@ -1007,11 +1013,13 @@ do
 							textComplete = (getColoredString(L["Complete: %s"], colors.lightGray)):format(getColoredString(missionCount.complete, colorComplete))
 							textTotal = (getColoredString(L["Total: %s"], colors.lightGray)):format(missionCount.total)
 
-
 							tooltip:SetCell(row, 3, ("%s%s%s%s%s"):format(textInProgress, textPlaceholder, textComplete, textPlaceholder, textTotal), nil, "RIGHT", 2)
+							tooltip:SetCell(row, 5, getIconString(Garrison.ICON_PATH_QR, 16, false, false))
 
 							tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_MISSION})
 							tooltip:SetCellScript(row, 2, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_MISSION})
+
+							tooltip:SetCellScript(row, 5, "OnMouseUp", QRButton_OnMouseUp, {playerData.info, Garrison.TYPE_MISSION})
 
 							AddEmptyRow(tooltip)
 							AddSeparator(tooltip)
@@ -1094,16 +1102,16 @@ do
 											parsedTime or "~"..missionData.timeLeft,
 											getColoredString("("..formattedSeconds(missionData.duration)..")", colors.lightGray)
 										)
-										tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 1)
+										tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 2)
 									elseif (missionData.start == 0 or timeLeft < 0) then
-										tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 1)
+										tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 2)
 									else
 										local formattedTime = ("%s %s"):format(
 											formattedSeconds(timeLeft),
 											getColoredString("("..formattedSeconds(missionData.duration)..")", colors.lightGray)
 										)
 
-										tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 1)
+										tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 2)
 									end
 
 									if configDb.general.mission.showFollowers and missionData.followers and #missionData.followers > 0 then
@@ -1806,6 +1814,8 @@ function Garrison:OnInitialize()
 
 	self:SecureHook(C_Garrison, "RecruitFollower", "RecruitFollower")
 
+	self:SetupQRExport()
+
 	timers.init_update = Garrison:ScheduleTimer("DelayedUpdate", 5)	
 
 	ldb_object_mission.icon = Garrison.ICON_PATH_MISSION
@@ -1822,8 +1832,7 @@ function Garrison:OnInitialize()
 				playerData.missionsExpanded = isCurrentChar
 			end
 		end
-	end	
-
+	end
 end
 
 function Garrison:DelayedUpdate()
