@@ -14,6 +14,7 @@ Garrison.cleanName = "Broker Garrison"
 Garrison.detachframe = {}
 
 local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
+local LDBIcon = ldb and LibStub("LibDBIcon-1.0")
 local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale(ADDON_NAME)
 local LibQTip = LibStub('LibQTip-1.0')
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
@@ -210,6 +211,14 @@ local DB_DEFAULTS = {
 			fontSize = 12,
 			showIcon = true,
 			backgroundAlpha = 255,
+		},
+		minimap = {
+			mission = {
+
+			},
+			building = {
+			
+			},
 		},
 		debugPrint = false,
 	},
@@ -757,6 +766,20 @@ function Garrison:UpdateConfig()
 				GarrisonLandingPageMinimapButton:Show()
 			end
 		end
+	end
+
+	if LDBIcon then
+		if configDb.minimap.mission.hide then 
+			LDBIcon:Hide("BrokerGarrisonLDBMission")
+		else
+			LDBIcon:Show("BrokerGarrisonLDBMission")
+		end
+
+		if configDb.minimap.building.hide then 
+			LDBIcon:Hide("BrokerGarrisonLDBBuilding")
+		else
+			LDBIcon:Show("BrokerGarrisonLDBBuilding")
+		end	
 	end
 end
 
@@ -1777,9 +1800,7 @@ function Garrison:OnInitialize()
 	Toast:Register(TOAST_MISSION_COMPLETE, toastMissionComplete)
 	Toast:Register(TOAST_BUILDING_COMPLETE, toastBuildingComplete)
 	Toast:Register(TOAST_SHIPMENT_COMPLETE, toastShipmentComplete)
-	Toast:Register(TOAST_SUMMARY, toastSummary)
-
-	Garrison:UpdateConfig()
+	Toast:Register(TOAST_SUMMARY, toastSummary)	
 
 	self:RegisterEvent("GARRISON_MISSION_STARTED", "GARRISON_MISSION_STARTED")
 	self:RegisterEvent("GARRISON_MISSION_COMPLETE_RESPONSE", "GARRISON_MISSION_COMPLETE_RESPONSE")
@@ -1810,6 +1831,13 @@ function Garrison:OnInitialize()
 
 	ldb_object_mission.icon = Garrison.ICON_PATH_MISSION
 	ldb_object_building.icon = Garrison.ICON_PATH_BUILDING
+
+	if LDBIcon then
+		LDBIcon:Register("BrokerGarrisonLDBMission", ldb_object_mission, configDb.minimap.mission)
+		LDBIcon:Register("BrokerGarrisonLDBBuilding", ldb_object_building, configDb.minimap.building)
+	end
+
+	Garrison:UpdateConfig()
 
 	-- collapse other characters (if option is enabled)
 	for realmName, realmData in pairs(globalDb.data) do

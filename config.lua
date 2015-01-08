@@ -951,7 +951,35 @@ function Garrison:GetOptions()
 						set = function(_,v)
 							configDb.display.backgroundAlpha = (v / 255)
 						end,
+					},
+					minimapHeader = {
+						order = 200,
+						type = "header",
+						name = L["Minimap"],
+						cmdHidden = true,
 					},					
+					minimapMissionShow = {
+						order = 210,
+						type = "toggle",
+						width = "full",
+						name = L["Mission: Hide minimap icon"],
+						desc = L["Mission: Hide minimap icon"],
+						get = function() return configDb.minimap.mission.hide end,
+						set = function(_,v) configDb.minimap.mission.hide = v
+							Garrison:UpdateConfig()
+						end,
+					},
+					minimapBuildingShow = {
+						order = 220,
+						type = "toggle",
+						width = "full",
+						name = L["Building: Hide minimap icon"],
+						desc = L["Building: Hide minimap icon"],
+						get = function() return configDb.minimap.building.hide end,
+						set = function(_,v) configDb.minimap.building.hide = v
+							Garrison:UpdateConfig()
+						end,
+					},
 				},
 			},
 			tooltip = {
