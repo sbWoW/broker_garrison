@@ -2,7 +2,7 @@ local ADDON_NAME, private = ...
 
 local Garrison = LibStub("AceAddon-3.0"):GetAddon(ADDON_NAME)
 
-local AceConfigRegistry = LibStub("AceConfigRegistry-3.0")
+local AceConfigRegistry = LibStub("AceConfig-3.0")
 local AceConfigDialog = LibStub("AceConfigDialog-3.0")
 local AceDBOptions = LibStub("AceDBOptions-3.0")
 local LSM = LibStub:GetLibrary("LibSharedMedia-3.0")
@@ -161,7 +161,7 @@ function Garrison:GetOptions()
 				order = 100,
 				type = "group",
 				name = L["General"],
-				cmdHidden = true,
+				cmdHidden = false,
 				args = {				
 					garrisonMinimapButton = {
 						order = 100,
@@ -209,13 +209,11 @@ function Garrison:GetOptions()
 						end,
 						--disabled = function() return not configDb.general.highAccuracy end,
 					},
-
-
-					missionGroup = {
+					mission = {
 						order = 200,
 						type = "group",
 						name = L["Mission"],
-						cmdHidden = true,
+						cmdHidden = false,
 						args = {
 							ldbHeader = {
 								order = 100,
@@ -281,11 +279,11 @@ function Garrison:GetOptions()
 
 						},
 					},
-					buildingGroup = {
+					building = {
 						order = 200,
 						type = "group",
 						name = L["Building"],
-						cmdHidden = true,
+						cmdHidden = false,
 						args = {					
 							ldbHeader = {
 								order = 100,
@@ -354,25 +352,25 @@ function Garrison:GetOptions()
 					},					
 				},
 			},
-			dataGroup = {
+			data = {
 				order = 200,
 				type = "group",
 				name = L["Data"],
-				cmdHidden = true,
+				cmdHidden = false,
 				args = {
 				},
 			},
-			notificationGroup = {			
+			notification = {			
 				order = 300,
 				type = "group",
 				name = L["Notifications"],
-				cmdHidden = true,
+				cmdHidden = false,
 				args = {
 					notificationGeneral = {
 						order = 10,
 						type = "group",
 						name = L["General"],
-						cmdHidden = true,
+						cmdHidden = false,
 						args = {
 							disableInParty = {
 								order = 100,
@@ -406,11 +404,11 @@ function Garrison:GetOptions()
 							},
 						},
 					},
-					notificationMissionGroup = {
+					notificationMission = {
 						order = 100,
 						type = "group",
 						name = L["Mission"],
-						cmdHidden = true,
+						cmdHidden = false,
 						args = {
 							notificationToggle = {
 								order = 100,
@@ -554,11 +552,11 @@ function Garrison:GetOptions()
 							},
 						},
 					},
-					notificationBuildingGroup = {
+					notificationBuilding = {
 						order = 200,
 						type = "group",
 						name = L["Building"],
-						cmdHidden = true,
+						cmdHidden = false,
 						args = {
 							notificationToggle = {
 								order = 100,
@@ -705,11 +703,11 @@ function Garrison:GetOptions()
 							},
 						},
 					},
-					notificationShipmentGroup = {
+					notificationShipment = {
 						order = 300,
 						type = "group",
 						name = L["Shipment"],
-						cmdHidden = true,
+						cmdHidden = false,
 						args = {
 							notificationToggle = {
 								order = 100,
@@ -865,11 +863,11 @@ function Garrison:GetOptions()
 					notificationLibSink = Garrison:GetSinkAce3OptionsDataTable(),
 				},
 			},			
-			displayGroup = {
+			display = {
 				order = 500,
 				type = "group",
 				name = L["Display"],
-				cmdHidden = true,
+				cmdHidden = false,
 				args = {
 					scale = {
 						order = 110,
@@ -957,8 +955,19 @@ function Garrison:GetOptions()
 						type = "header",
 						name = L["Minimap"],
 						cmdHidden = true,
-					},					
-					minimapMissionShow = {
+					},
+					minimapButton = {
+						order = 205,
+						type = "toggle",
+						width = "full",
+						name = L["Load Minimap icon"],
+						desc = L["Load Minimap icon (requires ui reload!)"],
+						get = function() return configDb.minimap.load end,
+						set = function(_,v) configDb.minimap.load = v
+							Garrison:UpdateConfig()
+						end,
+					},
+					minimapMissionHide = {
 						order = 210,
 						type = "toggle",
 						width = "full",
@@ -968,8 +977,9 @@ function Garrison:GetOptions()
 						set = function(_,v) configDb.minimap.mission.hide = v
 							Garrison:UpdateConfig()
 						end,
+						disabled = function() return not configDb.minimap.load end,
 					},
-					minimapBuildingShow = {
+					minimapBuildingHide = {
 						order = 220,
 						type = "toggle",
 						width = "full",
@@ -979,6 +989,7 @@ function Garrison:GetOptions()
 						set = function(_,v) configDb.minimap.building.hide = v
 							Garrison:UpdateConfig()
 						end,
+						disabled = function() return not configDb.minimap.load end,
 					},
 				},
 			},
@@ -986,13 +997,13 @@ function Garrison:GetOptions()
 				order = 600,
 				type = "group",
 				name = L["Tooltip"],
-				cmdHidden = true,
+				cmdHidden = false,
 				args = {
 					mission = {
 						order = 100,
 						type = "group",
 						name = L["Mission"],
-						cmdHidden = true,
+						cmdHidden = false,
 						args = {
 							miscHeader = {
 								order = 10,
@@ -1137,7 +1148,7 @@ function Garrison:GetOptions()
 						order = 200,
 						type = "group",
 						name = L["Building"],
-						cmdHidden = true,
+						cmdHidden = false,
 						args = {
 							miscHeader = {
 								order = 10,
@@ -1245,11 +1256,11 @@ function Garrison:GetOptions()
 					},
 				},
 			},
-			aboutGroup = {
+			about = {
 				order = 900,
 				type = "group",
 				name = L["About"],
-				cmdHidden = true,
+				cmdHidden = false,
 				args = {
 					aboutHeader = {
 						order = 100,
@@ -1392,7 +1403,7 @@ function Garrison.getDataOptionTable()
 			set = function(info, val) 
 				local t=Garrison:returnchars(); 
 					Garrison:deletechar(t[val]) 
-					garrisonOptions.args.dataGroup.args = Garrison.getDataOptionTable()
+					garrisonOptions.args.data.args = Garrison.getDataOptionTable()
 				end,
 				get = function(info) return nil end,
 				width = "double",
@@ -1422,7 +1433,7 @@ function Garrison.getDataOptionTable()
 				name = L["Tooltip"],
 				get = "GetDataOptionTooltip",
 				set = "SetDataOptionTooltip",
-				cmdHidden = true,
+				cmdHidden = false,
 			}
 			dataTable[prefixdataOptionNotification..(baseOrder + i)] = {
 				order = baseOrder + (i * 10) + 2,
@@ -1430,7 +1441,7 @@ function Garrison.getDataOptionTable()
 				name = L["Notifications"],
 				get = "GetDataOptionNotification",
 				set = "SetDataOptionNotification",
-				cmdHidden = true,
+				cmdHidden = false,
 			}			
 			dataTable["dataNewline"..(baseOrder + i)] = {
 				order = baseOrder + (i * 10) + 3,
@@ -1459,14 +1470,14 @@ function Garrison:SetupOptions()
 	local options = Garrison:GetOptions()
 	garrisonOptions = options
 
-	AceConfigRegistry:RegisterOptionsTable(ADDON_NAME, options)	
+	AceConfigRegistry:RegisterOptionsTable(ADDON_NAME, options, {"brokergarrison", "garrison"})
 	Garrison.optionsFrame = AceConfigDialog:AddToBlizOptions(ADDON_NAME, Garrison.cleanName)
 	
 
 	-- Fix sink config options
-	options.args.notificationGroup.args.notificationLibSink.order = 600
-	options.args.notificationGroup.args.notificationLibSink.inline = true
-	options.args.notificationGroup.args.notificationLibSink.name = ""
+	options.args.notification.args.notificationLibSink.order = 600
+	options.args.notification.args.notificationLibSink.inline = true
+	options.args.notification.args.notificationLibSink.name = ""
 	--options.args.notificationGroup.args.notificationLibSink.disabled = function() return not configDb.notification.enabled end
 
 	options.plugins["profiles"] = {
@@ -1478,7 +1489,7 @@ function Garrison:SetupOptions()
 	options.args.tooltip.args.building.args = GetSortOptionTable(7, Garrison.TYPE_BUILDING, 400, options.args.tooltip.args.building.args)
 	options.args.tooltip.args.mission.args = GetSortOptionTable(7, Garrison.TYPE_MISSION, 400, options.args.tooltip.args.mission.args)	
 
-	options.args.dataGroup.args = Garrison.getDataOptionTable()
+	options.args.data.args = Garrison.getDataOptionTable()
 
 	--local sortedOptions = Garrison.sort(options.args, "order,a")
 	--for k, v in sortedOptions do

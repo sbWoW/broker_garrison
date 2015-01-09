@@ -213,12 +213,9 @@ local DB_DEFAULTS = {
 			backgroundAlpha = 255,
 		},
 		minimap = {
-			mission = {
-
-			},
-			building = {
-			
-			},
+			load = false,
+			mission = {},
+			building = {},
 		},
 		debugPrint = false,
 	},
@@ -768,7 +765,7 @@ function Garrison:UpdateConfig()
 		end
 	end
 
-	if LDBIcon then
+	if LDBIcon and configDb.minimap.load then
 		if configDb.minimap.mission.hide then 
 			LDBIcon:Hide("BrokerGarrisonLDBMission")
 		else
@@ -1832,9 +1829,11 @@ function Garrison:OnInitialize()
 	ldb_object_mission.icon = Garrison.ICON_PATH_MISSION
 	ldb_object_building.icon = Garrison.ICON_PATH_BUILDING
 
-	if LDBIcon then
+	if LDBIcon and configDb.minimap.load then
 		LDBIcon:Register("BrokerGarrisonLDBMission", ldb_object_mission, configDb.minimap.mission)
 		LDBIcon:Register("BrokerGarrisonLDBBuilding", ldb_object_building, configDb.minimap.building)
+	else
+		LDBIcon = nil
 	end
 
 	Garrison:UpdateConfig()

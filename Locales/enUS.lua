@@ -190,3 +190,6 @@ L["Run updates (LDB, data queries) in combat"] = true
 L["Minimap"] = true
 L["Mission: Hide minimap icon"] = true
 L["Building: Hide minimap icon"] = true
+
+L["Load Minimap icon"] = true
+L["Load Minimap icon (requires ui reload!)"] = true
