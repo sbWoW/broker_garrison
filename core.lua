@@ -182,6 +182,8 @@ local DB_DEFAULTS = {
 				hideMinimapPulse = false,
 				compactToast = false,
 				notificationQueueEnabled = true,
+				newRandomMissionNotification = true,
+				hideBlizzardNotificationRandomMission = true,
 			},
 			building = {
 				enabled = true,
@@ -329,7 +331,6 @@ local function toastSummary (toast, text, notificationType)
 	toast:SetFormattedText(text)
 	toast:SetIconTexture(Garrison.Icon[notificationType])
 end
-
 
 local function toastMissionComplete (toast, text, missionData)
 	if configDb.notification.mission.toastPersistent then
@@ -1802,6 +1803,7 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("GARRISON_MISSION_STARTED", "GARRISON_MISSION_STARTED")
 	self:RegisterEvent("GARRISON_MISSION_COMPLETE_RESPONSE", "GARRISON_MISSION_COMPLETE_RESPONSE")
 	self:RegisterEvent("GARRISON_MISSION_FINISHED", "GARRISON_MISSION_FINISHED")
+	self:RegisterEvent("GARRISON_RANDOM_MISSION_ADDED", "GARRISON_RANDOM_MISSION_ADDED")
 
 	self:RegisterEvent("GARRISON_SHOW_LANDING_PAGE", "GARRISON_SHOW_LANDING_PAGE")
 	self:RegisterEvent("GARRISON_MISSION_NPC_OPENED", "GARRISON_MISSION_NPC_OPENED")
@@ -1813,10 +1815,13 @@ function Garrison:OnInitialize()
 	--self:RegisterEvent("VIGNETTE_REMOVED", "VignetteEvent")
 	--self:RegisterEvent("VIGNETTE_ADDED", "VignetteEvent")	
 	self:RegisterEvent("SHOW_LOOT_TOAST", "LootToastEvent")
-	self:RegisterEvent("CHAT_MSG_LOOT", "ChatLootEvent")
+	self:RegisterEvent("CHAT_MSG_LOOT", "ChatLootEvent")	
 
 	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
 	self:RawHook("GarrisonBuildingAlertFrame_ShowAlert", true)
+	
+	-- 6.1: New Random Mission 
+	self:RawHook("GarrisonRandomMissionAlertFrame_ShowAlert", true)
 
 	self:RawHook("GarrisonMinimapBuilding_ShowPulse", true)
 	self:RawHook("GarrisonMinimapShipmentCreated_ShowPulse", true)

@@ -107,6 +107,13 @@ function Garrison:GARRISON_MISSION_FINISHED(event, missionID)
 	Garrison:Update()
 end
 
+function Garrison:GARRISON_RANDOM_MISSION_ADDED(event, missionID)
+	if configDb.notification.mission.newRandomMissionNotification then
+		debugPrint("New Random Mission - Show Notification")
+		-- TODO: Show Notification
+	end
+end
+
 function Garrison:GARRISON_SHOW_LANDING_PAGE(...)
 	Garrison:UpdateConfig()
 
@@ -754,6 +761,15 @@ function Garrison:GarrisonBuildingAlertFrame_ShowAlert(name)
 	else
 		debugPrint("Show blizzard notification"..name)
 		self.hooks.GarrisonBuildingAlertFrame_ShowAlert(name)
+	end
+end
+
+function Garrison:GarrisonRandomMissionAlertFrame_ShowAlert(missionID)
+	if configDb.notification.mission.hideBlizzardNotificationRandomMission then
+		debugPrint("Blizzard notification hidden: "..missionID)
+	else
+		debugPrint("Show blizzard notification"..missionID)
+		self.hooks.GarrisonRandomMissionAlertFrame_ShowAlert(missionID)
 	end
 end
 

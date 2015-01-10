@@ -515,9 +515,33 @@ function Garrison:GetOptions()
 									Garrison:UpdateConfig()
 								end,
 								disabled = function() return not configDb.notification.mission.enabled end,
+							},
+							hideBlizzardNotificationRandomMission = {
+								order = 420,
+								type = "toggle",
+								width = "full",
+								name = L["Hide Blizzard notifications for new random mission"],
+								desc = L["Don't show the built-in notifications"],
+								get = function() return configDb.notification.mission.hideBlizzardNotificationRandomMission end,
+								set = function(_,v)
+									configDb.notification.mission.hideBlizzardNotificationRandomMission = v
+									Garrison:UpdateConfig()
+								end,								
+							},
+							newRandomMissionNotification = {
+								order = 430,
+								type = "toggle",
+								width = "full",
+								name = L["Display Notification for new Random Mission"],
+								desc = L["Display Notification for new Random Mission"],
+								get = function() return configDb.notification.mission.newRandomMissionNotification end,
+								set = function(_,v)
+									configDb.notification.mission.newRandomMissionNotification = v
+									Garrison:UpdateConfig()
+								end,								
 							},							
 							garrisonMinimapButtonAnimation = {
-								order = 420,
+								order = 440,
 								type = "toggle",
 								width = "full",
 								name = L["Hide Minimap-Button animation"],
@@ -527,7 +551,7 @@ function Garrison:GetOptions()
 								disabled = function() return configDb.general.hideGarrisonMinimapButton end,
 							},
 							playSound = {
-								order = 430,
+								order = 450,
 								type = "toggle",
 								name = L["Play Sound"],
 								desc = L["Play Sound"],
@@ -538,7 +562,7 @@ function Garrison:GetOptions()
 								disabled = function() return not configDb.notification.mission.enabled end,
 							},
 							playSoundOnMissionCompleteName = {
-								order = 440,
+								order = 460,
 								type = "select",
 								name = L["Sound"],
 								desc = L["Sound"],
