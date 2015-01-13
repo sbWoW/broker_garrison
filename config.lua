@@ -225,8 +225,8 @@ function Garrison:GetOptions()
 								order = 110,
 								type = "input",
 								width = "full",
-								name = L["Custom LDB Text"],
-								desc = L["Custom LDB Text"],
+								name = L["Label Text"],
+								desc = L["Label Text"],
 								get = function() return configDb.general.mission.ldbLabelText end,
 								set = function(_,v) configDb.general.mission.ldbLabelText = v
 								end,							
