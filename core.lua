@@ -700,8 +700,11 @@ function Garrison:GetMissionCount(paramCharInfo)
 		
 		for realmName, realmData in pairs(globalDb.data) do
 			for playerName, playerData in pairs(realmData) do
-				if not Garrison.isCurrentChar(playerData.info) then
-					Garrison:GetPlayerMissionCount(playerData.info, missionCount, playerData.missions)
+				-- don't count/show disabled characters
+				if playerData.tooltipEnabled == nil or playerData.tooltipEnabled then
+					if not Garrison.isCurrentChar(playerData.info) then
+						Garrison:GetPlayerMissionCount(playerData.info, missionCount, playerData.missions)
+					end
 				end
 			end
 		end
@@ -741,8 +744,11 @@ function Garrison:GetBuildingCount(paramCharInfo)
 
 		for realmName, realmData in pairs(globalDb.data) do
 			for playerName, playerData in pairs(realmData) do
-				if not Garrison.isCurrentChar(playerData.info) then
-					Garrison:GetPlayerBuildingCount(playerData.info, buildingCount, playerData.buildings)
+				-- don't count/show disabled characters
+				if playerData.tooltipEnabled == nil or playerData.tooltipEnabled then
+					if not Garrison.isCurrentChar(playerData.info) then
+						Garrison:GetPlayerBuildingCount(playerData.info, buildingCount, playerData.buildings)
+					end
 				end
 			end
 		end
@@ -1670,33 +1676,37 @@ function Garrison:UpdateLDB()
 
 	for realmName, realmData in pairs(globalDb.data) do
 		for playerName, playerData in pairs(realmData) do
-			local tmpResourceCacheAmount = Garrison.getResourceFromTimestamp(playerData.garrisonCacheLastLooted, now)
+			-- don't count/show disabled characters
+			if playerData.tooltipEnabled == nil or playerData.tooltipEnabled then
 
-			if Garrison.isCurrentChar(playerData.info) then
-				currencyAmount = (playerData.currencyAmount or 0)
-				currencyApexisAmount = playerData.currencyApexisAmount or 0
-				currencySealOfTemperedFateAmount = playerData.currencySealOfTemperedFateAmount or 0
-				
-				resourceCacheAmount = tmpResourceCacheAmount or 0
+				local tmpResourceCacheAmount = Garrison.getResourceFromTimestamp(playerData.garrisonCacheLastLooted, now)
 
+				if Garrison.isCurrentChar(playerData.info) then
+					currencyAmount = (playerData.currencyAmount or 0)
+					currencyApexisAmount = playerData.currencyApexisAmount or 0
+					currencySealOfTemperedFateAmount = playerData.currencySealOfTemperedFateAmount or 0
+					
+					resourceCacheAmount = tmpResourceCacheAmount or 0
+
+					if playerData.invasion and playerData.invasion.available then
+						--debugPrint("invasionAvailableCurrent!!!!!")
+						invasionAvailableCurrent = true
+					end
+				end
+				currencyTotal = currencyTotal + (playerData.currencyAmount or 0)
+				currencyApexisTotal = currencyApexisTotal + (playerData.currencyApexisAmount or 0)			
 				if playerData.invasion and playerData.invasion.available then
-					--debugPrint("invasionAvailableCurrent!!!!!")
-					invasionAvailableCurrent = true
-				end
-			end
-			currencyTotal = currencyTotal + (playerData.currencyAmount or 0)
-			currencyApexisTotal = currencyApexisTotal + (playerData.currencyApexisAmount or 0)			
-			if playerData.invasion and playerData.invasion.available then
-				invasionAvailable = true
-			end			
+					invasionAvailable = true
+				end			
 
-			if tmpResourceCacheAmount then
-				if tmpResourceCacheAmount > resourceCacheAmountMax then
-					resourceCacheAmountMax = tmpResourceCacheAmount
-					resourceCacheAmountMaxChar = playerData.info
-				end
-				--resourceCacheAmountMax = math.max(resourceCacheAmountMax, tmpResourceCacheAmount)
+				if tmpResourceCacheAmount then
+					if tmpResourceCacheAmount > resourceCacheAmountMax then
+						resourceCacheAmountMax = tmpResourceCacheAmount
+						resourceCacheAmountMaxChar = playerData.info
+					end
+					--resourceCacheAmountMax = math.max(resourceCacheAmountMax, tmpResourceCacheAmount)
 
+				end
 			end
 		end
 	end
