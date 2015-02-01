@@ -1282,8 +1282,36 @@ do
 								--local sortedBuildingTable = Garrison.sort(playerData.buildings, "name,a")
 
 								for plotID, buildingData in sortedBuildingTable do
+									
+									local timeLeftBuilding = 0
+									if buildingData.isBuilding then
+										timeLeftBuilding = buildingData.buildTime - (now - buildingData.timeStart)
+									end
+
+									local rank, buildingInfoIcon = "", ""
+									if buildingData.isBuilding or buildingData.canActivate then									
+
+										if (buildingData.isBuilding and timeLeftBuilding > 0) then
+											buildingInfoIcon = Garrison.ICON_ARROW_UP_WAITING
+										else
+											buildingInfoIcon = Garrison.ICON_ARROW_UP
+										end
+
+											--debugPrint(("[%s] isBuilding: %s, timeLeftBuilding: %s"):format(buildingData.name, _G.tostring(buildingData.isBuilding), _G.tostring(timeLeftBuilding)))
+
+										if buildingData.rank > 1 then
+											rank = getColoredString("("..(buildingData.rank - 1)..")", colors.lightGray)
+										else
+											rank = ""
+										end
+									else
+										rank = getColoredString("("..buildingData.rank..")", colors.lightGray)
+									end
+
+									buildingInfoIcon = buildingInfoIcon..Garrison:GetLootInfoForBuilding(playerData, buildingData)
 
 									if not configDb.general.building.hideBuildingWithoutShipments or 
+										(buildingInfoIcon ~= "") or
 										(buildingData.isBuilding or buildingData.canActivate) or
 										(buildingData.shipment and buildingData.shipment.shipmentCapacity ~= nil and buildingData.shipment.shipmentCapacity > 0) then 							
 
@@ -1319,33 +1347,7 @@ do
 										
 										-- Display building and Workorder data								
 										row = AddRow(tooltip, colors.darkGray)
-
-										local timeLeftBuilding = 0
-										if buildingData.isBuilding then
-											timeLeftBuilding = buildingData.buildTime - (now - buildingData.timeStart)
-										end
-
-										local rank, buildingInfoIcon = "", ""
-										if buildingData.isBuilding or buildingData.canActivate then									
-
-											if (buildingData.isBuilding and timeLeftBuilding > 0) then
-												buildingInfoIcon = Garrison.ICON_ARROW_UP_WAITING
-											else
-												buildingInfoIcon = Garrison.ICON_ARROW_UP
-											end
-
-											--debugPrint(("[%s] isBuilding: %s, timeLeftBuilding: %s"):format(buildingData.name, _G.tostring(buildingData.isBuilding), _G.tostring(timeLeftBuilding)))
-
-											if buildingData.rank > 1 then
-												rank = getColoredString("("..(buildingData.rank - 1)..")", colors.lightGray)
-											else
-												rank = ""
-											end
-										else
-											rank = getColoredString("("..buildingData.rank..")", colors.lightGray)
-										end
-
-										buildingInfoIcon = buildingInfoIcon..Garrison:GetLootInfoForBuilding(playerData, buildingData)
+										
 
 										if configDb.display.showIcon then
 											--tooltip:SetCell(row, 1, getIconString(, configDb.display.iconSize, false, false), nil, "LEFT", 1)
