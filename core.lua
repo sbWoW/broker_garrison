@@ -1194,23 +1194,23 @@ do
 						--local buildingCount = Garrison:GetBuildingCount(playerData.info)
 						local buildingCount = buildingCountTable[playerName]
 
-						if playerData.tooltipEnabled == nil or playerData.tooltipEnabled and (buildingCount.building.total > 0) then
+						local estimatedCacheResourceAmount = ""
+						local cacheWarning = false
+						local tmpResources = Garrison.getResourceFromTimestamp(playerData.garrisonCacheLastLooted, now)
+						if tmpResources ~= nil and tmpResources >= 5 then
+							local resourceColor = colors.lightGray
+							if tmpResources >= 400 then
+								resourceColor = colors.red
+								cacheWarning = true
+							end
+							estimatedCacheResourceAmount = getColoredString((" (%s)"):format(math.min(500, tmpResources)), resourceColor)								
+						end
+
+						if playerData.tooltipEnabled == nil or playerData.tooltipEnabled and (buildingCount.building.total > 0 or cacheWarning) then
 							playerCount = playerCount + 1 
 
 							AddEmptyRow(tooltip)
 							row = AddRow(tooltip)
-
-							local estimatedCacheResourceAmount = ""
-
-							local tmpResources = Garrison.getResourceFromTimestamp(playerData.garrisonCacheLastLooted, now)
-							if tmpResources ~= nil and tmpResources >= 5 then
-								local resourceColor = colors.lightGray
-
-								if tmpResources >= 400 then
-									resourceColor = colors.red
-								end
-								estimatedCacheResourceAmount = getColoredString((" (%s)"):format(math.min(500, tmpResources)), resourceColor)
-							end
 
 							local invasionAvailable = ""
 
@@ -1219,7 +1219,7 @@ do
 							end
 
 							tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN, nil, "LEFT", 1, nil, 0, 0, 20, 20)
-							tooltip:SetCell(row, 2, ("%s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), invasionAvailable), nil, "LEFT", 3)
+							tooltip:SetCell(row, 2, ("%s %s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), invasionAvailable, cacheWarning and Garrison.ICON_WARNING or ""), nil, "LEFT", 3)
 							tooltip:SetCell(row, 5, ("%s %s %s %s%s %s %s"):format(Garrison.ICON_CURRENCY_TEMPERED_FATE_TOOLTIP, BreakUpLargeNumbers(playerData.currencySealOfTemperedFateAmount or 0), 
 								Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), estimatedCacheResourceAmount, 
 								Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), 
@@ -1236,7 +1236,7 @@ do
 							if not (playerData.buildingsExpanded) then
 								
 
-								local playerBuildingUpgrade = ("%s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), invasionAvailable)
+								local playerBuildingUpgrade = ("%s %s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), invasionAvailable, cacheWarning and Garrison.ICON_WARNING or "")
 
 								local formattedShipment = ""
 
