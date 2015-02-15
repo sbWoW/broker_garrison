@@ -15,6 +15,8 @@ local garrisonDb, globalDb, configDb
 
 local debugPrint = Garrison.debugPrint
 
+local orderValues = nil
+
 local fonts = {}
 local sounds = {}
 
@@ -23,11 +25,17 @@ local prefixSortAscending = "sortAscending"
 local prefixDataOptionTooltip = "dataOptionTooltip"
 local prefixdataOptionNotification = "dataOptionNotification"
 
+local prefixDataOptionCharOrder = "dataOptionCharOrder"
+
 local lenPrefixSortValue = _G.strlen(prefixSortValue)
 local lenPrefixSortAscending = _G.strlen(prefixSortAscending)
-
 local lenPrefixDataOptionTooltip = _G.strlen(prefixDataOptionTooltip)
 local lenPrefixDataOptionNotification = _G.strlen(prefixdataOptionNotification)
+
+local lenPrefixDataOptionCharOrder = _G.strlen(prefixDataOptionCharOrder)
+
+
+
 
 local charLookupTable = {}
 
@@ -1351,6 +1359,38 @@ function Garrison:SetDataOptionNotification(info, value)
 	charLookupTable[tonumber(key)].notificationEnabled = value
 end
 
+
+function Garrison:SetCharOrder(info, value)	
+	local key = strsub(info[#info], lenPrefixDataOptionCharOrder + 1)
+	
+	charLookupTable[tonumber(key)].order = value
+
+	garrisonOptions.args.data.args = Garrison.getDataOptionTable()
+end
+
+function Garrison:GetCharOrder(info, ...)	
+	local key = strsub(info[#info], lenPrefixDataOptionCharOrder + 1)
+	
+	local orderCurrent = charLookupTable[tonumber(key)].order
+
+	return orderCurrent or 5
+end
+
+function Garrison:GetCharOrderValues()	
+
+	if orderValues == nil then
+		orderValues = {}
+		for i=1,9 do
+			orderValues[i] = tostring(i);
+		end
+	end
+
+	return orderValues
+end
+
+
+
+
 local function GetSortOptionTable(numOptions, paramType, baseOrder, sortTable)
 
 	local i 	
@@ -1388,7 +1428,7 @@ end
 function Garrison.getDataOptionTable()
 
 	local baseOrder = 100
-	local i = 0
+	
 
 	charLookupTable = {}
 
@@ -1419,7 +1459,11 @@ function Garrison.getDataOptionTable()
 			cmdHidden = true,
 		}
 
-		for playerName,playerData in Garrison.pairsByKeys(realmData) do
+		local i = 0
+
+		local sortedPlayerTable = Garrison.sort(realmData, "order,a", "info.playerName,a")
+
+		for playerName,playerData in sortedPlayerTable do
 			dataTable["dataCharName"..(baseOrder + i)] = {
 				order = baseOrder + (i * 10),
 				type = "description",
@@ -1442,9 +1486,20 @@ function Garrison.getDataOptionTable()
 				get = "GetDataOptionNotification",
 				set = "SetDataOptionNotification",
 				cmdHidden = false,
-			}			
+			}
+			dataTable[prefixDataOptionCharOrder..(baseOrder + i)] = {
+				order = baseOrder + (i * 10) + 4,
+				type = "select",
+				name = "Order",
+				get = "GetCharOrder",
+				set = "SetCharOrder",
+				values = "GetCharOrderValues",
+				cmdHidden = false,
+				width = "half",
+				--disabled = function() return (i == 0) end,
+			}						
 			dataTable["dataNewline"..(baseOrder + i)] = {
-				order = baseOrder + (i * 10) + 3,
+				order = baseOrder + (i * 10) + 5,
 				type = "description",
 				name = "",
 				width = "full",

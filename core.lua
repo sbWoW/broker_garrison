@@ -998,7 +998,8 @@ do
 					AddEmptyRow(tooltip)
 					AddSeparator(tooltip)
 
-					for playerName, playerData in pairsByKeys(realmData) do
+					local sortedPlayerTable = Garrison.sort(realmData, "order,a", "info.playerName,a")
+					for playerName, playerData in sortedPlayerTable do
 						--local missionCount = Garrison:GetMissionCount(playerData.info)
 						local missionCount = missionCountTable[playerName]
 
@@ -1189,7 +1190,8 @@ do
 					AddEmptyRow(tooltip)
 					AddSeparator(tooltip)
 
-					for playerName, playerData in pairsByKeys(realmData) do
+					local sortedPlayerTable = Garrison.sort(realmData, "order,a", "info.playerName,a")
+					for playerName, playerData in sortedPlayerTable do
 
 						--local buildingCount = Garrison:GetBuildingCount(playerData.info)
 						local buildingCount = buildingCountTable[playerName]
@@ -1860,7 +1862,13 @@ function Garrison:OnInitialize()
 			if configDb.general.mission.collapseOtherCharsOnLogin then
 				playerData.missionsExpanded = isCurrentChar
 			end
-		end
+
+			-- add sort order for players
+			if not playerData.order then
+				playerData.order = 5
+			end
+
+		end		
 	end	
 
 end
