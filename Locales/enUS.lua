@@ -193,3 +193,6 @@ L["Building: Hide minimap icon"] = true
 
 L["Load Minimap icon"] = true
 L["Load Minimap icon (requires ui reload!)"] = true
+
+L["Delete"] = true
+L["LDB"] = true

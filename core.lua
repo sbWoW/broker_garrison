@@ -701,7 +701,7 @@ function Garrison:GetMissionCount(paramCharInfo)
 		for realmName, realmData in pairs(globalDb.data) do
 			for playerName, playerData in pairs(realmData) do
 				-- don't count/show disabled characters
-				if playerData.tooltipEnabled == nil or playerData.tooltipEnabled then
+				if playerData.ldbEnabled == nil or playerData.ldbEnabled then
 					if not Garrison.isCurrentChar(playerData.info) then
 						Garrison:GetPlayerMissionCount(playerData.info, missionCount, playerData.missions)
 					end
@@ -745,7 +745,7 @@ function Garrison:GetBuildingCount(paramCharInfo)
 		for realmName, realmData in pairs(globalDb.data) do
 			for playerName, playerData in pairs(realmData) do
 				-- don't count/show disabled characters
-				if playerData.tooltipEnabled == nil or playerData.tooltipEnabled then
+				if playerData.ldbEnabled == nil or playerData.ldbEnabled then
 					if not Garrison.isCurrentChar(playerData.info) then
 						Garrison:GetPlayerBuildingCount(playerData.info, buildingCount, playerData.buildings)
 					end
@@ -1681,7 +1681,7 @@ function Garrison:UpdateLDB()
 	for realmName, realmData in pairs(globalDb.data) do
 		for playerName, playerData in pairs(realmData) do
 			-- don't count/show disabled characters
-			if playerData.tooltipEnabled == nil or playerData.tooltipEnabled then
+			if playerData.ldbEnabled == nil or playerData.ldbEnabled then
 
 				local tmpResourceCacheAmount = Garrison.getResourceFromTimestamp(playerData.garrisonCacheLastLooted, now)
 
@@ -1791,6 +1791,8 @@ function Garrison:OnInitialize()
 
 		globalDb.data[charInfo.realmName][charInfo.playerName].tooltipEnabled = true
 		globalDb.data[charInfo.realmName][charInfo.playerName].notificationEnabled = true
+		globalDb.data[charInfo.realmName][charInfo.playerName].ldbEnabled = true
+		
 	end
 
 	self:InitHelper()

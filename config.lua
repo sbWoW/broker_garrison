@@ -23,23 +23,34 @@ local sounds = {}
 local prefixSortValue = "sortValue"
 local prefixSortAscending = "sortAscending"
 local prefixDataOptionTooltip = "dataOptionTooltip"
-local prefixdataOptionNotification = "dataOptionNotification"
+local prefixDataOptionNotification = "dataOptionNotification"
+local prefixDataOptionLDB = "dataOptionLDB"
 
 local prefixDataOptionCharOrder = "dataOptionCharOrder"
 
 local lenPrefixSortValue = _G.strlen(prefixSortValue)
 local lenPrefixSortAscending = _G.strlen(prefixSortAscending)
 local lenPrefixDataOptionTooltip = _G.strlen(prefixDataOptionTooltip)
-local lenPrefixDataOptionNotification = _G.strlen(prefixdataOptionNotification)
+local lenPrefixDataOptionNotification = _G.strlen(prefixDataOptionNotification)
+local lenPrefixDataOptionLDB = _G.strlen(prefixDataOptionLDB)
 
 local lenPrefixDataOptionCharOrder = _G.strlen(prefixDataOptionCharOrder)
-
-
-
-
 local charLookupTable = {}
 
 local garrisonOptions
+
+StaticPopupDialogs["DELETE_CHARACTER_CONFIRMATION"] = {
+	text = "Delete character data? (%s-%s)",
+	button1 = "Yes",
+	button2 = "No",
+	OnAccept = function(self)
+		Garrison:deletechar(self.realmName, self.playerName)		
+	end,
+	timeout = 0,
+	whileDead = true,
+	hideOnEscape = true,
+	preferredIndex = 3,  -- avoid some UI taint, see http://www.wowace.com/announcements/how-to-avoid-some-ui-taint/
+}
 
 
 function Garrison:returnchars()
@@ -131,8 +142,7 @@ function Garrison:GetLDBText(paramType)
 end
 
 
-function Garrison:deletechar(realm_and_character)
-	local playerName, realmName = (":"):split(realm_and_character, 2)
+function Garrison:deletechar(realmName, playerName)
 	if not realmName or realmName == nil or realmName == "" then return nil end
 	if not playerName or playerName == nil or playerName == "" then return nil end
 
@@ -147,7 +157,9 @@ function Garrison:deletechar(realm_and_character)
 		globalDb.data[realmName] = nil
 	end
 
-	debugPrint(("%s deleted."):format(realm_and_character))	
+	debugPrint(("%s-%s deleted."):format(realmName, playerName))
+	garrisonOptions.args.data.args = Garrison.getDataOptionTable()
+
 end
 
 
@@ -1347,18 +1359,47 @@ function Garrison:GetDataOptionNotification(info, ...)
 	return retVal
 end
 
+function Garrison:GetDataOptionLDB(info, ...)
+	local key = strsub(info[#info], lenPrefixDataOptionLDB + 1)
+	
+	local retVal = charLookupTable[tonumber(key)].ldbEnabled
+	if retVal == nil then
+		charLookupTable[tonumber(key)].ldbEnabled = true
+		retVal = true
+	end
+
+	return retVal
+end
+
 function Garrison:SetDataOptionTooltip(info, value)
 	local key = strsub(info[#info], lenPrefixDataOptionTooltip + 1)
-	
 	charLookupTable[tonumber(key)].tooltipEnabled = value
 end
 
 function Garrison:SetDataOptionNotification(info, value)
 	local key = strsub(info[#info], lenPrefixDataOptionNotification + 1)
-	
 	charLookupTable[tonumber(key)].notificationEnabled = value
 end
 
+function Garrison:SetDataOptionLDB(info, value)
+	local key = strsub(info[#info], lenPrefixDataOptionLDB + 1)
+	charLookupTable[tonumber(key)].ldbEnabled = value
+end
+
+function Garrison:DeleteCharacter(info, ...)
+	local key = strsub(info[#info], 10 + 1)
+	local playerData = charLookupTable[tonumber(key)]
+
+	if playerData then
+		local dialog = StaticPopup_Show("DELETE_CHARACTER_CONFIRMATION", playerData.info.realmName, playerData.info.playerName)
+		if dialog then
+			dialog.realmName = playerData.info.realmName
+			dialog.playerName = playerData.info.playerName
+		end
+	end
+
+	garrisonOptions.args.data.args = Garrison.getDataOptionTable()
+end
 
 function Garrison:SetCharOrder(info, value)	
 	local key = strsub(info[#info], lenPrefixDataOptionCharOrder + 1)
@@ -1387,8 +1428,6 @@ function Garrison:GetCharOrderValues()
 
 	return orderValues
 end
-
-
 
 
 local function GetSortOptionTable(numOptions, paramType, baseOrder, sortTable)
@@ -1434,20 +1473,50 @@ function Garrison.getDataOptionTable()
 
 	local dataTable = {}
 
-	dataTable.deletechar = {
-			name = L["Delete char"],
-			desc = L["Delete the selected char"],
-			order = 10,
-			type = "select",
-			values = Garrison:returnchars(),
-			set = function(info, val) 
-				local t=Garrison:returnchars(); 
-					Garrison:deletechar(t[val]) 
-					garrisonOptions.args.data.args = Garrison.getDataOptionTable()
-				end,
-				get = function(info) return nil end,
-				width = "double",
+
+	dataTable.title1 = {
+		type = "description",
+		name = "Character",
+		width = "normal",
+		order = 90,
 	}
+	dataTable.title2 = {
+		type = "description",
+		name = L["Tooltip"],
+		width = "half",
+		order = 91,
+	}	
+	dataTable.title3 = {
+		type = "description",
+		name = L["Notification"],
+		width = "half",
+		order = 92,
+	}
+	dataTable.title4 = {
+		type = "description",
+		name = L["LDB"],
+		width = "half",
+		order = 93,
+	}	
+	dataTable.title5 = {
+		type = "description",
+		name = "Order",
+		width = "half",
+		order = 94,
+	}
+	dataTable.title6 = {
+		type = "description",
+		name = "",
+		width = "half",
+		order = 95,
+	}	
+	dataTable.title7 = {
+		type = "description",
+		name = "",
+		width = "full",
+		order = 95,
+	}	
+
 
 	--globalDb
 	for realmName,realmData in Garrison.pairsByKeys(globalDb.data) do
@@ -1474,32 +1543,50 @@ function Garrison.getDataOptionTable()
 			dataTable[prefixDataOptionTooltip..(baseOrder + i)] = {
 				order = baseOrder + (i * 10) + 1,
 				type = "toggle",
-				name = L["Tooltip"],
+				name = "",
 				get = "GetDataOptionTooltip",
 				set = "SetDataOptionTooltip",
 				cmdHidden = false,
+				width = "half",
 			}
-			dataTable[prefixdataOptionNotification..(baseOrder + i)] = {
+			dataTable[prefixDataOptionNotification..(baseOrder + i)] = {
 				order = baseOrder + (i * 10) + 2,
 				type = "toggle",
-				name = L["Notifications"],
+				name = "",
 				get = "GetDataOptionNotification",
 				set = "SetDataOptionNotification",
 				cmdHidden = false,
+				width = "half",
 			}
+			dataTable[prefixDataOptionLDB..(baseOrder + i)] = {
+				order = baseOrder + (i * 10) + 3,
+				type = "toggle",
+				name = "",
+				get = "GetDataOptionLDB",
+				set = "SetDataOptionLDB",
+				cmdHidden = false,
+				width = "half",
+			}			
 			dataTable[prefixDataOptionCharOrder..(baseOrder + i)] = {
 				order = baseOrder + (i * 10) + 4,
 				type = "select",
-				name = "Order",
+				name = "",
 				get = "GetCharOrder",
 				set = "SetCharOrder",
 				values = "GetCharOrderValues",
 				cmdHidden = false,
 				width = "half",
-				--disabled = function() return (i == 0) end,
-			}						
-			dataTable["dataNewline"..(baseOrder + i)] = {
+			}
+			dataTable["dataDelete"..(baseOrder + i)] = {
 				order = baseOrder + (i * 10) + 5,
+				type = "execute",
+				name = L["Delete"],
+				func = "DeleteCharacter",
+				width = "half",
+				cmdHidden = true,
+			}
+			dataTable["dataNewline"..(baseOrder + i)] = {
+				order = baseOrder + (i * 10) + 6,
 				type = "description",
 				name = "",
 				width = "full",
