@@ -1468,54 +1468,59 @@ function Garrison.getDataOptionTable()
 
 	local baseOrder = 100
 	
-
 	charLookupTable = {}
 
-	local dataTable = {}
 
-
-	dataTable.title1 = {
-		type = "description",
-		name = "Character",
-		width = "normal",
-		order = 90,
+	dataTable = {
+		newline = {
+			type = "description",
+			name = "",
+			width = "full",
+			order = 80,
+		},
+		title1 = {
+			type = "description",
+			name = "Character",
+			width = "normal",
+			order = 90,
+		},
+		title2 = {
+			type = "description",
+			name = L["Tooltip"],
+			width = "half",
+			order = 91,
+		},
+		title3 = {
+			type = "description",
+			name = L["Notifications"],
+			width = "half",
+			order = 92,
+		},
+		title4 = {
+			type = "description",
+			name = L["LDB"],
+			width = "half",
+			order = 93,
+		},
+		title5 = {
+			type = "description",
+			name = "Order",
+			width = "half",
+			order = 94,
+		},
+		title6 = {
+			type = "description",
+			name = "",
+			width = "half",
+			order = 95,
+		},
+		title7 = {
+			type = "description",
+			name = "",
+			width = "full",
+			order = 95,
+		},
 	}
-	dataTable.title2 = {
-		type = "description",
-		name = L["Tooltip"],
-		width = "half",
-		order = 91,
-	}	
-	dataTable.title3 = {
-		type = "description",
-		name = L["Notification"],
-		width = "half",
-		order = 92,
-	}
-	dataTable.title4 = {
-		type = "description",
-		name = L["LDB"],
-		width = "half",
-		order = 93,
-	}	
-	dataTable.title5 = {
-		type = "description",
-		name = "Order",
-		width = "half",
-		order = 94,
-	}
-	dataTable.title6 = {
-		type = "description",
-		name = "",
-		width = "half",
-		order = 95,
-	}	
-	dataTable.title7 = {
-		type = "description",
-		name = "",
-		width = "full",
-		order = 95,
-	}	
 
 
 	--globalDb
@@ -1530,6 +1535,10 @@ function Garrison.getDataOptionTable()
 
 		local i = 0
 
+		local sortOptions = {}
+		sortOptions[#sortOptions] = "order,a"
+		sortOptions[#sortOptions] = "info.playerName,a"
+			
 		local sortedPlayerTable = Garrison.sort(realmData, "order,a", "info.playerName,a")
 
 		for playerName,playerData in sortedPlayerTable do
