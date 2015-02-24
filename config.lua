@@ -1471,7 +1471,7 @@ function Garrison.getDataOptionTable()
 	charLookupTable = {}
 
 
-	dataTable = {
+	local dataTable = {
 		newline = {
 			type = "description",
 			name = "",
