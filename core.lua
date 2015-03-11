@@ -1237,8 +1237,9 @@ do
 
 							if not (playerData.buildingsExpanded) then
 								
+								local buildingInfoIcon = Garrison:GetLootInfoForPlayer(playerData)
 
-								local playerBuildingUpgrade = ("%s %s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), invasionAvailable, cacheWarning and Garrison.ICON_WARNING or "")
+								local playerBuildingUpgrade = ("%s %s %s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), invasionAvailable, cacheWarning and Garrison.ICON_WARNING or "", buildingInfoIcon)
 
 								local formattedShipment = ""
 

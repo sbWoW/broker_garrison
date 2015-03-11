@@ -110,48 +110,6 @@ Garrison.DURATION_PATTERN = {
 	}
 }
 
-Garrison.buildingInfo = {
-	["Mine"] = {
-		trackLootItemId = 115508,
-		minLooted = 5,
-		["level"] = {
-			[61] = 1,
-			[62] = 2,
-			[63] = 3,
-		},
-	},
-	["Herb Garden"] = {
-		trackLootItemId = 116053,
-		minLooted = 5,
-		["level"] = {
-			[29] = 1,
-			[136] = 2,
-			[137] = 3,
-		},
-	},
-	["War Mill"] = {
-		--trackQuestId = 36058,
-		trackCustom = function() return _G.IsQuestFlaggedCompleted(36058) end,
-		trackCustomId = "WARMILL",
-		minLevel = 3,
-		weekly = true,
-		["level"] = {
-			[8] = 1,
-			[9] = 2,
-			[10] = 3,
-		},
-	},
-	["Inn"] = {
-		trackCustomId = "INN",
-		minLevel = 2,
-		["level"] = {
-			[34] = 1,
-			[35] = 2,
-			[36] = 3,
-		},
-	},
-}
-
 Garrison.instanceId = {
 	[1153] = {
 		-- chest location, 0.01 distance
@@ -283,8 +241,8 @@ Garrison.ICON_PATH_ARROW_UP_WAITING = mediaPath.."bg_garrison_tooltip_buildings_
 Garrison.ICON_PATH_CHECK = mediaPath.."bg_garrison_tooltip_check_active"
 Garrison.ICON_PATH_CHECK_WAITING = mediaPath.."bg_garrison_tooltip_check_waiting"
 Garrison.ICON_PATH_WARNING = mediaPath.."bg_garrison_toolbar_warning"
-
 Garrison.ICON_PATH_INVASION = mediaPath.."bg_garrison_toolbar_invasion"
+Garrison.ICON_PATH_DAILY_AVAILABLE = mediaPath.."bg_garrison_toolbar_daily"
 
 Garrison.COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
 --Garrison.ICON_CURRENCY = string.format("\124T%s\\%s:%d:%d:1:0\124t", mediaPath, name, 16, 16)
@@ -307,7 +265,7 @@ Garrison.ICON_CHECK = Garrison.getIconString(Garrison.ICON_PATH_CHECK, 16, false
 Garrison.ICON_CHECK_WAITING = Garrison.getIconString(Garrison.ICON_PATH_CHECK_WAITING, 16, false)
 Garrison.ICON_WARNING = Garrison.getIconString(Garrison.ICON_PATH_WARNING, 16, false)
 Garrison.ICON_INVASION = Garrison.getIconString(Garrison.ICON_PATH_INVASION, 16, false)
-
+Garrison.ICON_DAILY_AVAILABLE = Garrison.getIconString(Garrison.ICON_PATH_DAILY_AVAILABLE, 16, false)
 
 Garrison.ICON_OPEN = Garrison.getIconString(Garrison.ICON_PATH_OPEN, 16, false)
 Garrison.ICON_CLOSE = Garrison.getIconString(Garrison.ICON_PATH_CLOSE, 16, false)
@@ -327,6 +285,82 @@ Garrison.NotificationTitle = {
 	[Garrison.TYPE_BUILDING] = L["Building"],
 	[Garrison.TYPE_MISSION] = L["Mission"],
 	[Garrison.TYPE_SHIPMENT] = L["Shipment"],	
+}
+
+Garrison.buildingInfo = {
+	["Mine"] = {
+		indicator = {
+			{
+				trackLootItemId = 115508,
+				minLooted = 5,
+			},
+		},
+		["level"] = {
+			[61] = 1,
+			[62] = 2,
+			[63] = 3,
+		},
+	},
+	["Herb Garden"] = {
+		indicator = {
+			[0] = {			
+				trackLootItemId = 116053,
+				minLooted = 5,
+			},
+		},
+		["level"] = {
+			[29] = 1,
+			[136] = 2,
+			[137] = 3,
+		},
+	},
+	["War Mill"] = {
+		indicator = {			
+			{	--trackQuestId = 36058,
+				trackCustom = function() return _G.IsQuestFlaggedCompleted(36058) end,
+				trackCustomId = "WARMILL_SOTF",
+				minLevel = 3,
+				weekly = true,
+			},
+			{
+				trackCustom = function() 
+					if Garrison.isHorde() then
+						return _G.IsQuestFlaggedCompleted(38188) 
+					end
+					if Garrison.isAlliance() then
+						return _G.IsQuestFlaggedCompleted(38175) 
+					end
+				end,
+				trackCustomId = "WARMILL_IRONSCRAPS",
+				minLevel = 3,
+				daily = true,
+				customIcon = true,
+				showCollapsed = true,
+				icon = {
+					T = "",
+					F = Garrison.ICON_DAILY_AVAILABLE,
+				}
+			},
+		},
+		["level"] = {
+			[8] = 1,
+			[9] = 2,
+			[10] = 3,
+		},
+	},
+	["Inn"] = {
+		indicator = {
+			{
+				trackCustomId = "INN_FOLLOWER",
+				minLevel = 2,
+			},
+		},
+		["level"] = {
+			[34] = 1,
+			[35] = 2,
+			[36] = 3,
+		},
+	},
 }
 
 

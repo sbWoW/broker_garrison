@@ -490,21 +490,24 @@ function Garrison:CheckBuildingInfo()
 	if Garrison.buildingInfo then
 		for buildingName, buildingInfo in pairs(Garrison.buildingInfo) do
 
-			if buildingInfo.trackCustomId and buildingInfo.trackCustom ~= nil then
-				local result = buildingInfo.trackCustom()
-				debugPrint(("BuildingInfo (%s): %s"):format(buildingName, tostring(result)))
+			for indicatorIndex, indicatorData in pairs(buildingInfo.indicator) do
 
-				if buildingInfo.weekly then
-					if not globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly then
-						globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly = {}
-					end
-					globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly[buildingInfo.trackCustomId] = result
-				elseif buildingInfo.daily then
-					if not globalDb.data[charInfo.realmName][charInfo.playerName].trackDaily then
-						globalDb.data[charInfo.realmName][charInfo.playerName].trackDaily = {}
-					end					
-					globalDb.data[charInfo.realmName][charInfo.playerName].trackDaily[buildingInfo.trackCustomId] = result					
-				end				
+				if indicatorData.trackCustomId and indicatorData.trackCustom ~= nil then
+					local result = indicatorData.trackCustom()
+					debugPrint(("BuildingInfo (%s): %s"):format(buildingName, tostring(result)))
+
+					if indicatorData.weekly then
+						if not globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly then
+							globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly = {}
+						end
+						globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly[indicatorData.trackCustomId] = result
+					elseif indicatorData.daily then
+						if not globalDb.data[charInfo.realmName][charInfo.playerName].trackDaily then
+							globalDb.data[charInfo.realmName][charInfo.playerName].trackDaily = {}
+						end					
+						globalDb.data[charInfo.realmName][charInfo.playerName].trackDaily[indicatorData.trackCustomId] = result					
+					end				
+				end
 			end
 		end
 	end
@@ -619,35 +622,62 @@ function Garrison:ChatLootEvent(event, ...)
 	end
 end
 
-function Garrison:GetLootInfoForBuilding(playerData, buildingData)
+
+function Garrison:GetLootInfoForPlayer(playerData) 
+	
+	local retValue = ""
+
+	for buildingName, buildingData in pairs(playerData.buildings) do
+		retValue = retValue..Garrison:GetLootInfoForBuilding(playerData, buildingData, true)
+	end
+
+	return retValue
+end
+
+function Garrison:GetLootInfoForBuilding(playerData, buildingData, collapsedView)
 	local retValue = ""
 	
 	for buildingName, buildingInfo in pairs(Garrison.buildingInfo) do
 		if buildingInfo.level then
 			local buildingLevel = buildingInfo.level[buildingData.id]
-			if buildingLevel and buildingInfo.trackLootItemId ~= nil and playerData.lootedToday then 
-			local lootedToday = playerData.lootedToday[buildingInfo.trackLootItemId] or 0
-				if buildingInfo.minLooted and lootedToday > buildingInfo.minLooted then
-					retValue = " "..Garrison.ICON_CHECK
-				else
-					retValue = " "..Garrison.ICON_CHECK_WAITING
-				end
-			end
 
 			if not playerData.trackWeekly then
 				playerData.trackWeekly = {}
-			end
+			end	
+			if not playerData.trackDaily then
+				playerData.trackDaily = {}
+			end				
 
-			if buildingLevel and buildingInfo.trackCustomId ~= nil and playerData.trackWeekly then
-				if buildingInfo.minLevel and ((buildingLevel > buildingInfo.minLevel)
-					or (not (buildingData.isBuilding or buildingData.canActivate) and buildingLevel == buildingInfo.minLevel))
-				then					
-					local complete = playerData.trackWeekly[buildingInfo.trackCustomId]
+			for indicatorIndex, indicatorData in pairs(buildingInfo.indicator) do
 
-					if complete then							
-						retValue = " "..Garrison.ICON_CHECK
-					else
-						retValue = " "..Garrison.ICON_CHECK_WAITING
+				if not collapsedView or indicatorData.showCollapsed then
+
+					if buildingLevel and indicatorData.trackLootItemId ~= nil and playerData.lootedToday then 
+					local lootedToday = playerData.lootedToday[indicatorData.trackLootItemId] or 0
+						if indicatorData.minLooted and lootedToday > indicatorData.minLooted then
+							retValue = retValue.." "..Garrison.ICON_CHECK
+						else
+							retValue = retValue.." "..Garrison.ICON_CHECK_WAITING
+						end
+					end
+
+					if buildingLevel and indicatorData.trackCustomId ~= nil and playerData.trackWeekly and playerData.trackDaily then
+						if indicatorData.minLevel and ((buildingLevel > indicatorData.minLevel)
+							or (not (buildingData.isBuilding or buildingData.canActivate) and buildingLevel == indicatorData.minLevel))
+						then					
+							local complete
+							if indicatorData.weekly then
+							 	complete = playerData.trackWeekly[indicatorData.trackCustomId]
+							elseif indicatorData.daily then
+								complete = playerData.trackDaily[indicatorData.trackCustomId]
+							end
+
+							if complete then							
+								retValue = retValue.." "..(indicatorData.customIcon and indicatorData.icon.T or Garrison.ICON_CHECK)
+							else
+								retValue = retValue.." "..(indicatorData.customIcon and indicatorData.icon.F or Garrison.ICON_CHECK_WAITING)
+							end
+						end
 					end
 				end
 			end

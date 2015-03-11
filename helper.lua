@@ -445,6 +445,14 @@ function Garrison.itemIdFromLink(itemLink)
 end
 
 
+function Garrison.isHorde()
+	return (Garrison.charInfo.playerFaction == "Horde")
+end
+
+function Garrison.isAlliance()
+	return (Garrison.charInfo.playerFaction == "Alliance")
+end
+
 function Garrison.GetNextWeeklyResetTime()
 	local nextDailyReset = Garrison.GetNextDailyResetTime()
 	if (nextDailyReset == nil) then
