@@ -816,7 +816,7 @@ function Garrison:RecruitFollower(...)
 	local tmp = ...
 	debugPrint("RecruitFollower"..tostring(tmp))
 
-	globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly["INN"] = true
+	globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly["INN_FOLLOWER"] = true
 end
 
 --function Garrison:GarrisonCapacitiveDisplayFrame_Update()
