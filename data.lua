@@ -353,6 +353,7 @@ Garrison.buildingInfo = {
 			{
 				trackCustomId = "INN_FOLLOWER",
 				minLevel = 2,
+				weekly = true,
 			},
 		},
 		["level"] = {
