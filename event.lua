@@ -488,6 +488,24 @@ function Garrison:CheckInvasionAvailable()
 	globalDb.data[charInfo.realmName][charInfo.playerName].invasion.available = C_Garrison.IsInvasionAvailable() and not _G.IsQuestFlaggedCompleted(37640) -- Available and not completed gold invasion quest
 end
 
+function Garrison:CheckNumBonusRollQuests() 
+	local count = 0
+	for _, value in ipairs(Garrison.bonusRollItemQuestId) do
+  		if (_G.IsQuestFlaggedCompleted(value)) then
+    		count = count + 1
+    	end
+  	end
+
+  	if not globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly then
+		globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly = {}
+	end
+
+	globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly["BONUS_ROLL_QUESTS"] = count
+
+  	return count;
+end
+
+
 
 function Garrison:CheckBuildingInfo()
 	if Garrison.buildingInfo then
@@ -705,15 +723,14 @@ function Garrison:UpdateCurrency()
 	local _, amount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY)
 	local _, amountApexis, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_APEXIS)
 	local _, amountSealOfTemperedFateAmount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE)
-
-	
-
 	
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencyApexisAmount = amountApexis
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfTemperedFateAmount = amountSealOfTemperedFateAmount
 
 	Garrison:Update()
+
+	Garrison:CheckNumBonusRollQuests()
 end
 
 function Garrison:QuickUpdate()
@@ -755,6 +772,7 @@ function Garrison:SlowUpdate()
 
 		Garrison:CheckInvasionAvailable()
 		Garrison:CheckBuildingInfo()
+		Garrison:CheckNumBonusRollQuests()
 
 		if not Garrison.location.inGarrison then
 			-- not in garrison - full update (slow)

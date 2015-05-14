@@ -22,6 +22,9 @@ Garrison.colors = {
 	--lightGray = {r=(82/255), g=(91/255), b=(97/255), a=1},
 }
 
+Garrison.bonusRollItemQuestId = { 36055, 37452, 37453, 36056, 37456, 37457, 36054, 37454, 37455, 36057, 37458, 37459, 36058 }
+Garrison.bonusRollMaxNumQuests = 3
+
 local resets = {
 	[1] = 3, -- US, Tuesday
 	[2] = 5, -- Korea, Thursday

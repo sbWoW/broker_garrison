@@ -289,6 +289,7 @@ function Garrison:RegisterEvents()
 
 	Garrison:CheckInvasionAvailable()
 	Garrison:CheckBuildingInfo()
+	Garrison:CheckNumBonusRollQuests()
 
 end
 
@@ -1208,6 +1209,21 @@ do
 							estimatedCacheResourceAmount = getColoredString((" (%s)"):format(math.min(500, tmpResources)), resourceColor)								
 						end
 
+						local availableBonusRollQuests = ""
+						if playerData.info.bonusEnabled then
+							local tmpBonusRollQ = playerData.trackWeekly["BONUS_ROLL_QUESTS"]
+							local tmpAvailableBonusRollQ = Garrison.bonusRollMaxNumQuests
+
+							if tmpBonusRollQ ~= nil and tmpBonusRollQ > 0 then
+								tmpAvailableBonusRollQ = tmpAvailableBonusRollQ - tmpBonusRollQ
+							end
+
+							if tmpAvailableBonusRollQ > 0 then
+								availableBonusRollQuests = getColoredString((" (%s)"):format(tmpAvailableBonusRollQ), colors.lightGray)
+							end
+						end
+
+
 						if playerData.tooltipEnabled == nil or playerData.tooltipEnabled and (buildingCount.building.total > 0 or cacheWarning) then
 							playerCount = playerCount + 1 
 
@@ -1222,7 +1238,7 @@ do
 
 							tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN, nil, "LEFT", 1, nil, 0, 0, 20, 20)
 							tooltip:SetCell(row, 2, ("%s %s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), invasionAvailable, cacheWarning and Garrison.ICON_WARNING or ""), nil, "LEFT", 3)
-							tooltip:SetCell(row, 5, ("%s %s %s %s%s %s %s"):format(Garrison.ICON_CURRENCY_TEMPERED_FATE_TOOLTIP, BreakUpLargeNumbers(playerData.currencySealOfTemperedFateAmount or 0), 
+							tooltip:SetCell(row, 5, ("%s %s%s %s %s%s %s %s"):format(Garrison.ICON_CURRENCY_TEMPERED_FATE_TOOLTIP, BreakUpLargeNumbers(playerData.currencySealOfTemperedFateAmount or 0), availableBonusRollQuests,
 								Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), estimatedCacheResourceAmount, 
 								Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), 
 							nil, "RIGHT", 1)
@@ -1792,9 +1808,18 @@ function Garrison:OnInitialize()
 
 		globalDb.data[charInfo.realmName][charInfo.playerName].tooltipEnabled = true
 		globalDb.data[charInfo.realmName][charInfo.playerName].notificationEnabled = true
-		globalDb.data[charInfo.realmName][charInfo.playerName].ldbEnabled = true
-		
+		globalDb.data[charInfo.realmName][charInfo.playerName].ldbEnabled = true		
 	end
+	
+	if not charInfo.bonusEnabled then
+		-- Check for level
+		local playerLevel = _G.UnitLevel("player")
+
+		if playerLevel == _G.GetMaxPlayerLevel() then
+			globalDb.data[charInfo.realmName][charInfo.playerName].info.bonusEnabled = true
+		end
+	end
+
 
 	self:InitHelper()
 	self:InitEvent()
