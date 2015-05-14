@@ -464,16 +464,19 @@ function Garrison:VignetteEvent(event, ...)
 end
 
 function Garrison:LootToastEvent(event, ...)
-	local typeIdentifier, itemLink, quantity = ...
-	if Garrison:IsNearCache() then
-		debugPrint(("Looted %s (amount: %s) of %s"):format(tostring(typeIdentifier), tostring(quantity), tostring(itemLink)))
-		if typeIdentifier == "currency" and itemLink then
-			local currencyType = string.match(itemLink, "currency:([%-?%d:]+)")
+	--local typeIdentifier, itemLink, quantity = ...
+	local typeIdentifier, itemLink, quantity, specID, sex, isPersonal, lootSource = ...;
 
-			if currencyType ~= nil and currencyType == tostring(Garrison.GARRISON_CURRENCY) then
-				globalDb.data[charInfo.realmName][charInfo.playerName].garrisonCacheLastLooted = time()
-			end
-		end
+	if lootSource == Garrison.LOOT_SOURCE_GARRISON_CACHE then --
+	--if Garrison:IsNearCache() then
+		debugPrint(("Looted %s (amount: %s) of %s"):format(tostring(typeIdentifier), tostring(quantity), tostring(itemLink)))
+		--if typeIdentifier == "currency" and itemLink then
+		--	local currencyType = string.match(itemLink, "currency:([%-?%d:]+)")
+
+		--	if currencyType ~= nil and currencyType == tostring(Garrison.GARRISON_CURRENCY) then
+		globalDb.data[charInfo.realmName][charInfo.playerName].garrisonCacheLastLooted = time()
+		--	end
+		--end
 	end
 end
 
