@@ -1421,8 +1421,8 @@ function Garrison:GetCharOrderValues()
 
 	if orderValues == nil then
 		orderValues = {}
-		for i=1,9 do
-			orderValues[i] = tostring(i);
+		for i=1,11 do
+			orderValues[i] = (i < 10 and '0' or '')..tostring(i);
 		end
 	end
 
