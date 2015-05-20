@@ -448,6 +448,8 @@ function Garrison:SendNotification(paramCharInfo, data, notificationType)
 				(notificationType == TYPE_SHIPMENT and (not data.notificationValue or data.shipmentsReadyEstimate > data.notificationValue))
 			) then
 
+				--debugPrint(("%s: %s > %s"):format(data.name, tostring(data.shipmentsReadyEstimate), tostring(data.notificationValue)))
+
 				if not Garrison:DisableInInstance() then
 
 					local notificationText, toastName, toastText, soundName, toastEnabled, playSound, notificationTitle

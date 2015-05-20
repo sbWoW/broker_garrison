@@ -294,8 +294,13 @@ function Garrison:UpdateShipment(buildingID, shipmentData)
 				tmpShipment.notificationDismissed = shipmentData.notificationDismissed or false
 				tmpShipment.notification = shipmentData.notification
 
+				-- remember total shipments
+				if tmpShipment.shipmentsTotal == nil then
+					tmpShipment.shipmentsTotal = shipmentData.shipmentsTotal
+				end
+
 				if tmpShipment.name and tmpShipment.notificationValue then
-					debugPrint(("Update Shipment (%s) - NotificationValue=%s"):format(tmpShipment.name, tmpShipment.notificationValue))
+					debugPrint(("Update Shipment (%s, %s) - NotificationValue=%s, ShipmentsTotal=%s (%s)"):format(tmpShipment.name, tostring(buildingID), tmpShipment.notificationValue, tostring(tmpShipment.shipmentsTotal), tostring(shipmentData.shipmentsTotal)))
 				end
 			end
 		end
@@ -354,12 +359,16 @@ function Garrison:FullUpdateBuilding(updateType)
 			tmpBuildings[plotID] = Garrison:UpdateBuilding(plotID)
 		end
 		if updateType == Garrison.TYPE_SHIPMENT then
-			local buildingData = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID]			
+			local buildingData = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID]
 
 			if not buildingData then
 				debugPrint("UpdateShipment: Unknown Building: "..buildingID)
 			else
+				debugPrint(("#1UpdateShipment (%s) NotificationValue: %s (Total: %s)"):format(tostring(buildingData.shipment.name), tostring(buildingData.shipment.notificationValue), tostring(buildingData.shipment.shipmentsTotal)))
+
 				local tmpShipment = Garrison:UpdateShipment(buildingID, buildingData.shipment)
+
+				debugPrint(("#2UpdateShipment (%s) NotificationValue: %s (Total: %s)"):format(tostring(tmpShipment.name), tostring(tmpShipment.notificationValue), tostring(tmpShipment.shipmentsTotal)))
 
 				globalDb.data[charInfo.realmName][charInfo.playerName].buildings[plotID].shipment = tmpShipment
 			end
