@@ -584,7 +584,7 @@ function Garrison:DoShipmentMagic(shipmentData, paramCharInfo)
 	local timeLeftTotal = 0
 	local shipmentsAvailable = shipmentData.shipmentCapacity
 
-	if shipmentData and shipmentData.shipmentsTotal then
+	if shipmentData and shipmentData.shipmentsTotal and shipmentData.creationTime then
 		local timeDiff = (now - shipmentData.creationTime)
 		local shipmentsReadyByTime = 0
 		if shipmentData.duration and shipmentData.duration > 0 then
