@@ -1240,10 +1240,11 @@ do
 
 							tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN, nil, "LEFT", 1, nil, 0, 0, 20, 20)
 							tooltip:SetCell(row, 2, ("%s %s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), invasionAvailable, cacheWarning and Garrison.ICON_WARNING or ""), nil, "LEFT", 3)
-							tooltip:SetCell(row, 5, ("%s %s%s %s %s%s %s %s"):format(Garrison.ICON_CURRENCY_INEVITABLE_FATE_TOOLTIP, BreakUpLargeNumbers(playerData.currencySealOfInevitableFateAmount or 0), availableBonusRollQuests,
+							tooltip:SetCell(row, 5, ("%s %s%s %s %s %s %s%s %s %s %s %s"):format(Garrison.ICON_CURRENCY_INEVITABLE_FATE_TOOLTIP, BreakUpLargeNumbers(playerData.currencySealOfInevitableFateAmount or 0), availableBonusRollQuests,
 								Garrison.ICON_CURRENCY_TEMPERED_FATE_TOOLTIP, BreakUpLargeNumbers(playerData.currencySealOfTemperedFateAmount or 0), 
 								Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), estimatedCacheResourceAmount, 
-								Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), 
+								Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0), 
+								Garrison.ICON_CURRENCY_OIL, BreakUpLargeNumbers(playerData.currencyOil or 0)), 
 							nil, "RIGHT", 1)
 
 							tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_BUILDING})
