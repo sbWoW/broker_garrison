@@ -1240,7 +1240,8 @@ do
 
 							tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN, nil, "LEFT", 1, nil, 0, 0, 20, 20)
 							tooltip:SetCell(row, 2, ("%s %s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), invasionAvailable, cacheWarning and Garrison.ICON_WARNING or ""), nil, "LEFT", 3)
-							tooltip:SetCell(row, 5, ("%s %s%s %s %s%s %s %s"):format(Garrison.ICON_CURRENCY_TEMPERED_FATE_TOOLTIP, BreakUpLargeNumbers(playerData.currencySealOfTemperedFateAmount or 0), availableBonusRollQuests,
+							tooltip:SetCell(row, 5, ("%s %s%s %s %s%s %s %s"):format(Garrison.ICON_CURRENCY_INEVITABLE_FATE_TOOLTIP, BreakUpLargeNumbers(playerData.currencySealOfInevitableFateAmount or 0), availableBonusRollQuests,
+								Garrison.ICON_CURRENCY_TEMPERED_FATE_TOOLTIP, BreakUpLargeNumbers(playerData.currencySealOfTemperedFateAmount or 0), 
 								Garrison.ICON_CURRENCY_TOOLTIP, BreakUpLargeNumbers(playerData.currencyAmount or 0), estimatedCacheResourceAmount, 
 								Garrison.ICON_CURRENCY_APEXIS_TOOLTIP, BreakUpLargeNumbers(playerData.currencyApexisAmount or 0)), 
 							nil, "RIGHT", 1)
@@ -1688,6 +1689,8 @@ function Garrison:UpdateLDB()
 	local currencyTotal, currencyAmount = 0, 0
 	local currencyApexisAmount, currencyApexisTotal = 0, 0
 	local currencySealOfTemperedFateAmount = 0
+	local currencySealOfIneveitableFateAmount = 0
+	local currencyOil = 0
 
 	local resourceCacheAmount, resourceCacheAmountMax = 0, 0
 	local resourceCacheAmountMaxChar = nil
@@ -1708,6 +1711,8 @@ function Garrison:UpdateLDB()
 					currencyAmount = (playerData.currencyAmount or 0)
 					currencyApexisAmount = playerData.currencyApexisAmount or 0
 					currencySealOfTemperedFateAmount = playerData.currencySealOfTemperedFateAmount or 0
+					currencySealOfIneveitableFateAmount = playerData.currencySealOfInevitableFateAmount or 0
+					currencyOil = playerData.currencyOil or 0
 					
 					resourceCacheAmount = tmpResourceCacheAmount or 0
 
@@ -1742,7 +1747,9 @@ function Garrison:UpdateLDB()
 		currencyAmount = currencyAmount,
 		currencyApexisAmount = currencyApexisAmount,
 		currencySealOfTemperedFateAmount = currencySealOfTemperedFateAmount,
+		currencySealOfIneveitableFateAmount = currencySealOfIneveitableFateAmount,
 		currencyApexisTotal = currencyApexisTotal,
+		currencyOil = currencyOil,
 		currencyTotal = currencyTotal,
 		currencyIcon = Garrison.ICON_CURRENCY,
 		currencyApexisIcon = Garrison.ICON_CURRENCY_APEXIS,

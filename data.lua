@@ -39,6 +39,10 @@ Garrison.WeeklyResetDay = resets[Garrison.REGION]
 Garrison.GARRISON_CURRENCY = 824
 Garrison.GARRISON_CURRENCY_APEXIS = 823
 Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE = 994
+Garrison.GARRISON_CURRENTY_SEAL_OF_INEVITABLE_FATE = 1129
+Garrison.GARRISON_CURRENTY_OIL = 1101
+
+
 
 Garrison.LOOT_SOURCE_GARRISON_CACHE = 10
 
@@ -181,6 +185,7 @@ Garrison.ICON_REPLACEMENT = {
 	[strlower("Interface\\ICONS\\Garrison_Building_Workshop")] = mediaPath.."garrison_building_workshop",
 	[strlower("Interface\\ICONS\\Garrison_Building_TradingPost")] = mediaPath.."garrison_building_tradingpost",
 	[strlower("Interface\\ICONS\\Garrison_Building_Storehouse")] = mediaPath.."garrison_building_storehouse",
+	[strlower("Interface\\ICONS\\Garrison_Building_Cargoship")] = mediaPath.."garrison_building_cargoship",
 	[strlower("Interface\\ICONS\\Trade_Tailoring")] = mediaPath.."trade_tailoring",
 	[strlower("Interface\\ICONS\\Trade_Mining")] = mediaPath.."trade_mining",
 	[strlower("Interface\\ICONS\\Trade_Fishing")] = mediaPath.."trade_fishing",
@@ -219,18 +224,23 @@ Garrison.ICON_REPLACEMENT = {
 
 	[strlower("Interface\\ICONS\\INV_Garrison_Resource")] = mediaPath.."bg_garrison_toolbar_resource",
 	[strlower("Interface\\ICONS\\INV_Apexis_Draenor")] = mediaPath.."bg_garrison_toolbar_apexis",
+	[strlower("Interface\\ICONS\\INV_Garrison_Oil")] = mediaPath.."bg_garrison_toolbar_oil",
 	[strlower("Interface\\ICONS\\Ability_AnimusOrbs")] = mediaPath.."bg_garrison_toolbar_fate",
 }
 
 Garrison.ICON_PATH_CURRENCY = mediaPath.."bg_garrison_toolbar_resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS = mediaPath.."bg_garrison_toolbar_apexis"
-Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE = mediaPath.."bg_garrison_toolbar_fate"
+Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE = mediaPath.."bg_garrison_toolbar_fate" 
+Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE = mediaPath.."bg_garrison_toolbar_fate" --@TODO
+Garrison.ICON_PATH_CURRENCY_OIL = mediaPath.."bg_garrison_toolbar_oil"
 
 Garrison.ICON_PATH_ABOUT1 = mediaPath.."bg_garrison_about_h1"
 
 Garrison.ICON_PATH_CURRENCY_TOOLTIP = mediaPath.."bg_garrison_tooltip_resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP = mediaPath.."bg_garrison_tooltip_apexis"
 Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE_TOOLTIP = mediaPath.."bg_garrison_tooltip_fate"
+Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE_TOOLTIP = mediaPath.."bg_garrison_tooltip_fate" --@TODO
+Garrison.ICON_PATH_CURRENCY_OIL_TOOLTIP = mediaPath.."bg_garrison_toolbar_oil"
 
 Garrison.ICON_PATH_MISSION = mediaPath.."bg_garrison_toolbar_missions"
 Garrison.ICON_PATH_BUILDING = mediaPath.."bg_garrison_toolbar_buildings"
@@ -253,12 +263,19 @@ Garrison.COMPLETED_PATTERN = "^[^%d]*(0)[^%d]*$"
 --Garrison.ICON_CURRENCY = string.format("\124T%s\\%s:%d:%d:1:0\124t", mediaPath, name, 16, 16)
 
 Garrison.ICON_CURRENCY = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY, 16, false)
-Garrison.ICON_CURRENCY_APEXIS = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS, 16, false)
 Garrison.ICON_CURRENCY_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TOOLTIP, 16, false)
-Garrison.ICON_CURRENCY_TEMPERED_FATE = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE, 16, false)
+
+Garrison.ICON_CURRENCY_APEXIS = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS, 16, false)
 Garrison.ICON_CURRENCY_APEXIS_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP, 16, false)
+
+Garrison.ICON_CURRENCY_TEMPERED_FATE = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE, 16, false)
 Garrison.ICON_CURRENCY_TEMPERED_FATE_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE_TOOLTIP, 16, false)
 
+Garrison.ICON_CURRENCY_INEVITABLE_FATE = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE, 16, false)
+Garrison.ICON_CURRENCY_INEVITABLE_FATE_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE_TOOLTIP, 16, false)
+
+Garrison.ICON_CURRENCY_OIL = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_OIL, 16, false)
+Garrison.ICON_CURRENCY_OIL_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_OIL_TOOLTIP, 16, false)
 
 Garrison.ICON_MISSION = Garrison.getIconString(Garrison.ICON_PATH_MISSION, 16, false)
 Garrison.ICON_BUILDING = Garrison.getIconString(Garrison.ICON_PATH_BUILDING, 16, false)
@@ -702,6 +719,14 @@ Garrison.ldbVars = {
 		name = L["Apexis Crystals"],
 		data = function(data) return Garrison.getTableValue(data, "currencyApexisAmount") or 0 end,
 	},
+	["oil"] = {
+		name = L["Oil"],
+		data = function(data) return Garrison.getTableValue(data, "currencyOil") or 0 end,
+	},	
+	["oilicon"] = {
+		name = L["Icon: Oil"],
+		data = function(data) return Garrison.ICON_CURRENCY_OIL end,
+	},	
 	["sotf"] = {
 		name = L["Seal of Tempered Fate"],
 		data = function(data) return Garrison.getTableValue(data, "currencySealOfTemperedFateAmount") or 0 end,
@@ -709,6 +734,14 @@ Garrison.ldbVars = {
 	["sotficon"] = {
 		name = L["Icon: Seal of Tempered Fate"],
 		data = function(data) return Garrison.ICON_CURRENCY_TEMPERED_FATE end,
+	},
+	["soif"] = {
+		name = L["Seal of Inevitable Fate"],
+		data = function(data) return Garrison.getTableValue(data, "currencySealOfInevitableFateAmount") or 0 end,
+	},	
+	["soificon"] = {
+		name = L["Icon: Seal of Inevitable Fate"],
+		data = function(data) return Garrison.ICON_CURRENCY_INEVITABLE_FATE end,
 	},	
 	["tapexis"] = {
 		name = L["Apexis Crystals (Total)"],

@@ -196,3 +196,8 @@ L["Load Minimap icon (requires ui reload!)"] = true
 
 L["Delete"] = true
 L["LDB"] = true
+
+L["Oil"] = true
+L["Icon: Oil"] = true
+L["Seal of Inevitable Fate"] = true
+L["Icon: Seal of Inevitable Fate"] = true

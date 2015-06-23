@@ -731,11 +731,17 @@ end
 function Garrison:UpdateCurrency()
 	local _, amount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY)
 	local _, amountApexis, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_APEXIS)
-	local _, amountSealOfTemperedFateAmount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE)
+	local _, amountSealOfTemperedFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE)
+	local _, amountOil, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_OIL)
+	local _, amountSealOfInevitableFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_INEVITABLE_FATE)
+	
 	
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencyApexisAmount = amountApexis
-	globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfTemperedFateAmount = amountSealOfTemperedFateAmount
+	globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfTemperedFateAmount = amountSealOfTemperedFate
+	globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfInevitableFateAmount = amountSealOfInevitableFate
+	globalDb.data[charInfo.realmName][charInfo.playerName].currencyOil = amountOil
+	
 
 	Garrison:Update()
 

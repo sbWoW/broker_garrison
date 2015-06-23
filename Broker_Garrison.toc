@@ -1,4 +1,4 @@
-## Interface: 60100
+## Interface: 60200
 ## Title: Broker: Garrison
 ## Notes: Display Garrison missons for all Characters
 ## Author: smb
