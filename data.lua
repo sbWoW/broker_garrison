@@ -231,7 +231,7 @@ Garrison.ICON_REPLACEMENT = {
 Garrison.ICON_PATH_CURRENCY = mediaPath.."bg_garrison_toolbar_resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS = mediaPath.."bg_garrison_toolbar_apexis"
 Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE = mediaPath.."bg_garrison_toolbar_fate" 
-Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE = mediaPath.."bg_garrison_toolbar_fate" --@TODO
+Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE = mediaPath.."bg_garrison_toolbar_fate" --@TODO http://wowprogramming.com/utils/blp2png/39986b3c446d9a7b645176dd24fbd182.png
 Garrison.ICON_PATH_CURRENCY_OIL = mediaPath.."bg_garrison_toolbar_oil"
 
 Garrison.ICON_PATH_ABOUT1 = mediaPath.."bg_garrison_about_h1"
@@ -239,7 +239,7 @@ Garrison.ICON_PATH_ABOUT1 = mediaPath.."bg_garrison_about_h1"
 Garrison.ICON_PATH_CURRENCY_TOOLTIP = mediaPath.."bg_garrison_tooltip_resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP = mediaPath.."bg_garrison_tooltip_apexis"
 Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE_TOOLTIP = mediaPath.."bg_garrison_tooltip_fate"
-Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE_TOOLTIP = mediaPath.."bg_garrison_tooltip_fate" --@TODO
+Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE_TOOLTIP = mediaPath.."bg_garrison_tooltip_fate" --@TODO http://wowprogramming.com/utils/blp2png/39986b3c446d9a7b645176dd24fbd182.png
 Garrison.ICON_PATH_CURRENCY_OIL_TOOLTIP = mediaPath.."bg_garrison_toolbar_oil"
 
 Garrison.ICON_PATH_MISSION = mediaPath.."bg_garrison_toolbar_missions"
