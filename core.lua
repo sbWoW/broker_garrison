@@ -1208,7 +1208,7 @@ do
 								resourceColor = colors.red
 								cacheWarning = true
 							end
-							estimatedCacheResourceAmount = getColoredString((" (%s)"):format(math.min(500, tmpResources)), resourceColor)								
+							estimatedCacheResourceAmount = getColoredString((" (%s)"):format(math.min(Garrison.CACHE_SIZE, tmpResources)), resourceColor)								
 						end
 
 						local availableBonusRollQuests = ""
@@ -1830,6 +1830,13 @@ function Garrison:OnInitialize()
 		end
 	end
 
+	if not globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize then
+		for questId, cacheSize in pairs(globalDb.data) do
+			if(_G.IsQuestFlaggedCompleted(questId)) then
+				Garrison:SetCacheSize(cacheSize);
+			end
+		end
+	end
 
 	self:InitHelper()
 	self:InitEvent()
@@ -1920,5 +1927,4 @@ function Garrison:DelayedUpdate()
 
 	--self:RegisterEvent("SHIPMENT_CRAFTER_CLOSED", "ShipmentUpdate")
 	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE", "UpdateCurrency")
-
 end

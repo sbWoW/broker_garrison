@@ -350,7 +350,7 @@ function Garrison.getResourceFromTimestamp(timestamp, ...)
 		now = time()
 	end
 	
-	return math.min(500, math.floor(((now - timestamp) / 60) / 10))
+	return math.min(Garrison.CACHE_SIZE, math.floor(((now - timestamp) / 60) / 10))
 end
 
 function Garrison.replaceVariables(text, data)

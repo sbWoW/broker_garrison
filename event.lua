@@ -484,9 +484,20 @@ function Garrison:LootToastEvent(event, ...)
 
 		--	if currencyType ~= nil and currencyType == tostring(Garrison.GARRISON_CURRENCY) then
 		globalDb.data[charInfo.realmName][charInfo.playerName].garrisonCacheLastLooted = time()
+		
+		if(quantity > 750) then
+			Garrison:SetCacheSize(1000);
+		end
 		--	end
 		--end
 	end
+end
+
+function Garrison:SetCacheSize(size) 
+	if(globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize < size) then
+		globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize = size;
+	end
+	Garrison.CACHE_SIZE = globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize;
 end
 
 function Garrison:CheckInvasionAvailable()
