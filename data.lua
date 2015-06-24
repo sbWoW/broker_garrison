@@ -44,7 +44,7 @@ Garrison.GARRISON_CURRENTY_OIL = 1101
 
 Garrison.CACHE_SIZE = 500
 Garrison.cacheSizeQuestId = {
-	[189189] => 750,	
+	[189189] = 750,	
 }
 
 Garrison.LOOT_SOURCE_GARRISON_CACHE = 10

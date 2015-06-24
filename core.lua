@@ -1831,7 +1831,7 @@ function Garrison:OnInitialize()
 	end
 
 	if not globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize then
-		for questId, cacheSize in pairs(globalDb.data) do
+		for questId, cacheSize in pairs(Garrison.cacheSizeQuestId) do
 			if(_G.IsQuestFlaggedCompleted(questId)) then
 				Garrison:SetCacheSize(cacheSize);
 			end
