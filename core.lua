@@ -1204,7 +1204,7 @@ do
 						local tmpResources = Garrison.getResourceFromTimestamp(playerData.garrisonCacheLastLooted, now)
 						if tmpResources ~= nil and tmpResources >= 5 then
 							local resourceColor = colors.lightGray
-							if tmpResources >= 400 then
+							if tmpResources >= (Garrison.CACHE_SIZE * 0.8) then
 								resourceColor = colors.red
 								cacheWarning = true
 							end

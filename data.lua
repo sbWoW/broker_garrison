@@ -228,26 +228,24 @@ Garrison.ICON_REPLACEMENT = {
 	[strlower("Interface\\ICONS\\INV_Garrison_Resource")] = mediaPath.."bg_garrison_toolbar_resource",
 	[strlower("Interface\\ICONS\\INV_Apexis_Draenor")] = mediaPath.."bg_garrison_toolbar_apexis",
 	[strlower("Interface\\ICONS\\INV_Garrison_Oil")] = mediaPath.."bg_garrison_toolbar_oil",
-	[strlower("Interface\\ICONS\\Ability_AnimusOrbs")] = mediaPath.."bg_garrison_toolbar_fate",
+	[strlower("Interface\\ICONS\\Ability_AnimusOrbs")] = mediaPath.."bg_garrison_toolbar_seal_tempered",
 
-	-- [strlower("Interface\\ICONS\\Achievement_Battleground_TempleOfKotmogu_02_Green")] = mediaPath.."bg_garrison_toolbar_inevitable_fate", -- TODO
+	[strlower("Interface\\ICONS\\Achievement_Battleground_TempleOfKotmogu_02_Green")] = mediaPath.."bg_garrison_toolbar_seal_inevitable", -- TODO
 }
 
 Garrison.ICON_PATH_CURRENCY = mediaPath.."bg_garrison_toolbar_resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS = mediaPath.."bg_garrison_toolbar_apexis"
-Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE = mediaPath.."bg_garrison_toolbar_fate" 
---Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE = mediaPath.."bg_garrison_toolbar_inevitable_fate" --@TODO http://wowprogramming.com/utils/blp2png/39986b3c446d9a7b645176dd24fbd182.png
-Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE = "Interface\\ICONS\\Achievement_Battleground_TempleOfKotmogu_02_Green" -- TODO
+Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE = mediaPath.."bg_garrison_toolbar_seal_tempered" 
+Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE = mediaPath.."bg_garrison_toolbar_seal_inevitable"
 Garrison.ICON_PATH_CURRENCY_OIL = mediaPath.."bg_garrison_toolbar_oil"
 
 Garrison.ICON_PATH_ABOUT1 = mediaPath.."bg_garrison_about_h1"
 
 Garrison.ICON_PATH_CURRENCY_TOOLTIP = mediaPath.."bg_garrison_tooltip_resource"
 Garrison.ICON_PATH_CURRENCY_APEXIS_TOOLTIP = mediaPath.."bg_garrison_tooltip_apexis"
-Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE_TOOLTIP = mediaPath.."bg_garrison_tooltip_fate"
---Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE_TOOLTIP = mediaPath.."bg_garrison_tooltip_inevitable_fate" --@TODO http://wowprogramming.com/utils/blp2png/39986b3c446d9a7b645176dd24fbd182.png
-Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE_TOOLTIP = "Interface\\ICONS\\Achievement_Battleground_TempleOfKotmogu_02_Green" -- TODO
-Garrison.ICON_PATH_CURRENCY_OIL_TOOLTIP = mediaPath.."bg_garrison_toolbar_oil"
+Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE_TOOLTIP = mediaPath.."bg_garrison_tooltip_seal_tempered"
+Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE_TOOLTIP = mediaPath.."bg_garrison_tooltip_seal_inevitable" 
+Garrison.ICON_PATH_CURRENCY_OIL_TOOLTIP = mediaPath.."bg_garrison_tooltip_oil"
 
 Garrison.ICON_PATH_MISSION = mediaPath.."bg_garrison_toolbar_missions"
 Garrison.ICON_PATH_BUILDING = mediaPath.."bg_garrison_toolbar_buildings"
