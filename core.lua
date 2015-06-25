@@ -1690,7 +1690,7 @@ function Garrison:UpdateLDB()
 	local currencyTotal, currencyAmount = 0, 0
 	local currencyApexisAmount, currencyApexisTotal = 0, 0
 	local currencySealOfTemperedFateAmount = 0
-	local currencySealOfIneveitableFateAmount = 0
+	local currencySealOfInevitableFateAmount = 0
 	local currencyOil = 0
 
 	local resourceCacheAmount, resourceCacheAmountMax = 0, 0
@@ -1712,7 +1712,7 @@ function Garrison:UpdateLDB()
 					currencyAmount = (playerData.currencyAmount or 0)
 					currencyApexisAmount = playerData.currencyApexisAmount or 0
 					currencySealOfTemperedFateAmount = playerData.currencySealOfTemperedFateAmount or 0
-					currencySealOfIneveitableFateAmount = playerData.currencySealOfInevitableFateAmount or 0
+					currencySealOfInevitableFateAmount = playerData.currencySealOfInevitableFateAmount or 0
 					currencyOil = playerData.currencyOil or 0
 					
 					resourceCacheAmount = tmpResourceCacheAmount or 0
@@ -1748,7 +1748,7 @@ function Garrison:UpdateLDB()
 		currencyAmount = currencyAmount,
 		currencyApexisAmount = currencyApexisAmount,
 		currencySealOfTemperedFateAmount = currencySealOfTemperedFateAmount,
-		currencySealOfIneveitableFateAmount = currencySealOfIneveitableFateAmount,
+		currencySealOfInevitableFateAmount = currencySealOfInevitableFateAmount,
 		currencyApexisTotal = currencyApexisTotal,
 		currencyOil = currencyOil,
 		currencyTotal = currencyTotal,
@@ -1830,14 +1830,6 @@ function Garrison:OnInitialize()
 		end
 	end
 
-	if not globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize then
-		for questId, cacheSize in pairs(Garrison.cacheSizeQuestId) do
-			if(_G.IsQuestFlaggedCompleted(questId)) then
-				Garrison:SetCacheSize(cacheSize);
-			end
-		end
-	end
-
 	self:InitHelper()
 	self:InitEvent()
 
@@ -1850,6 +1842,14 @@ function Garrison:OnInitialize()
 
 	self:SetupOptions()
 	self:SetupAPI()
+
+	if not globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize then
+		for questId, cacheSize in pairs(Garrison.cacheSizeQuestId) do
+			if(_G.IsQuestFlaggedCompleted(questId)) then
+				Garrison:SetCacheSize(cacheSize);
+			end
+		end
+	end	
 
 	Garrison:SetSinkStorage(configDb.notification.sink)
 

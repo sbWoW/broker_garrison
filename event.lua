@@ -494,10 +494,11 @@ function Garrison:LootToastEvent(event, ...)
 end
 
 function Garrison:SetCacheSize(size) 
-	if(globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize < size) then
-		globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize = size;
+	local currentSize = globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize
+	if(currentSize ~= nil and size ~= nil and currentSize < size) then
+		globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize = size
+		Garrison.CACHE_SIZE = size
 	end
-	Garrison.CACHE_SIZE = globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize;
 end
 
 function Garrison:CheckInvasionAvailable()
