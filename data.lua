@@ -44,7 +44,9 @@ Garrison.GARRISON_CURRENTY_OIL = 1101
 
 Garrison.CACHE_SIZE = 500
 Garrison.cacheSizeQuestId = {
-	[189189] = 750,	
+	[37935] = 750, -- improved logistics horde
+	[38445] = 750, -- improved logistics alliance
+	-- TODO: [37485] = 1000,
 }
 
 Garrison.LOOT_SOURCE_GARRISON_CACHE = 10
