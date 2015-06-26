@@ -160,7 +160,7 @@ local DB_DEFAULTS = {
 				},
 				group = {
 					[1] = {
-						value = "m.missionState",
+						value = "m.followerType",
 						ascending = true,
 					},
 				},				
@@ -1201,14 +1201,15 @@ do
 
 						local estimatedCacheResourceAmount = ""
 						local cacheWarning = false
-						local tmpResources = Garrison.getResourceFromTimestamp(playerData.garrisonCacheLastLooted, now)
+						local cacheSize = playerData.cacheSize or 500
+						local tmpResources = Garrison.getResourceFromTimestamp(cacheSize, playerData.garrisonCacheLastLooted, now)
 						if tmpResources ~= nil and tmpResources >= 5 then
 							local resourceColor = colors.lightGray
-							if tmpResources >= (Garrison.CACHE_SIZE * 0.8) then
+							if tmpResources >= (cacheSize * 0.8) then
 								resourceColor = colors.red
 								cacheWarning = true
 							end
-							estimatedCacheResourceAmount = getColoredString((" (%s)"):format(math.min(Garrison.CACHE_SIZE, tmpResources)), resourceColor)								
+							estimatedCacheResourceAmount = getColoredString((" (%s)"):format(math.min(cacheSize, tmpResources)), resourceColor)								
 						end
 
 						local availableBonusRollQuests = ""
@@ -1706,7 +1707,7 @@ function Garrison:UpdateLDB()
 			-- don't count/show disabled characters
 			if playerData.ldbEnabled == nil or playerData.ldbEnabled then
 
-				local tmpResourceCacheAmount = Garrison.getResourceFromTimestamp(playerData.garrisonCacheLastLooted, now)
+				local tmpResourceCacheAmount = Garrison.getResourceFromTimestamp(playerData.cacheSize, playerData.garrisonCacheLastLooted, now)
 
 				if Garrison.isCurrentChar(playerData.info) then
 					currencyAmount = (playerData.currencyAmount or 0)
@@ -1820,6 +1821,10 @@ function Garrison:OnInitialize()
 		globalDb.data[charInfo.realmName][charInfo.playerName].notificationEnabled = true
 		globalDb.data[charInfo.realmName][charInfo.playerName].ldbEnabled = true		
 	end
+
+	if not globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize then
+		globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize = 500
+	end
 	
 	if not charInfo.bonusEnabled then
 		-- Check for level
@@ -1842,14 +1847,6 @@ function Garrison:OnInitialize()
 
 	self:SetupOptions()
 	self:SetupAPI()
-
-	if not globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize then
-		for questId, cacheSize in pairs(Garrison.cacheSizeQuestId) do
-			if(_G.IsQuestFlaggedCompleted(questId)) then
-				Garrison:SetCacheSize(cacheSize);
-			end
-		end
-	end	
 
 	Garrison:SetSinkStorage(configDb.notification.sink)
 
@@ -1920,6 +1917,12 @@ end
 
 function Garrison:DelayedUpdate()
 	Garrison:LoadDependencies()
+
+	for questId, cacheSize in pairs(Garrison.cacheSizeQuestId) do
+		if(_G.IsQuestFlaggedCompleted(questId)) then
+			Garrison:SetCacheSize(cacheSize);
+		end
+	end
 
 	delayedInit = true
 	Garrison:UpdateCurrency()	

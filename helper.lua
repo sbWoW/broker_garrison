@@ -340,7 +340,7 @@ function Garrison.getTableValue(data, ...)
 	return nil
 end
 
-function Garrison.getResourceFromTimestamp(timestamp, ...)
+function Garrison.getResourceFromTimestamp(cacheSize, timestamp, ...)
 	if not timestamp then 
 		return nil
 	end
@@ -350,7 +350,7 @@ function Garrison.getResourceFromTimestamp(timestamp, ...)
 		now = time()
 	end
 	
-	return math.min(Garrison.CACHE_SIZE, math.floor(((now - timestamp) / 60) / 10))
+	return math.min(cacheSize or 500, math.floor(((now - timestamp) / 60) / 10))
 end
 
 function Garrison.replaceVariables(text, data)

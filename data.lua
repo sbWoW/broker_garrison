@@ -42,7 +42,6 @@ Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE = 994
 Garrison.GARRISON_CURRENTY_SEAL_OF_INEVITABLE_FATE = 1129
 Garrison.GARRISON_CURRENTY_OIL = 1101
 
-Garrison.CACHE_SIZE = 500
 Garrison.cacheSizeQuestId = {
 	[37935] = 750, -- improved logistics horde
 	[38445] = 750, -- improved logistics alliance
@@ -473,6 +472,11 @@ Garrison.tooltipConfig = {
 	["m.name"] = {
 		value = "name",
 		name = L["Mission Name"],
+		type = Garrison.TYPE_MISSION,
+	},
+	["m.followerType"] = {
+		value = "followerTypeID",
+		name = L["Follower Type (Garrison, Shipyard)"],
 		type = Garrison.TYPE_MISSION,
 	},
 }

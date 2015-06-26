@@ -44,6 +44,7 @@ function Garrison:GARRISON_MISSION_STARTED(event, missionID, start)
 				level = garrisonMission.level,
 				followers = {},
 				rewards = garrisonMission.rewards,
+				followerTypeID = garrisonMission.followerTypeID
 			}
 			
 			debugPrint("Added Mission: "..missionID)
@@ -497,7 +498,6 @@ function Garrison:SetCacheSize(size)
 	local currentSize = globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize
 	if(currentSize ~= nil and size ~= nil and currentSize < size) then
 		globalDb.data[charInfo.realmName][charInfo.playerName].cacheSize = size
-		Garrison.CACHE_SIZE = size
 	end
 end
 
