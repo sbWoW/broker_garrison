@@ -201,3 +201,4 @@ L["Oil"] = true
 L["Icon: Oil"] = true
 L["Seal of Inevitable Fate"] = true
 L["Icon: Seal of Inevitable Fate"] = true
+L["Follower Type (Garrison, Shipyard)"] = true
