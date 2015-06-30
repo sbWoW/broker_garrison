@@ -486,9 +486,6 @@ function Garrison:LootToastEvent(event, ...)
 		--	if currencyType ~= nil and currencyType == tostring(Garrison.GARRISON_CURRENCY) then
 		globalDb.data[charInfo.realmName][charInfo.playerName].garrisonCacheLastLooted = time()
 		
-		if(quantity > 750) then
-			Garrison:SetCacheSize(1000);
-		end
 		--	end
 		--end
 	end

@@ -45,7 +45,7 @@ Garrison.GARRISON_CURRENTY_OIL = 1101
 Garrison.cacheSizeQuestId = {
 	[37935] = 750, -- improved logistics horde
 	[38445] = 750, -- improved logistics alliance
-	-- TODO: [37485] = 1000,
+	[37485] = 1000,
 }
 
 Garrison.LOOT_SOURCE_GARRISON_CACHE = 10
@@ -766,7 +766,11 @@ Garrison.ldbVars = {
 	},
 	["cachewarning"] = {
 		name = L["Resource Cache Warning Icon"],
-		data = function(data) return (Garrison.getTableValue(data, "resourceCacheAmountMax") or 0) > 400 and Garrison.ICON_WARNING or "" end,
+		data = function(data) return (Garrison.getTableValue(data, "resourceCacheAmountMaxFilling") or 0) > 0.8 and Garrison.ICON_WARNING or "" end,
+	},
+	["cachesize"] = {
+		name = L["Resource Cache Size"],
+		data = function(data) return (Garrison.getTableValue(data, "cacheSize") or 500) end,
 	},
 	["crescache"] = {
 		name = L["Current Player Resource Cache"],

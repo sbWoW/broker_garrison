@@ -1694,8 +1694,12 @@ function Garrison:UpdateLDB()
 	local currencySealOfInevitableFateAmount = 0
 	local currencyOil = 0
 
+	local resourceCacheAmountMaxFilling = 0
+	local cacheSize = 0
+
 	local resourceCacheAmount, resourceCacheAmountMax = 0, 0
 	local resourceCacheAmountMaxChar = nil
+	local resourceCacheAmountMaxSize = 500
 
 	local now = time()
 
@@ -1715,6 +1719,7 @@ function Garrison:UpdateLDB()
 					currencySealOfTemperedFateAmount = playerData.currencySealOfTemperedFateAmount or 0
 					currencySealOfInevitableFateAmount = playerData.currencySealOfInevitableFateAmount or 0
 					currencyOil = playerData.currencyOil or 0
+					cacheSize = playerData.cacheSize or 0
 					
 					resourceCacheAmount = tmpResourceCacheAmount or 0
 
@@ -1729,10 +1734,14 @@ function Garrison:UpdateLDB()
 					invasionAvailable = true
 				end			
 
+				local tmpResourceCacheFilling = (tmpResourceCacheAmount or 0) / (playerData.cacheSize or 500)				
 				if tmpResourceCacheAmount then
-					if tmpResourceCacheAmount > resourceCacheAmountMax then
+					if tmpResourceCacheFilling > resourceCacheAmountMaxFilling then
+					--if tmpResourceCacheAmount > resourceCacheAmountMax then
 						resourceCacheAmountMax = tmpResourceCacheAmount
 						resourceCacheAmountMaxChar = playerData.info
+						resourceCacheAmountMaxSize = playerData.cacheSize
+						resourceCacheAmountMaxFilling = tmpResourceCacheFilling
 					end
 					--resourceCacheAmountMax = math.max(resourceCacheAmountMax, tmpResourceCacheAmount)
 
@@ -1752,9 +1761,15 @@ function Garrison:UpdateLDB()
 		currencySealOfInevitableFateAmount = currencySealOfInevitableFateAmount,
 		currencyApexisTotal = currencyApexisTotal,
 		currencyOil = currencyOil,
+		cacheSize = cacheSize,
 		currencyTotal = currencyTotal,
 		currencyIcon = Garrison.ICON_CURRENCY,
 		currencyApexisIcon = Garrison.ICON_CURRENCY_APEXIS,
+
+		resourceCacheAmountMaxFilling = resourceCacheAmountMaxFilling,
+		resourceCacheAmountMaxSize = resourceCacheAmountMaxSize,
+		cacheSize = cacheSize,
+
 
 		resourceCacheAmountMax = resourceCacheAmountMax,
 		resourceCacheAmountMaxChar = resourceCacheAmountMaxChar,
