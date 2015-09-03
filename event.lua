@@ -848,12 +848,12 @@ function Garrison:GarrisonMinimapShipmentCreated_ShowPulse()
 		self.hooks.GarrisonMinimapShipmentCreated_ShowPulse(_G.GarrisonLandingPageMinimapButton)
 	end
 end
-function Garrison:GarrisonMinimapMission_ShowPulse()
+function Garrison:GarrisonMinimapMission_ShowPulse(_, missionID)
 	if configDb.notification.mission.hideMinimapPulse then
 		debugPrint("Hide Pulse (Mission)")		
 	else
 		debugPrint("Play Pulse (Mission)")
-		self.hooks.GarrisonMinimapMission_ShowPulse(_G.GarrisonLandingPageMinimapButton)
+		self.hooks.GarrisonMinimapMission_ShowPulse(_G.GarrisonLandingPageMinimapButton, missionID)
 	end
 end
 
