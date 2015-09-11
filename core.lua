@@ -458,7 +458,7 @@ function Garrison:SendNotification(paramCharInfo, data, notificationType)
 						toastText = ("%s\n%s"):format(formatRealmPlayer(paramCharInfo, true), data.name)
 					else
 						toastText = ("%s\n\n%s"):format(formatRealmPlayer(paramCharInfo, true), data.name)
-					end
+						end
 
 					toastEnabled = configDb.notification[notificationType].toastEnabled
 					playSound = configDb.notification[notificationType].playSound
@@ -904,6 +904,10 @@ do
 	end
 
 	function DrawTooltip(anchor_frame, paramTooltipType)
+		if not configDb.general.updateInCombat and InCombatLockdown() then
+			return
+		end
+
 		if not anchor_frame then
 			return
 		end
@@ -1050,6 +1054,12 @@ do
 
 								AddEmptyRow(tooltip, colors.darkGray)
 
+								if not configDb.general.mission.hideHeader then
+									--row = AddRow(tooltip, colors.darkGray)
+									--tooltip:SetCell(row, 4, getColoredString(L["SHIPYARD"], colors.lightGray), nil, "CENTER", 1)									
+									--AddEmptyRow(tooltip, colors.darkGray)
+								end								
+
 								--debugPrint(groupBy)
 								local sortedMissionTable = Garrison.sort(playerData.missions, unpack(sortOptions))
 								local lastGroupValue = nil
@@ -1069,6 +1079,12 @@ do
 												AddEmptyRow(tooltip, colors.darkGray)
 
 												lastGroupValue = groupByValue
+
+												if not configDb.general.mission.hideHeader then
+													--row = AddRow(tooltip, colors.darkGray)
+													--tooltip:SetCell(row, 4, getColoredString(L["SHIPYARD"], colors.lightGray), nil, "CENTER", 1)									
+													--AddEmptyRow(tooltip, colors.darkGray)
+												end															
 											end
 										end
 									end
@@ -1672,6 +1688,10 @@ end
 
 
 function Garrison:Update()
+	if not configDb.general.updateInCombat and InCombatLockdown() then
+		return
+	end
+
 	Garrison:FullUpdateBuilding(TYPE_SHIPMENT)
 
 	Garrison:UpdateUnknownMissions(false)
