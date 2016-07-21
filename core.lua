@@ -64,6 +64,10 @@ local notificationQueue = {}
 Garrison.notificationQueue = notificationQueue
 local notificationQueueEnabled = false
 
+-- LE_FOLLOWER_TYPE_SHIPYARD_6_2
+-- LE_FOLLOWER_TYPE_GARRISON_7_0
+-- LE_FOLLOWER_TYPE_GARRISON_6_0
+
 Garrison.data = {}
 
 -- Garrison Functions
@@ -1517,8 +1521,8 @@ do
 				Garrison:ToggleDetached(paramType)
 			else
 				if GarrisonLandingPage then
-					if (not GarrisonLandingPage:IsShown()) then
-						ShowUIPanel(GarrisonLandingPage)
+					if (not GarrisonLandingPage:IsShown()) then						
+                        ShowGarrisonLandingPage(C_Garrison.GetLandingPageGarrisonType());
 					else
 						HideUIPanel(GarrisonLandingPage)
 					end
@@ -1634,7 +1638,9 @@ end
 function Garrison:UpdateUnknownMissions(missionsLoaded)
 	local activeMissions = {}
 
-	for key,garrisonMission in pairs(C_Garrison.GetInProgressMissions()) do
+    local garrisonMission = {}
+
+	for key,garrisonMission in pairs(Garrison:GetInProgressMissions()) do
 		activeMissions[garrisonMission.missionID] = true
 		-- Mission not found in Database
 		if not globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID]
@@ -1673,7 +1679,9 @@ function Garrison:UpdateUnknownMissions(missionsLoaded)
 		end
 	end
 
-	for key,garrisonMission in pairs(C_Garrison.GetCompleteMissions()) do
+    local completeMissions = {}
+
+	for key,garrisonMission in pairs(Garrison:GetCompleteMissions()) do
 		if (globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID]) then
 			if globalDb.data[charInfo.realmName][charInfo.playerName].missions[garrisonMission.missionID].start ~= 0 then
 				debugPrint("Finished Mission (Loop): "..garrisonMission.missionID)
@@ -1907,8 +1915,10 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("SHOW_LOOT_TOAST", "LootToastEvent")
 	self:RegisterEvent("CHAT_MSG_LOOT", "ChatLootEvent")
 
-	self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
-	self:RawHook("GarrisonBuildingAlertFrame_ShowAlert", true)
+	--self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
+	--self:RawHook("GarrisonBuildingAlertFrame_ShowAlert", true)
+    self:RawHook("GarrisonMissionAlertSystem", true);
+    self:RawHook("GarrisonBuildingAlertSystem", true);
 
 	self:RawHook("GarrisonMinimapBuilding_ShowPulse", true)
 	self:RawHook("GarrisonMinimapShipmentCreated_ShowPulse", true)

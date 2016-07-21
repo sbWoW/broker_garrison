@@ -150,7 +150,7 @@ function Garrison.GetTextureForID(id, size)
 		dummyTextureFrame = _G.CreateFrame("Frame", nil, _G.UIParent)
 
 		local icon = dummyTextureFrame:CreateTexture()
-		icon:SetToFileData(id)
+		icon:SetTexture(id)
 
 		local texture = icon:GetTexture()
 
@@ -163,6 +163,10 @@ function Garrison.GetTextureForID(id, size)
 end
 
 function Garrison.GetIconPath(name) 
+
+    if type(name) == 'number' then
+        return name
+    end 
 
 	local rawName = _G.strlower(name:gsub(".blp", ""):gsub("\\\\", "\\"))
 
@@ -207,18 +211,20 @@ function Garrison.getIconString(name, size, isAtlas, ...)
 				local iconZoom = ...
 
 				if type(name) == 'number' then
-					local _, _, _, _, _, _, _, _, _, itemTexture, _ = _G.GetItemInfo(name)
-                    if itemTexture == nil then
-    					return ""
-                    end
-                    name = itemTexture
-				end
+					local _, _, _, _, _, _, _, _, _, itemTexture, _ = _G.GetItemInfo(name)                    
 
-				if iconZoom then			
-					Garrison.iconCache[key] = string.format("\124T%s:%d:%d:1:0:64:64:4:60:4:60\124t", Garrison.GetIconPath(name), size, size)
-				else
-					Garrison.iconCache[key] = string.format("\124T%s:%d:%d:1:0\124t", Garrison.GetIconPath(name), size, size)
+                    if itemTexture == nil then
+    					name = "Interface\\Icons\\INV_Misc_QuestionMark"
+                    else
+                        name = itemTexture
+                    end
 				end
+                 
+			    if iconZoom then			
+   					Garrison.iconCache[key] = string.format("\124T%s:%d:%d:1:0:64:64:4:60:4:60\124t", Garrison.GetIconPath(name), size, size)
+   				else
+   					Garrison.iconCache[key] = string.format("\124T%s:%d:%d:1:0\124t", Garrison.GetIconPath(name), size, size)
+			    end
 			end
 		end
 		

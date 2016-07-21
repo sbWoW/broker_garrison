@@ -25,12 +25,7 @@ function iconCellPrototype:SetupCell(tooltip, value, justification, font, l_pad,
 
    self.size = size
 
-   if(_G.type(texture) == "number") then
-      self.icon:SetToFileData(texture)
-   else
-      self.icon:SetTexture(texture)
-   end   
-
+   self.icon:SetTexture(texture)   
    self.icon:SetWidth(size)
    self.icon:SetHeight(size)
    self.icon:Show()

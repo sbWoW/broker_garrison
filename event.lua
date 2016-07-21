@@ -22,6 +22,46 @@ function Garrison:GARRISON_MISSION_COMPLETE_RESPONSE(event, missionID, canComple
 	Garrison:Update()
 end
 
+function Garrison:GetInProgressMissions()
+	local garrisonMission = {}
+
+    local types = { 
+        LE_FOLLOWER_TYPE_GARRISON_7_0, 
+        LE_FOLLOWER_TYPE_GARRISON_6_0, 
+        LE_FOLLOWER_TYPE_SHIPYARD_6_2 
+    }
+
+    for key,type in pairs(types) do
+        local localMission = {}
+        C_Garrison.GetInProgressMissions(localMission, type)
+        for i=1,#localMission do
+            garrisonMission[#garrisonMission+1] = localMission[i]
+        end
+    end
+
+    return garrisonMission
+end
+
+function Garrison:GetCompleteMissions()
+	local garrisonMission = {}
+
+    local types = { 
+        LE_FOLLOWER_TYPE_GARRISON_7_0, 
+        LE_FOLLOWER_TYPE_GARRISON_6_0, 
+        LE_FOLLOWER_TYPE_SHIPYARD_6_2 
+    }
+
+    for key,type in pairs(types) do
+        local localMission = {}
+        C_Garrison.GetCompleteMissions(garrisonMission, type)
+        for i=1,#localMission do
+            garrisonMission[#garrisonMission+1] = localMission[i]
+        end        
+    end
+
+    return garrisonMission
+end
+
 function Garrison:GARRISON_MISSION_STARTED(event, missionID, start)
 
 	local startTime = time()
@@ -30,7 +70,7 @@ function Garrison:GARRISON_MISSION_STARTED(event, missionID, start)
 		startTime = start		
 	end
 
-	for key,garrisonMission in pairs(C_Garrison.GetInProgressMissions()) do
+    for key,garrisonMission in pairs(Garrison:GetInProgressMissions()) do
 		if (garrisonMission.missionID == missionID) then
 			local mission = {
 				id = garrisonMission.missionID,
@@ -218,7 +258,7 @@ function Garrison:GetShipmentData(buildingID)
 end
 
 function Garrison:UpdatePlotSize()
-	local plots = C_Garrison.GetPlots()
+	local plots = C_Garrison.GetPlots(LE_FOLLOWER_TYPE_GARRISON_6_0)
 
 	if plots and #plots > 0 then
 		for plotID, buildingData in pairs(globalDb.data[charInfo.realmName][charInfo.playerName].buildings) do
@@ -342,7 +382,7 @@ function Garrison:FullUpdateBuilding(updateType)
 
 	C_Garrison.RequestLandingPageShipmentInfo()
 
-	local buildings = C_Garrison.GetBuildings()
+	local buildings = C_Garrison.GetBuildings(LE_GARRISON_TYPE_6_0)
 	local tmpBuildings = {}	
 
 	if #buildings == 0 then
@@ -814,21 +854,21 @@ function Garrison:CheckAddonLoaded(event, addon)
 	end
 end
 
-function Garrison:GarrisonMissionAlertFrame_ShowAlert(missionID)
+function Garrison:GarrisonMissionAlertSystem(missionID)
 	if configDb.notification.mission.hideBlizzardNotification then
 		debugPrint("Blizzard notification hidden: "..missionID)
 	else
 		debugPrint("Show blizzard notification"..missionID)
-		self.hooks.GarrisonMissionAlertFrame_ShowAlert(missionID)
+		self.hooks.GarrisonMissionAlertSystem(missionID)
 	end
 end
 
-function Garrison:GarrisonBuildingAlertFrame_ShowAlert(name)
+function Garrison:GarrisonBuildingAlertSystem(...)
 	if configDb.notification.building.hideBlizzardNotification then
-		debugPrint("Blizzard notification hidden: "..name)
+		debugPrint("Blizzard notification hidden: ")
 	else
-		debugPrint("Show blizzard notification"..name)
-		self.hooks.GarrisonBuildingAlertFrame_ShowAlert(name)
+		debugPrint("Show blizzard notification")
+		self.hooks.GarrisonBuildingAlertSystem(...)
 	end
 end
 
