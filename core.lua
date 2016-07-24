@@ -1915,10 +1915,9 @@ function Garrison:OnInitialize()
 	self:RegisterEvent("SHOW_LOOT_TOAST", "LootToastEvent")
 	self:RegisterEvent("CHAT_MSG_LOOT", "ChatLootEvent")
 
-	--self:RawHook("GarrisonMissionAlertFrame_ShowAlert", true)
-	--self:RawHook("GarrisonBuildingAlertFrame_ShowAlert", true)
-    self:RawHook("GarrisonMissionAlertSystem", true);
-    self:RawHook("GarrisonBuildingAlertSystem", true);
+	-- disabled for now - need to figure out a better way to silence blizzard notifications
+    --self:RawHook("GarrisonMissionAlertSystem", true);
+    --self:RawHook("GarrisonBuildingAlertSystem", true);
 
 	self:RawHook("GarrisonMinimapBuilding_ShowPulse", true)
 	self:RawHook("GarrisonMinimapShipmentCreated_ShowPulse", true)
