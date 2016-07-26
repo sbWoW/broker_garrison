@@ -229,8 +229,11 @@ end
 
 function Garrison:UpdateLocation()
 	--Garrison.location.mapName = _G.GetRealZoneText()
-	Garrison.location.inGarrison = Garrison:IsInGarrison()
+	--Garrison.location.inGarrison = Garrison:IsInGarrison()
 	debugPrint(("ZoneUpdate: %s (%s)"):format(Garrison.location.mapName or "-", _G.tostring(Garrison.location.inGarrison)))
+    
+    Garrison.location.inGarrison = C_Garrison.IsPlayerInGarrison(LE_GARRISON_TYPE_6_0);
+    Garrison.location.inOrderHall = C_Garrison.IsPlayerInGarrison(LE_GARRISON_TYPE_7_0);
 end
 
 function Garrison:ZoneUpdate(...)
@@ -255,6 +258,12 @@ function Garrison:GetShipmentData(buildingID)
 	}
 
 	return tmpShipment
+end
+
+function Garrison:GetTalentData(id)
+    local talentData = C_Garrison.GetTalentTrees(LE_GARRISON_TYPE_7_0, select(3, UnitClass("player")))[1][id];
+
+    return talentData;
 end
 
 function Garrison:UpdatePlotSize()
@@ -376,6 +385,67 @@ function Garrison:UpdateBuilding(plotID)
 	end
 
 	return tmpBuilding
+end
+
+function Garrison:UpdateTalent(talentData)
+    -- Filter?
+    tmpTalent = talentData
+
+    return tmpTalent
+end
+
+function Garrison:UpdateCategory(categoryData)
+    -- Filter?
+    tmpCategory = categoryData
+
+    return tmpCategory
+end
+
+
+function Garrison:FullUpdateCategories()	
+	local tmpCategories = {}	
+    local categories = C_Garrison.GetClassSpecCategoryInfo(LE_FOLLOWER_TYPE_GARRISON_7_0)
+
+        for i = 1, #categories do
+            local category = categories[i]
+
+            debugPrint(category)
+
+            local tmpCategory = Garrison:UpdateCategory(category)
+
+            local categoryId = tmpCategory.id
+
+                debugPrint(("UpdateCategory: %s / %s"):format(i or "-1", tmpCategory.name))
+
+                tmpCategories[i] = tmpCategory
+                
+            end
+
+        globalDb.data[charInfo.realmName][charInfo.playerName].categories = tmpCategories
+
+end
+
+function Garrison:FullUpdateTalents()	
+	local tmpTalents = {}	
+    local talentArr = C_Garrison.GetTalentTrees(LE_GARRISON_TYPE_7_0, select(3, UnitClass("player")))
+
+    if talentArr ~= nil then
+        local talents = talentArr[1];
+
+        for i = 1, #talents do
+            local talent = talents[i]
+            local tmpTalent = Garrison:UpdateTalent(talent)
+
+            local talentId = tmpTalent.id
+
+            debugPrint(("UpdateTalent: %s / %s"):format(talentId or "-1", talent.name))
+
+            tmpTalents[talentId] = tmpTalent
+            
+        end
+
+        globalDb.data[charInfo.realmName][charInfo.playerName].talents = tmpTalents
+    end    
 end
 
 function Garrison:FullUpdateBuilding(updateType)
@@ -546,20 +616,22 @@ function Garrison:CheckInvasionAvailable()
 	globalDb.data[charInfo.realmName][charInfo.playerName].invasion.available = C_Garrison.IsInvasionAvailable() and not _G.IsQuestFlaggedCompleted(37640) -- Available and not completed gold invasion quest
 end
 
-function Garrison:CheckNumBonusRollQuests() 
+function Garrison:CheckNumBonusRollQuests()     
 	local count = 0
-	for _, value in ipairs(Garrison.bonusRollItemQuestId) do
-  		if (_G.IsQuestFlaggedCompleted(value)) then
-    		count = count + 1
-    	end
-  	end
 
-  	if not globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly then
-		globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly = {}
-	end
+    if Garrison.legacyGarrisonEnabled then
+    	for _, value in ipairs(Garrison.bonusRollItemQuestId) do
+      		if (_G.IsQuestFlaggedCompleted(value)) then
+        		count = count + 1
+        	end
+      	end
+    end
 
+ 	if not globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly then
+    	globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly = {}
+	end    
 	globalDb.data[charInfo.realmName][charInfo.playerName].trackWeekly["BONUS_ROLL_QUESTS"] = count
-
+    
   	return count;
 end
 
@@ -777,21 +849,57 @@ function Garrison:ShipmentStatusUpdate(event, shipmentStarted)
 	end
 end
 
+function Garrison:GARRISON_TALENT_COMPLETE(...)
+    debugPrint(...)
+    C_Garrison.RequestClassSpecCategoryInfo(LE_FOLLOWER_TYPE_GARRISON_7_0);
+    Garrison:UpdateTalents()
+end
+function Garrison:GARRISON_TALENT_UPDATE(...)
+    debugPrint(...)
+    C_Garrison.RequestClassSpecCategoryInfo(LE_FOLLOWER_TYPE_GARRISON_7_0);
+    Garrison:UpdateTalents()
+end
+function Garrison:GARRISON_FOLLOWER_CATEGORIES_UPDATED(...)
+    debugPrint(...)
+    Garrison:UpdateCategories()
+end
+function Garrison:GARRISON_FOLLOWER_ADDED(...)
+    debugPrint(...)
+    Garrison:UpdateCategories()
+end
+function Garrison:GARRISON_FOLLOWER_REMOVED(...)
+    debugPrint(...)
+    Garrison:UpdateCategories()
+end
+
+function Garrison:UpdateTalents()
+    --debugPrint(Garrison:GetTalentData())
+end
+
+function Garrison:UpdateCategories()
+    Garrison:FullUpdateCategories()
+end 
+
 function Garrison:UpdateCurrency()
-	local _, amount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY)
-	local _, amountApexis, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_APEXIS)
-	local _, amountSealOfTemperedFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE)
-	local _, amountOil, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_OIL)
-	local _, amountSealOfInevitableFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_INEVITABLE_FATE)
+    if Garrison.legacyGarrisonEnabled then
+	    local _, amount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY)
+	    local _, amountApexis, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_APEXIS)
+	    local _, amountSealOfTemperedFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE)
+	    local _, amountOil, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_OIL)
+	    local _, amountSealOfInevitableFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_INEVITABLE_FATE)
+    end
 	
+    local _, amountOrderResources, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_ORDER_RESOURCES);
 	
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencyApexisAmount = amountApexis
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfTemperedFateAmount = amountSealOfTemperedFate
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfInevitableFateAmount = amountSealOfInevitableFate
 	globalDb.data[charInfo.realmName][charInfo.playerName].currencyOil = amountOil
-	
 
+    -- 7.0
+    globalDb.data[charInfo.realmName][charInfo.playerName].currencyOrderResourcesAmount = amountOrderResources
+	
 	Garrison:Update()
 
 	Garrison:CheckNumBonusRollQuests()

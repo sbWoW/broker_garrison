@@ -40,10 +40,12 @@ local garrisonDb, configDb, globalDb, DEFAULT_FONT, colors
 local TYPE_BUILDING = "building"
 local TYPE_MISSION = "mission"
 local TYPE_SHIPMENT = "shipment"
+local TYPE_ORDERHALL = "orderhall"
 
 Garrison.TYPE_BUILDING = TYPE_BUILDING
 Garrison.TYPE_MISSION = TYPE_MISSION
 Garrison.TYPE_SHIPMENT = TYPE_SHIPMENT
+Garrison.TYPE_ORDERHALL = TYPE_ORDERHALL
 
 local addonInitialized = false
 local delayedInit = false
@@ -103,6 +105,13 @@ local DB_DEFAULTS = {
 				collapseOtherCharsOnLogin = false,
 				compactTooltip = false,
 			},			
+            orderhall = {
+                hideHeader = false,
+                showOnlyCurrentRealm = false,
+				collapseOtherCharsOnLogin = false,
+				compactTooltip = false,
+                ldbLabelText = L["Orderhall"],
+            },
 			hideGarrisonMinimapButton = false,
 			highAccuracy = true,
 			showSeconds = true,
@@ -168,7 +177,7 @@ local DB_DEFAULTS = {
 						ascending = true,
 					},
 				},				
-			},
+			},            
 		},
 		notification = {
 			sink = {},
@@ -241,8 +250,10 @@ local location = {
 	garrisonMapName = _G.GetMapNameByID(976),
 	zoneName = nil,
 	inGarrison = nil,
+    inOrderHall = nil,
 }
 Garrison.location = location
+Garrison.legacyGarrisonEnabled = false
 
 -- LDB init
 local ldb_object_mission = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME.."Mission",
@@ -257,6 +268,13 @@ local ldb_object_building = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObjec
    label = L["Garrison: Buildings"],
 	icon = "Interface\\Icons\\Inv_Garrison_Resource",
 	text = L["Garrison: Buildings"],
+   })
+
+   local ldb_object_orderhall = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME.."Orderhall",
+  { type = "data source",
+   label = L["Garrison: Orderhall"],
+	icon = "Interface\\Icons\\Inv_Garrison_Resource",
+	text = L["Garrison: Orderhall"],
    })
 
 
@@ -278,7 +296,11 @@ end
 function Garrison:RegisterEvents()
 	debugPrint("RegisterEvents")
 
-	local fullUpdateRet = Garrison:FullUpdateBuilding(TYPE_BUILDING)	
+	local fullUpdateRet = Garrison:FullUpdateBuilding(TYPE_BUILDING)
+
+    Garrison:FullUpdateTalents()
+    -- needed?
+    --Garrison:FullUpdateCategories()	
 
 	timers.ldb_update = Garrison:ScheduleRepeatingTimer("LDBUpdate", 1)
 	timers.notify_update = Garrison:ScheduleRepeatingTimer("QuickUpdate", 5)
@@ -685,6 +707,57 @@ function Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, buildings
 	end
 end
 
+function Garrison:GetPlayerOrderhallCount(paramCharInfo, orderhallCount, categories, talents)
+	local now = time()
+
+	local numCategoriesPlayer = tableSize(categories)
+
+	if numCategoriesPlayer > 0 then
+        orderhallCount.category.total = orderhallCount.category.total + numCategoriesPlayer
+    end
+end
+
+function Garrison:GetOrderhallCount(paramCharInfo)
+    local orderhallCount = {
+        category = {
+            total = 0,
+            inProgress = 0,
+            complete = 0,
+        },
+        talent = {
+        total = 0,
+            inProgress = 0,
+            complete = 0,
+        }
+    }
+
+
+	if paramCharInfo then
+		Garrison:GetPlayerOrderhallCount(paramCharInfo, orderhallCount, globalDb.data[paramCharInfo.realmName][paramCharInfo.playerName].categories, globalDb.data[charInfo.realmName][charInfo.playerName].talents)
+		--missionCountCurrent = missionCount
+	else
+		Garrison:GetPlayerOrderhallCount(charInfo, orderhallCount, globalDb.data[charInfo.realmName][charInfo.playerName].categories, globalDb.data[charInfo.realmName][charInfo.playerName].talents)
+
+		orderhallCountCurrent = Garrison.deepcopy(orderhallCount, nil)
+		
+		for realmName, realmData in pairs(globalDb.data) do
+			for playerName, playerData in pairs(realmData) do
+				-- don't count/show disabled characters
+				if playerData.ldbEnabled == nil or playerData.ldbEnabled then
+					if not Garrison.isCurrentChar(playerData.info) then
+						Garrison:GetPlayerOrderhallCount(playerData.info, orderhallCount, playerData.categories, playerData.talents)
+					end
+				end
+			end
+		end
+	end    
+
+    
+
+    return orderhallCount, orderhallCountCurrent 
+end
+
+
 
 function Garrison:GetMissionCount(paramCharInfo)
 	local missionCount = {
@@ -846,9 +919,11 @@ do
 
 		if paramType == TYPE_MISSION then
 			globalDb.data[realm][character_name].missionsExpanded = not globalDb.data[realm][character_name].missionsExpanded
-		else
+		elseif paramType == TYPE_BUILDING then
 			globalDb.data[realm][character_name].buildingsExpanded = not globalDb.data[realm][character_name].buildingsExpanded
-		end
+		elseif paramType == TYPE_ORDERHALL then
+            
+        end
 
 		DrawTooltip(tooltipRegistry[paramType].anchor, paramType)
 	end
@@ -863,11 +938,13 @@ do
 	local function Tooltip_OnRelease_Mission(arg)
 		tooltipRegistry[TYPE_MISSION].tooltip = nil
 		tooltipRegistry[TYPE_MISSION].anchor = nil
+        
 
 		if tooltipType and tooltipType == TYPE_MISSION then
 			LDB_anchor = nil
 			tooltipType = nil
-		elseif tooltipType and tooltipType == TYPE_BUILDING then
+		--elseif tooltipType and tooltipType == TYPE_BUILDING then
+        elseif tooltipType then
 			debugPrint("OnReleaseDraw: "..tooltipType)
 			DrawTooltip(LDB_anchor, tooltipType)
 		end
@@ -875,17 +952,30 @@ do
 
 	local function Tooltip_OnRelease_Building(arg)
 		tooltipRegistry[TYPE_BUILDING].tooltip = nil
-		tooltipRegistry[TYPE_BUILDING].anchor = nil
+		tooltipRegistry[TYPE_BUILDING].anchor = nil        
 
 		if tooltipType and tooltipType == TYPE_BUILDING then
 			LDB_anchor = nil
 			tooltipType = nil		
-		elseif tooltipType and tooltipType == TYPE_MISSION then
+		--elseif tooltipType and tooltipType == TYPE_MISSION then
+        elseif tooltipType then
 			debugPrint("OnReleaseDraw: "..tooltipType)
 			DrawTooltip(LDB_anchor, tooltipType)
 		end
 	end
 
+	local function Tooltip_OnRelease_Orderhall(arg)
+		tooltipRegistry[TYPE_ORDERHALL].tooltip = nil
+		tooltipRegistry[TYPE_ORDERHALL].anchor = nil        
+
+		if tooltipType and tooltipType == TYPE_ORDERHALL then
+			LDB_anchor = nil
+			tooltipType = nil		
+		elseif tooltipType and (tooltipType == TYPE_MISSION or tooltipType == TYPE_BUILDING) then
+			debugPrint("OnReleaseDraw: "..tooltipType)
+			DrawTooltip(LDB_anchor, tooltipType)
+		end
+	end
 
 	local function AddSeparator(tooltip)
 		tooltip:AddSeparator(1, colors.lineGrey.r, colors.lineGrey.g, colors.lineGrey.b, colors.lineGrey.a)
@@ -944,7 +1034,10 @@ do
 				tooltip.OnRelease = Tooltip_OnRelease_Mission
 			elseif tooltipType == TYPE_BUILDING then
 				tooltip.OnRelease = Tooltip_OnRelease_Building
-			end
+            elseif tooltipType == TYPE_ORDERHALL then
+			    tooltip.onRelease = Tooltip_OnRelease_Orderhall
+            end
+
 			tooltip:EnableMouse(true)
 
 		   if detached then
@@ -1480,7 +1573,110 @@ do
 				end 
 			end
 			AddEmptyRow(tooltip)
-		end
+        elseif tooltipType == TYPE_ORDERHALL then
+			local sortOptions, groupBy = Garrison.getSortOptions(Garrison.TYPE_BUILDING, "name")			
+			
+			for realmName, realmData in pairsByKeys(globalDb.data) do
+				realmNum = realmNum + 1
+
+				local playerCount = 0
+
+				-- Preview building/player count
+				local orderhallCountTable = {}
+
+				for playerName, playerData in pairsByKeys(realmData) do
+					orderhallCountTable[playerName] = Garrison:GetOrderhallCount(playerData.info)
+
+					if playerData.tooltipEnabled == nil or playerData.tooltipEnabled and (orderhallCountTable[playerName].category.total > 0) then
+						playerCount = playerCount + 1
+					end
+				end
+
+				if playerCount > 0 and not (configDb.general.orderhall.showOnlyCurrentRealm and realmName ~= charInfo.realmName) then
+
+					if realmNum > 1 then
+						AddEmptyRow(tooltip)
+					end
+
+					row = tooltip:AddHeader()
+					tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 4)
+
+					AddEmptyRow(tooltip)
+					AddSeparator(tooltip)
+
+					local sortedPlayerTable = Garrison.sort(realmData, "order,a", "info.playerName,a")
+					for playerName, playerData in sortedPlayerTable do
+						
+						local orderhallCount = orderhallCountTable[playerName]
+
+						if playerData.tooltipEnabled == nil or playerData.tooltipEnabled and (orderhallCount.total > 0 ) then
+							
+							AddEmptyRow(tooltip)
+							row = AddRow(tooltip)
+
+						    tooltip:SetCell(row, 1, playerData.buildingsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN, nil, "LEFT", 1, nil, 0, 0, 20, 20)						
+                            tooltip:SetCell(row, 2, ("%s %s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), "", ""), nil, "LEFT", 3)
+
+							tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_MISSION})
+							tooltip:SetCellScript(row, 2, "OnMouseUp", ExpandButton_OnMouseUp, {("%s:%s"):format(realmName, playerName), Garrison.TYPE_MISSION})
+
+							AddEmptyRow(tooltip)
+							AddSeparator(tooltip)
+
+							if playerData.missionsExpanded and missionCount.total > 0 then
+
+								AddEmptyRow(tooltip, colors.darkGray)
+
+								if not configDb.general.mission.hideHeader then
+									--row = AddRow(tooltip, colors.darkGray)
+									--tooltip:SetCell(row, 4, getColoredString(L["SHIPYARD"], colors.lightGray), nil, "CENTER", 1)									
+									--AddEmptyRow(tooltip, colors.darkGray)
+								end								
+
+								--debugPrint(groupBy)
+								
+                                --local sortedCategoryTable = Garrison.sort(playerData.missions, unpack(sortOptions))
+                                local sortedCategoryTable = playerData.categories
+								local lastGroupValue = nil
+
+								for categoryID, categoryData in sortedCategoryTable do
+
+						            if configDb.display.showIcon then
+										tooltip:SetCell(row, 1, getIconString(categoryData.icon, configDb.display.iconSize, true), nil, "LEFT", 1)
+									end
+									tooltip:SetCell(row, 2, missionData.name..rewardString, nil, "LEFT", 2)
+
+                                    if(categoryData.researched) then
+                                        tooltip:SetCell(row, 4, getColoredString(L["Active!"], colors.green), nil, "RIGHT", 1)
+                                    elseif(categoryData.isBeingResearched)
+                                        now categoryData.researchStartTime
+                                    else
+                                        --
+                                    end
+
+
+									if (missionData.start == 0 or timeLeft < 0) then
+										tooltip:SetCell(row, 4, getColoredString(L["Complete!"], colors.green), nil, "RIGHT", 1)
+									else
+                                        local timeLeftCategory = categoryData.researchDuration - (now - buildingData.researchStartTime)
+
+										local formattedTime = ("%s %s"):format(
+											formattedSeconds(timeLeftCategory),
+											getColoredString("("..formattedSeconds(missionData.researchDuration)..")", colors.lightGray)
+										)
+
+										tooltip:SetCell(row, 4, formattedTime, nil, "RIGHT", 1)
+									end
+
+
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            AddEmptyRow(tooltip)
+        end
 
 		--debugPrint(("r: %s, g: %s, b: %s, a: %s"):format(configDb.display.backgroundColor.r, configDb.display.backgroundColor.g, configDb.display.backgroundColor.b, configDb.display.backgroundColor.a))
 
@@ -1512,6 +1708,10 @@ do
 	function ldb_object_mission:OnEnter()
 		DrawTooltip(self, TYPE_MISSION)
 	end
+
+	function ldb_object_orderhall:OnEnter()
+		DrawTooltip(self, TYPE_ORDERHALL)
+	end    
 
 	local function onclick(button, paramType)
 		if button == "LeftButton" then
@@ -1549,6 +1749,11 @@ do
 	function ldb_object_building:OnClick(button)
 		onclick(button, TYPE_BUILDING)
 	end
+
+	function ldb_object_orderhall:OnClick(button)
+		onclick(button, TYPE_ORDERHALL)
+	end
+    
 end
 
 function Garrison:IsDetached(paramType)
@@ -1816,6 +2021,10 @@ function Garrison:UpdateLDB()
 	ldb_object_building.text = Garrison.replaceVariables(Garrison:GetLDBText(Garrison.TYPE_BUILDING), data)
 	ldb_object_building.label = configDb.general.building.ldbLabelText
 
+    ldb_object_orderhall.text = "Orderhall" --Garrison.replaceVariables(Garrison:GetLDBText(Garrison.TYPE_ORDERHALL), data)
+	ldb_object_orderhall.label = configDb.general.orderhall.ldbLabelText
+
+
 end
 
 
@@ -1853,9 +2062,6 @@ function Garrison:OnInitialize()
 	if (not globalDb.data[charInfo.realmName][charInfo.playerName]["missions"]) then
 		globalDb.data[charInfo.realmName][charInfo.playerName]["missions"] = {}
 	end
-	if (not globalDb.data[charInfo.realmName][charInfo.playerName]["buildings"]) then
-		globalDb.data[charInfo.realmName][charInfo.playerName]["buildings"] = {}
-	end
 
 	-- Upgrade Code, 1 => 2
 	if not globalDb.data[charInfo.realmName][charInfo.playerName].configVersion then
@@ -1877,6 +2083,13 @@ function Garrison:OnInitialize()
 		if playerLevel == _G.GetMaxPlayerLevel() then
 			globalDb.data[charInfo.realmName][charInfo.playerName].info.bonusEnabled = true
 		end
+	end
+
+   	if (not globalDb.data[charInfo.realmName][charInfo.playerName]["talents"]) then
+		globalDb.data[charInfo.realmName][charInfo.playerName]["talents"] = {}
+	end
+    if (not globalDb.data[charInfo.realmName][charInfo.playerName]["categories"]) then
+		globalDb.data[charInfo.realmName][charInfo.playerName]["categories"] = {}
 	end
 
 	self:InitHelper()
@@ -1919,6 +2132,15 @@ function Garrison:OnInitialize()
     --self:RawHook("GarrisonMissionAlertSystem", true);
     --self:RawHook("GarrisonBuildingAlertSystem", true);
 
+    -- Order Halls
+    self:RegisterEvent("GARRISON_TALENT_COMPLETE", "GARRISON_TALENT_COMPLETE");
+	self:RegisterEvent("GARRISON_TALENT_UPDATE", "GARRISON_TALENT_UPDATE");
+	self:RegisterEvent("GARRISON_FOLLOWER_CATEGORIES_UPDATED", "GARRISON_FOLLOWER_CATEGORIES_UPDATED");
+	self:RegisterEvent("GARRISON_FOLLOWER_ADDED", "GARRISON_FOLLOWER_ADDED");
+	self:RegisterEvent("GARRISON_FOLLOWER_REMOVED", "GARRISON_FOLLOWER_REMOVED");
+
+    C_Garrison.RequestClassSpecCategoryInfo(LE_FOLLOWER_TYPE_GARRISON_7_0)
+
 	self:RawHook("GarrisonMinimapBuilding_ShowPulse", true)
 	self:RawHook("GarrisonMinimapShipmentCreated_ShowPulse", true)
 	self:RawHook("GarrisonMinimapMission_ShowPulse", true)	
@@ -1929,10 +2151,12 @@ function Garrison:OnInitialize()
 
 	ldb_object_mission.icon = Garrison.ICON_PATH_MISSION
 	ldb_object_building.icon = Garrison.ICON_PATH_BUILDING
+    ldb_object_orderhall.icon = Garrison.ICON_PATH_BUILDING
 
 	if LDBIcon and configDb.minimap.load then
 		LDBIcon:Register("BrokerGarrisonLDBMission", ldb_object_mission, configDb.minimap.mission)
 		LDBIcon:Register("BrokerGarrisonLDBBuilding", ldb_object_building, configDb.minimap.building)
+        LDBIcon:Register("BrokerGarrisonLDBOrderhall", ldb_object_orderhall, configDb.minimap.orderhall)
 	else
 		LDBIcon = nil
 	end
