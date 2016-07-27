@@ -286,6 +286,13 @@ Garrison.ICON_CURRENCY_INEVITABLE_FATE_TOOLTIP = Garrison.getIconString(Garrison
 Garrison.ICON_CURRENCY_OIL = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_OIL, 16, false)
 Garrison.ICON_CURRENCY_OIL_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_OIL_TOOLTIP, 16, false)
 
+local _, _, orderTexture = GetCurrencyInfo(1220)
+Garrison.ICON_CURRENCY_ORDER_RESOURCES =  Garrison.getIconString(orderTexture, 16, false) --string.format("\124T%s:%d:%d:1:0\124t", orderTexture, 16, 16)
+--Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_OIL, 16, false)
+Garrison.ICON_CURRENCY_ORDER_RESOURCES_TOOLTIP = Garrison.ICON_CURRENCY_ORDER_RESOURCES
+--Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_OIL_TOOLTIP, 16, false)
+
+
 Garrison.ICON_MISSION = Garrison.getIconString(Garrison.ICON_PATH_MISSION, 16, false)
 Garrison.ICON_BUILDING = Garrison.getIconString(Garrison.ICON_PATH_BUILDING, 16, false)
 
@@ -487,9 +494,17 @@ Garrison.ldbTemplate = {
 		name = L["Garrison Resources (Current char)"],
 		text = "%resfmt% %resicon%%cachewarning%",
 	},
-	["A1"] = {
+	["A2"] = {
 		name = L["Garrison Resources (No icon)"],
 		text = "%resfmt%%cachewarning%",
+	},
+	["A3"] = {
+		name = L["Order Resources (Current char)"],
+		text = "%oresfmt% %oresicon%",
+	},
+	["A4"] = {
+		name = L["Order Resources (No icon)"],
+		text = "%oresfmt%",
 	},
 	["M1"] = {
 		name = L["Progress, Complete"],
@@ -717,6 +732,10 @@ Garrison.ldbVars = {
 		name = L["Garrison Resources (Formatted)"],
 		data = function(data) return _G.BreakUpLargeNumbers(Garrison.getTableValue(data, "currencyAmount") or 0) end,
 	},
+	["oresfmt"] = {
+		name = L["Order Resources (Formatted)"],
+		data = function(data) return _G.BreakUpLargeNumbers(Garrison.getTableValue(data, "currencyOrderResourcesAmount") or 0) end,
+	},
 	["tres"] = {
 		name = L["Garrison Resources (Total)"],
 		data = function(data) return Garrison.getTableValue(data, "currencyTotal") or 0 end,
@@ -728,6 +747,10 @@ Garrison.ldbVars = {
 	["resicon"] = {
 		name = L["Icon: Garrison Resource"],
 		data = function(data) return Garrison.ICON_CURRENCY end,
+	},
+	["oresicon"] = {
+		name = L["Icon: Order Resource"],
+		data = function(data) return Garrison.ICON_CURRENCY_ORDER_RESOURCES end,
 	},
 	["apexis"] = {
 		name = L["Apexis Crystals"],

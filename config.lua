@@ -369,7 +369,77 @@ function Garrison:GetOptions()
 							},							
 	
 						},
-					},					
+					},
+					orderhall = {
+						order = 300,
+						type = "group",
+						name = L["Orderhall"],
+						cmdHidden = false,
+						args = {
+							ldbHeader = {
+								order = 100,
+								type = "header",
+								name = L["LDB Display"],
+								cmdHidden = true,
+							},
+							ldbLabelText = {
+								order = 110,
+								type = "input",
+								width = "full",
+								name = L["Label Text"],
+								desc = L["Label Text"],
+								get = function() return configDb.general.orderhall.ldbLabelText end,
+								set = function(_,v) configDb.general.orderhall.ldbLabelText = v
+								end,
+							},
+							ldbTemplateSelect = {
+								order = 120,
+								type = "select",
+								width = "full",
+								name = L["LDB Text"],
+								desc = L["LDB Text"],
+								values = Garrison:GetTemplates(Garrison.TYPE_ORDERHALL),
+								get = function() return configDb.general.orderhall.ldbTemplate end,
+								set = function(_,v)
+									if v then
+										if configDb.general.orderhall.ldbText == "custom" then
+											configDb.general.orderhall.ldbText = Garrison:GetLDBText(Garrison.TYPE_ORDERHALL) or ""
+											configDb.general.orderhall.ldbTemplate = v
+										else
+											configDb.general.orderhall.ldbTemplate = v
+											configDb.general.orderhall.ldbText = Garrison:GetLDBText(Garrison.TYPE_ORDERHALL) or ""
+										end
+									end
+
+								end,
+							},
+							ldbText = {
+								order = 130,
+								type = "input",
+								width = "full",
+								multiline = 5,
+								name = L["Custom LDB Text"],
+								desc = L["Custom LDB Text"],
+								get = function() return configDb.general.orderhall.ldbText end,
+								set = function(_,v) configDb.general.orderhall.ldbText = v
+								end,
+								disabled = function() return not configDb.general.orderhall.ldbTemplate or not (configDb.general.orderhall.ldbTemplate == "custom") end,
+							},
+							ldbVar = {
+								order = 140,
+								type = "select",
+								width = "full",
+								name = L["Add item to custom LDB Text"],
+								name = L["Add item to custom LDB Text"],
+								values = Garrison:GetLDBVariables(Garrison.TYPE_ORDERHALL),
+								get = function() return "" end,
+								set = function(_,v)
+									configDb.general.building.ldbText = ("%s%%%s%%"):format(configDb.general.orderhall.ldbText or "", v or "")
+								end,
+								disabled = function() return not configDb.general.orderhall.ldbTemplate or not (configDb.general.orderhall.ldbTemplate == "custom") end,
+							},
+						},
+					},
 				},
 			},
 			data = {
@@ -1266,6 +1336,116 @@ function Garrison:GetOptions()
 								name = "",
 								width = "full",
 							},						
+							sortHeader = {
+								order = 300,
+								type = "header",
+								name = L["Sort by"],
+								cmdHidden = true,
+							},
+						},
+					},
+					orderhall = {
+						order = 300,
+						type = "group",
+						name = L["Orderhall"],
+						cmdHidden = false,
+						args = {
+							miscHeader = {
+								order = 10,
+								type = "header",
+								name = L["Misc"],
+								cmdHidden = true,
+							},
+							hideHeader = {
+								order = 20,
+								type = "toggle",
+								width = "full",
+								name = L["Hide column header"],
+								desc = L["Hide column header"],
+								get = function() return configDb.general.orderhall.hideHeader end,
+								set = function(_,v) configDb.general.orderhall.hideHeader = v
+								Garrison:Update()
+								end,
+							},
+							hideInactiveTalents = {
+								order = 50,
+								type = "toggle",
+								width = "full",
+								name = L["Hide inactive talents"],
+								desc = L["Don't display inactive talents"],
+								get = function() return configDb.general.orderhall.hideInactiveTalents end,
+								set = function(_,v) configDb.general.orderhall.hideInactiveTalents = v
+								Garrison:Update()
+								end,
+							},
+							showOnlyCurrentRealm = {
+								order = 60,
+								type = "toggle",
+								width = "full",
+								name = L["Show only current realm"],
+								desc = L["Show only current realm"],
+								get = function() return configDb.general.orderhall.showOnlyCurrentRealm end,
+								set = function(_,v) configDb.general.orderhall.showOnlyCurrentRealm = v
+								Garrison:Update()
+								end,
+							},
+							collapseOtherCharsOnLogin = {
+								order = 70,
+								type = "toggle",
+								width = "full",
+								name = L["Collapse all other characters on login"],
+								desc = L["Collapse all other characters on login"],
+								get = function() return configDb.general.orderhall.collapseOtherCharsOnLogin end,
+								set = function(_,v) configDb.general.orderhall.collapseOtherCharsOnLogin = v
+								Garrison:Update()
+								end,
+							},
+							compactTooltip = {
+								order = 80,
+								type = "toggle",
+								width = "full",
+								name = L["Compact Tooltip"],
+								desc = L["Don't show empty newlines in tooltip"],
+								get = function() return configDb.general.orderhall.compactTooltip end,
+								set = function(_,v)
+									configDb.general.orderhall.compactTooltip = v
+								end,
+							},
+							groupHeader = {
+								order = 100,
+								type = "header",
+								name = L["Group by"],
+								cmdHidden = true,
+							},
+							groupOptionValue = {
+								order = 200,
+								type = "select",
+								width = "double",
+								name = L["Group by"],
+								desc = L["Group by"],
+								values = Garrison:GetTooltipSortOptions(Garrison.TYPE_ORDERHALL),
+								get = function() return configDb.tooltip.orderhall.group[1].value end,
+								set = function(_,v)
+									configDb.tooltip.orderhall.group[1].value = v
+								end,
+							},
+							groupOptionAscending = {
+								order = 201,
+								type = "toggle",
+								name = L["Sort ascending"],
+								desc = L["Sort ascending"],
+								get = function() return configDb.tooltip.orderhall.group[1].ascending end,
+								set = function(_,v)
+									configDb.tooltip.orderhall.group[1].ascending = v
+								end,
+								disabled = function() return (configDb.tooltip.orderhall.group[1].value or "-") == "-" end,
+							},
+							groupOptionNewline = {
+								order = 202,
+								type = "description",
+								name = "",
+								width = "full",
+							},
 							sortHeader = {
 								order = 300,
 								type = "header",
