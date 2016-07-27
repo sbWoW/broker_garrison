@@ -9,6 +9,7 @@ local events = {
 	[Garrison.TYPE_MISSION] = {},
 	[Garrison.TYPE_BUILDING] = {},
 	[Garrison.TYPE_SHIPMENT] = {},
+	[Garrison.TYPE_ORDERHALL] = {},
 }
 
 local function ldb(name) 
@@ -60,3 +61,5 @@ _G["BrokerGarrison"].registerEvent = register
 _G["BrokerGarrison"].TYPE_MISSION = Garrison.TYPE_MISSION
 _G["BrokerGarrison"].TYPE_BUILDING = Garrison.TYPE_BUILDING
 _G["BrokerGarrison"].TYPE_SHIPMENT = Garrison.TYPE_SHIPMENT
+_G["BrokerGarrison"].TYPE_ORDERHALL = Garrison.TYPE_ORDERHALL
+

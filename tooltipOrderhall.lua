@@ -74,19 +74,35 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
                         AddEmptyRow(tooltip, colors.darkGray)
 
                         if not configDb.general.orderhall.hideHeader then
-                            --row = AddRow(tooltip, colors.darkGray)
-                            --tooltip:SetCell(row, 4, getColoredString(L["SHIPYARD"], colors.lightGray), nil, "CENTER", 1)
-                            --AddEmptyRow(tooltip, colors.darkGray)
+                            row = AddRow(tooltip, colors.darkGray)
+                            tooltip:SetCell(row, 4, getColoredString(L["CATEGORY"], colors.lightGray), nil, "CENTER", 2)
+                            tooltip:SetCell(row, 6, getColoredString(L["TIME"], colors.lightGray), nil, "CENTER", 1)
+                            AddEmptyRow(tooltip, colors.darkGray)
                         end
 
-                        --debugPrint(groupBy)
+                        -- Categories
+                        for categoryId, categoryData in pairs(playerData.categories) do
+                            row = AddRow(tooltip, colors.darkGray)
+                            if configDb.display.showIcon then
+                                tooltip:SetCell(row, 1, getIconString(categoryData.icon, configDb.display.iconSize, false), nil, "LEFT", 1)
+                            end
+                            tooltip:SetCell(row, 2, categoryData.name, nil, "LEFT", 1)
 
+                            local formattedCategory = ("%s/%s"):format(categoryData.count,
+                                getColoredString(categoryData.limit, categoryData.limit == 0 and colors.white or colors.green))
+
+
+                            tooltip:SetCell(row, 3, formattedCategory, nil, "LEFT", 1)
+                        end
+
+                        AddEmptyRow(tooltip)
+                        AddSeparator(tooltip)
+                        AddEmptyRow(tooltip)
+
+                        -- Talents
                         local sortedTalentTable = Garrison.sort(playerData.talents, "tier,a", "uiOrder,a")
                         local lastGroupValue = nil
-
                         local lastTier = -1
-
-
 
                         for talentId, talentData in sortedTalentTable do
                             if configDb.general.orderhall.hideInactiveTalents and not Garrison.CheckOrderTalentAvailability(talentData.talentAvailability, 0)
