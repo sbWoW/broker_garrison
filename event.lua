@@ -442,6 +442,76 @@ function Garrison:FullUpdateTalents()
     end
 end
 
+function Garrison:UpdateShipment(containerId)
+    local name, texture, shipmentCapacity, shipmentsReady, shipmentsTotal, creationTime, duration, timeleftString, _, _, _, _, followerID = C_Garrison.GetLandingPageShipmentInfoByContainerID(containerId);
+
+    local tmpShipment
+
+    if (name and shipmentCapacity > 0) then
+        tmpShipment = {
+            name = name,
+            texture = texture,
+            shipmentCapacity = shipmentCapacity,
+            shipmentsReady = shipmentsReady,
+            shipmentsTotal = shipmentsTotal,
+            creationTime = creationTime,
+            duration = duration,
+            timeleftString = timeleftString,
+            followerID = followerID
+        }
+    end
+
+    return tmpShipment
+end
+
+function Garrison:FullUpdateShipments()
+
+    local SHIPMENT_TYPE_BUILDING = 1;
+    local SHIPMENT_TYPE_FOLLOWER = 2;
+    local SHIPMENT_TYPE_TALENT = 3;
+    local SHIPMENT_TYPE_LOOSE = 4;
+
+    local maxShipments = 10
+    local shipmentIndex = 0
+
+    local tmpShipments = {}
+
+    local followerShipments = C_Garrison.GetFollowerShipments(LE_GARRISON_TYPE_7_0);
+    for i = 1, #followerShipments do
+        local name, texture, shipmentCapacity, shipmentsReady, shipmentsTotal, creationTime, duration, timeleftString, _, _, _, _, followerID = C_Garrison.GetLandingPageShipmentInfoByContainerID(followerShipments[i]);
+        if (name and shipmentCapacity > 0 and shipmentIndex < maxShipments) then
+            shipmentIndex = shipmentIndex + 1;
+
+            local tmpShipment = Garrison:UpdateShipment(followerShipments[i])
+
+            if tmpShipment ~= nil then
+                tmpShipments[i] = Garrison:UpdateShipment(followerShipments[i])
+            end
+        end
+    end
+
+    globalDb.data[charInfo.realmName][charInfo.playerName].followerShipments = tmpShipments
+
+    tmpShipments = {}
+    shipmentIndex = 0
+
+    local looseShipments = C_Garrison.GetLooseShipments(LE_GARRISON_TYPE_7_0);
+    for i = 1, #looseShipments do
+        local name, texture, shipmentCapacity, shipmentsReady, shipmentsTotal, creationTime, duration, timeleftString = C_Garrison.GetLandingPageShipmentInfoByContainerID(looseShipments[i]);
+        if (name and shipmentCapacity > 0 and shipmentIndex < maxShipments) then
+            shipmentIndex = shipmentIndex + 1;
+
+            local tmpShipment = Garrison:UpdateShipment(followerShipments[i])
+
+            if tmpShipment ~= nil then
+                tmpShipments[i] = Garrison:UpdateShipment(followerShipments[i])
+            end
+        end
+    end
+
+    globalDb.data[charInfo.realmName][charInfo.playerName].looseShipments = tmpShipments
+end
+
 function Garrison:FullUpdateBuilding(updateType)
 
     C_Garrison.RequestLandingPageShipmentInfo()
@@ -1026,6 +1096,7 @@ function Garrison:GarrisonCapacitiveDisplayFrame_Update(obj, success, maxShipmen
 
     if Garrison.shipmentUpdate.success then
         debugPrint(("numPending: %s"):format(numPending or "0"))
+        Garrison:FullUpdateShipments();
 
         local buildingData = globalDb.data[charInfo.realmName][charInfo.playerName].buildings[Garrison.shipmentUpdate.plotID]
 

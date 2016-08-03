@@ -69,16 +69,11 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
                     AddEmptyRow(tooltip)
                     AddSeparator(tooltip)
 
+                    local followerShipmentsTable = Garrison:SortFollowerShipments(playerData.followerShipments)
+
                     if playerData.orderhallExpanded then
 
                         AddEmptyRow(tooltip, colors.darkGray)
-
-                        if not configDb.general.orderhall.hideHeader then
-                            row = AddRow(tooltip, colors.darkGray)
-                            tooltip:SetCell(row, 4, getColoredString(L["CATEGORY"], colors.lightGray), nil, "CENTER", 2)
-                            tooltip:SetCell(row, 6, getColoredString(L["TIME"], colors.lightGray), nil, "CENTER", 1)
-                            AddEmptyRow(tooltip, colors.darkGray)
-                        end
 
                         -- Categories
                         for categoryId, categoryData in pairs(playerData.categories) do
@@ -91,13 +86,17 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
                             local formattedCategory = ("%s/%s"):format(categoryData.count,
                                 getColoredString(categoryData.limit, categoryData.limit == 0 and colors.white or colors.green))
 
-
                             tooltip:SetCell(row, 3, formattedCategory, nil, "LEFT", 1)
-                        end
 
-                        AddEmptyRow(tooltip)
-                        AddSeparator(tooltip)
-                        AddEmptyRow(tooltip)
+                            -- Find follower Shipment
+                            if (followerShipmentsTable[categoryData.name]) then
+                                Garrison:DoTooltipShipment(tooltip, row, followerShipmentsTable[categoryData.name], playerData.info)
+                            end
+
+                            AddEmptyRow(tooltip)
+                            AddSeparator(tooltip)
+                            AddEmptyRow(tooltip)
+                        end
 
                         -- Talents
                         local sortedTalentTable = Garrison.sort(playerData.talents, "tier,a", "uiOrder,a")
@@ -157,6 +156,48 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
         end
     end
     AddEmptyRow(tooltip)
+end
+
+
+function Garrison:SortFollowerShipments(shipmentList)
+    local followerShipmentTable = {}
+
+    if shipmentList then
+        for _, shipmentData in pairs(shipmentList) do
+            followerShipmentTable[shipmentData.name] = shipmentData
+        end
+    end
+
+    return followerShipmentTable
+end
+
+function Garrison:DoTooltipShipment(tooltip, row, shipmentData, playerInfo)
+    if shipmentData then
+
+        local shipmentsReady, shipmentsInProgress, shipmentsAvailable, timeLeftNext, timeLeftTotal = Garrison:DoShipmentMagic(shipmentData, playerInfo)
+
+        if shipmentData.shipmentCapacity then
+            if shipmentsInProgress <= math.ceil(shipmentData.shipmentCapacity * 0.15) then
+                shipmentsInProgress = getColoredString(shipmentsInProgress, colors.red)
+            elseif shipmentsInProgress <= math.ceil(shipmentData.shipmentCapacity * 0.3) then
+                shipmentsInProgress = getColoredString(shipmentsInProgress, colors.yellow)
+            end
+        end
+
+        local formattedShipment = ("%s/%s %s"):format(shipmentsInProgress,
+            getColoredString(shipmentsReady, shipmentsReady == 0 and colors.white or colors.green),
+            getColoredString("(" .. shipmentsAvailable .. ")", colors.lightGray))
+
+
+        tooltip:SetCell(row, 4, formattedShipment, nil, "LEFT", 1)
+
+        if timeLeftNext > 0 and timeLeftTotal > 0 then
+            local formattedTime = ("%s %s"):format(formattedSeconds(timeLeftNext),
+                getColoredString("(" .. formattedSeconds(timeLeftTotal) .. ")", colors.lightGray))
+
+            tooltip:SetCell(row, 5, formattedTime, nil, "LEFT", 1)
+        end
+    end
 end
 
 function Garrison:InitTooltipOrderhall()

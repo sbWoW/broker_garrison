@@ -316,6 +316,7 @@ function Garrison:RegisterEvents()
     local fullUpdateRet = Garrison:FullUpdateBuilding(TYPE_BUILDING)
 
     Garrison:FullUpdateTalents()
+    Garrison:FullUpdateShipments()
     -- needed?
     --Garrison:FullUpdateCategories()	
 
@@ -1457,6 +1458,9 @@ function Garrison:OnInitialize()
         globalDb.data[charInfo.realmName][charInfo.playerName] = {
             missions = {},
             buildings = {},
+            shipments = {},
+            talents = {},
+            categories = {},
             missionsExpanded = true,
             buildingsExpanded = true,
             orderhallExpanded = true,
@@ -1505,6 +1509,12 @@ function Garrison:OnInitialize()
     end
     if (not globalDb.data[charInfo.realmName][charInfo.playerName]["categories"]) then
         globalDb.data[charInfo.realmName][charInfo.playerName]["categories"] = {}
+    end
+    if (not globalDb.data[charInfo.realmName][charInfo.playerName]["followerShipments"]) then
+        globalDb.data[charInfo.realmName][charInfo.playerName]["followerShipments"] = {}
+    end
+    if (not globalDb.data[charInfo.realmName][charInfo.playerName]["looseShipments"]) then
+        globalDb.data[charInfo.realmName][charInfo.playerName]["looseShipments"] = {}
     end
 
     self:InitHelper()
