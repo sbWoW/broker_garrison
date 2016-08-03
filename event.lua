@@ -683,11 +683,9 @@ end
 function Garrison:CheckNumBonusRollQuests()
     local count = 0
 
-    if Garrison.legacyGarrisonEnabled then
-        for _, value in ipairs(Garrison.bonusRollItemQuestId) do
-            if (_G.IsQuestFlaggedCompleted(value)) then
-                count = count + 1
-            end
+    for _, value in ipairs(Garrison.bonusRollItemQuestId) do
+        if (_G.IsQuestFlaggedCompleted(value)) then
+            count = count + 1
         end
     end
 
@@ -949,13 +947,12 @@ function Garrison:UpdateCategories()
 end
 
 function Garrison:UpdateCurrency()
-    if Garrison.legacyGarrisonEnabled then
-        local _, amount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY)
-        local _, amountApexis, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_APEXIS)
-        local _, amountSealOfTemperedFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE)
-        local _, amountOil, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_OIL)
-        local _, amountSealOfInevitableFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_INEVITABLE_FATE)
-    end
+    local _, amount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY)
+    local _, amountApexis, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_APEXIS)
+    local _, amountSealOfTemperedFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE)
+    local _, amountOil, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_OIL)
+    local _, amountSealOfInevitableFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_INEVITABLE_FATE)
+  
 
     local _, amountOrderResources, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_ORDER_RESOURCES);
 
