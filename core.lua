@@ -112,6 +112,7 @@ local DB_DEFAULTS = {
                 collapseOtherCharsOnLogin = false,
                 compactTooltip = false,
                 ldbLabelText = L["Orderhall"],
+                ldbTemplate = "A3",
             },
             hideGarrisonMinimapButton = false,
             highAccuracy = true,
