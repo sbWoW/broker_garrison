@@ -267,7 +267,7 @@ local location = {
     inOrderHall = nil,
 }
 Garrison.location = location
-Garrison.legacyGarrisonEnabled = false
+Garrison.legacyGarrisonEnabled = true
 
 -- LDB init
 local ldb_object_mission = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject(ADDON_NAME .. "Mission",
