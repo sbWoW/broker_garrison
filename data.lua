@@ -749,7 +749,7 @@ Garrison.ldbVars = {
 		data = function(data) return Garrison.ICON_CURRENCY end,
 	},
 	["oresicon"] = {
-		name = L["Icon: Order Resource"],
+		name = L["Icon: Order Resources"],
 		data = function(data) return Garrison.ICON_CURRENCY_ORDER_RESOURCES end,
 	},
 	["apexis"] = {
