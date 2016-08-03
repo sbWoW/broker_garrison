@@ -274,7 +274,7 @@ function Garrison:UpdatePlotSize()
     end
 end
 
-function Garrison:GetBuildingData(plotID)
+function Garrison:GetBuildingData(plotID)    
     local id, name, texPrefix, icon, rank, isBuilding, timeStart, buildTime, canActivate, canUpgrade, isPrebuilt = C_Garrison.GetOwnedBuildingInfoAbbrev(plotID)
 
     local hasFollowerSlot = _G.select(17, C_Garrison.GetOwnedBuildingInfo(plotID))
@@ -321,7 +321,7 @@ function Garrison:GetFollowerData(plotID)
     return tmpFollower
 end
 
-function Garrison:UpdateShipment(buildingID, shipmentData)
+function Garrison:UpdateBuildingShipment(buildingID, shipmentData)
     Garrison.shipmentUpdate.success = false
 
     local tmpShipment = {}
@@ -369,7 +369,7 @@ function Garrison:UpdateBuilding(plotID)
         shipmentData = buildingData.shipment
     end
 
-    tmpBuilding.shipment = Garrison:UpdateShipment(tmpBuilding.id, shipmentData)
+    tmpBuilding.shipment = Garrison:UpdateBuildingShipment(tmpBuilding.id, shipmentData)
 
     if tmpBuilding.hasFollowerSlot then
         tmpBuilding.follower = Garrison:GetFollowerData(plotID)
@@ -541,7 +541,7 @@ function Garrison:FullUpdateBuilding(updateType)
             else
                 --debugPrint(("#1UpdateShipment (%s) NotificationValue: %s (Total: %s)"):format(tostring(buildingData.shipment.name), tostring(buildingData.shipment.notificationValue), tostring(buildingData.shipment.shipmentsTotal)))
 
-                local tmpShipment = Garrison:UpdateShipment(buildingID, buildingData.shipment)
+                local tmpShipment = Garrison:UpdateBuildingShipment(buildingID, buildingData.shipment)
 
                 --debugPrint(("#2UpdateShipment (%s) NotificationValue: %s (Total: %s)"):format(tostring(tmpShipment.name), tostring(tmpShipment.notificationValue), tostring(tmpShipment.shipmentsTotal)))
 

@@ -735,6 +735,14 @@ function Garrison:GetPlayerOrderhallCount(paramCharInfo, orderhallCount, categor
     local numTalentsPlayer = tableSize(talents)
 
     if numTalentsPlayer > 0 then
+        tiersAvailable = 0    
+        for _, talentData in pairs(talents) do
+            if Garrison.CheckOrderTalentAvailability(talentData.talentAvailability, 0) then
+                tiersAvailable = tiersAvailable + 1
+            end            
+        end
+
+        orderhallCount.talent.tiersAvailable = tiersAvailable  
         orderhallCount.talent.total = orderhallCount.talent.total + numTalentsPlayer
     end
 end
@@ -750,6 +758,7 @@ function Garrison:GetOrderhallCount(paramCharInfo)
             total = 0,
             inProgress = 0,
             complete = 0,
+            tiersAvailable = 0,
         }
     }
 

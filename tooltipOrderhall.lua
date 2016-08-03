@@ -32,8 +32,8 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
         for playerName, playerData in pairsByKeys(realmData) do
             orderhallCountTable[playerName] = Garrison:GetOrderhallCount(playerData.info)
 
-            if playerData.tooltipEnabled == nil or playerData.tooltipEnabled and
-                    (orderhallCountTable[playerName].talent.total > 0 or orderhallCountTable[playerName].category.total > 0) then
+            if orderhallCountTable[playerName].talent.tiersAvailable > 0 and (playerData.tooltipEnabled == nil or playerData.tooltipEnabled and
+                    (orderhallCountTable[playerName].talent.total > 0 or orderhallCountTable[playerName].category.total > 0)) then
                 playerCount = playerCount + 1
             end
         end
@@ -55,7 +55,7 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
 
                 local orderhallCount = orderhallCountTable[playerName]
 
-                if playerData.tooltipEnabled == nil or playerData.tooltipEnabled and (orderhallCount.talent.total > 0) then
+                if orderhallCount.talent.tiersAvailable > 0 and (playerData.tooltipEnabled == nil or playerData.tooltipEnabled and (orderhallCount.talent.total > 0 or orderhallCount.category.total > 0)) then
 
                     AddEmptyRow(tooltip)
                     row = AddRow(tooltip)
@@ -71,7 +71,7 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
 
                     local followerShipmentsTable = Garrison:SortFollowerShipments(playerData.followerShipments)
 
-                    if playerData.orderhallExpanded then
+                    if playerData.orderhallExpanded and ((playerData.categories and #playerData.categories > 0) or (playerData.talents and #playerData.talents > 0 )) then
 
                         AddEmptyRow(tooltip, colors.darkGray)
 
