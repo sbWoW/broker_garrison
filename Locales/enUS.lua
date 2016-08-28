@@ -215,3 +215,4 @@ L["Order Resources (No icon)"] = true
 L["Order Resources (Current char)"] = true
 L["Garrison: Orderhall"] = true
 L["Orderhall"] = true
+L["OrderHalls not available"] = true

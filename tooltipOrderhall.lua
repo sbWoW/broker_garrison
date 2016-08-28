@@ -18,6 +18,7 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
     local name, row, realmName, realmData, playerName, playerData, talentID, talentData
     local realmNum = 0
     local now = time()
+    local dataCount = 0
 
     local sortOptions, groupBy = Garrison.getSortOptions(Garrison.TYPE_ORDERHALL, "name")
 
@@ -40,6 +41,7 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
 
         if playerCount > 0 and not (configDb.general.orderhall.showOnlyCurrentRealm and realmName ~= charInfo.realmName) then
 
+            dataCount = dataCount + 1
             if realmNum > 1 then
                 AddEmptyRow(tooltip)
             end
@@ -155,7 +157,14 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
             end
         end
     end
+
+    if dataCount == 0 then
+        row = AddRow(tooltip, colors.darkGray)
+        tooltip:SetCell(row, 1, getColoredString(L["OrderHalls not available"], colors.lightGray), nil, "LEFT", 6)
+    end
+
     AddEmptyRow(tooltip)
+    
 end
 
 
