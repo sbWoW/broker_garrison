@@ -1608,7 +1608,7 @@ function Garrison:OnInitialize()
 
     ldb_object_mission.icon = Garrison.ICON_PATH_MISSION
     ldb_object_building.icon = Garrison.ICON_PATH_BUILDING
-    ldb_object_orderhall.icon = Garrison.ICON_PATH_BUILDING
+    ldb_object_orderhall.icon = Garrison.ICON_PATH_CURRENCY_ORDER_RESOURCES
 
     if LDBIcon and configDb.minimap.load then
         LDBIcon:Register("BrokerGarrisonLDBMission", ldb_object_mission, configDb.minimap.mission)

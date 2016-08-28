@@ -243,6 +243,9 @@ Garrison.ICON_PATH_CURRENCY_TEMPERED_FATE = mediaPath.."bg_garrison_toolbar_seal
 Garrison.ICON_PATH_CURRENCY_INEVITABLE_FATE = mediaPath.."bg_garrison_toolbar_seal_inevitable"
 Garrison.ICON_PATH_CURRENCY_OIL = mediaPath.."bg_garrison_toolbar_oil"
 
+Garrison.ICON_PATH_CURRENCY_ORDER_RESOURCES = mediaPath.."bg_orderhall_toolbar_orderresources"
+Garrison.ICON_PATH_CURRENCY_ORDER_RESOURCES_TOOLTIP = mediaPath.."bg_orderhall_tooltip_orderresources"
+
 Garrison.ICON_PATH_ABOUT1 = mediaPath.."bg_garrison_about_h1"
 
 Garrison.ICON_PATH_CURRENCY_TOOLTIP = mediaPath.."bg_garrison_tooltip_resource"
@@ -286,12 +289,8 @@ Garrison.ICON_CURRENCY_INEVITABLE_FATE_TOOLTIP = Garrison.getIconString(Garrison
 Garrison.ICON_CURRENCY_OIL = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_OIL, 16, false)
 Garrison.ICON_CURRENCY_OIL_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_OIL_TOOLTIP, 16, false)
 
-local _, _, orderTexture = GetCurrencyInfo(1220)
-Garrison.ICON_CURRENCY_ORDER_RESOURCES =  Garrison.getIconString(orderTexture, 16, false) --string.format("\124T%s:%d:%d:1:0\124t", orderTexture, 16, 16)
---Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_OIL, 16, false)
-Garrison.ICON_CURRENCY_ORDER_RESOURCES_TOOLTIP = Garrison.ICON_CURRENCY_ORDER_RESOURCES
---Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_OIL_TOOLTIP, 16, false)
-
+Garrison.ICON_CURRENCY_ORDER_RESOURCES = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_ORDER_RESOURCES, 16, false)
+Garrison.ICON_CURRENCY_ORDER_RESOURCES_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_ORDER_RESOURCES_TOOLTIP, 16, false)
 
 Garrison.ICON_MISSION = Garrison.getIconString(Garrison.ICON_PATH_MISSION, 16, false)
 Garrison.ICON_BUILDING = Garrison.getIconString(Garrison.ICON_PATH_BUILDING, 16, false)
