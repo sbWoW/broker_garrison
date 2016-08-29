@@ -1411,41 +1411,41 @@ function Garrison:GetOptions()
 									configDb.general.orderhall.compactTooltip = v
 								end,
 							},
-							groupHeader = {
-								order = 100,
-								type = "header",
-								name = L["Group by"],
-								cmdHidden = true,
-							},
-							groupOptionValue = {
-								order = 200,
-								type = "select",
-								width = "double",
-								name = L["Group by"],
-								desc = L["Group by"],
-								values = Garrison:GetTooltipSortOptions(Garrison.TYPE_ORDERHALL),
-								get = function() return configDb.tooltip.orderhall.group[1].value end,
-								set = function(_,v)
-									configDb.tooltip.orderhall.group[1].value = v
-								end,
-							},
-							groupOptionAscending = {
-								order = 201,
-								type = "toggle",
-								name = L["Sort ascending"],
-								desc = L["Sort ascending"],
-								get = function() return configDb.tooltip.orderhall.group[1].ascending end,
-								set = function(_,v)
-									configDb.tooltip.orderhall.group[1].ascending = v
-								end,
-								disabled = function() return (configDb.tooltip.orderhall.group[1].value or "-") == "-" end,
-							},
-							groupOptionNewline = {
-								order = 202,
-								type = "description",
-								name = "",
-								width = "full",
-							},
+--							groupHeader = {
+--								order = 100,
+--								type = "header",
+--								name = L["Group by"],
+--								cmdHidden = true,
+--							},
+--							groupOptionValue = {
+--								order = 200,
+--								type = "select",
+--								width = "double",
+--								name = L["Group by"],
+--								desc = L["Group by"],
+--								values = Garrison:GetTooltipSortOptions(Garrison.TYPE_ORDERHALL),
+--								get = function() return configDb.tooltip.orderhall.group[1].value end,
+--								set = function(_,v)
+--									configDb.tooltip.orderhall.group[1].value = v
+--								end,
+--							},
+--							groupOptionAscending = {
+--								order = 201,
+--								type = "toggle",
+--								name = L["Sort ascending"],
+--								desc = L["Sort ascending"],
+--								get = function() return configDb.tooltip.orderhall.group[1].ascending end,
+--								set = function(_,v)
+--									configDb.tooltip.orderhall.group[1].ascending = v
+--								end,
+--								disabled = function() return (configDb.tooltip.orderhall.group[1].value or "-") == "-" end,
+--							},
+--							groupOptionNewline = {
+--								order = 202,
+--								type = "description",
+--								name = "",
+--								width = "full",
+--							},
 							sortHeader = {
 								order = 300,
 								type = "header",
