@@ -955,6 +955,7 @@ function Garrison:UpdateCurrency()
   
 
     local _, amountOrderResources, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_ORDER_RESOURCES);
+    local _, amountAncientMana, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_ANCIENT_MANA);
 
     globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
     globalDb.data[charInfo.realmName][charInfo.playerName].currencyApexisAmount = amountApexis
@@ -964,6 +965,7 @@ function Garrison:UpdateCurrency()
 
     -- 7.0
     globalDb.data[charInfo.realmName][charInfo.playerName].currencyOrderResourcesAmount = amountOrderResources
+    globalDb.data[charInfo.realmName][charInfo.playerName].currencyAncientManaAmount = amountAncientMana
 
     Garrison:Update()
 

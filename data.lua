@@ -42,6 +42,7 @@ Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE = 994
 Garrison.GARRISON_CURRENTY_SEAL_OF_INEVITABLE_FATE = 1129
 Garrison.GARRISON_CURRENTY_OIL = 1101
 Garrison.GARRISON_CURRENCY_ORDER_RESOURCES = C_Garrison.GetCurrencyTypes(LE_GARRISON_TYPE_7_0) -- 1220
+Garrison.GARRISON_CURRENCY_ANCIENT_MANA = 1155
 
 Garrison.cacheSizeQuestId = {
 	[37935] = 750, -- improved logistics horde
@@ -246,6 +247,10 @@ Garrison.ICON_PATH_CURRENCY_OIL = mediaPath.."bg_garrison_toolbar_oil"
 Garrison.ICON_PATH_CURRENCY_ORDER_RESOURCES = mediaPath.."bg_orderhall_toolbar_orderresources"
 Garrison.ICON_PATH_CURRENCY_ORDER_RESOURCES_TOOLTIP = mediaPath.."bg_orderhall_tooltip_orderresources"
 
+Garrison.ICON_PATH_CURRENCY_ANCIENT_MANA = mediaPath.."bg_orderhall_toolbar_ancientmana"
+Garrison.ICON_PATH_CURRENCY_ANCIENT_MANA_TOOLTIP = mediaPath.."bg_orderhall_tooltip_ancientmana"
+
+
 Garrison.ICON_PATH_ABOUT1 = mediaPath.."bg_garrison_about_h1"
 
 Garrison.ICON_PATH_CURRENCY_TOOLTIP = mediaPath.."bg_garrison_tooltip_resource"
@@ -291,6 +296,9 @@ Garrison.ICON_CURRENCY_OIL_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_C
 
 Garrison.ICON_CURRENCY_ORDER_RESOURCES = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_ORDER_RESOURCES, 16, false)
 Garrison.ICON_CURRENCY_ORDER_RESOURCES_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_ORDER_RESOURCES_TOOLTIP, 16, false)
+
+Garrison.ICON_CURRENCY_ANCIENT_MANA = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_ANCIENT_MANA, 16, false)
+Garrison.ICON_CURRENCY_ANCIENT_MANA_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_ANCIENT_MANA_TOOLTIP, 16, false)
 
 Garrison.ICON_MISSION = Garrison.getIconString(Garrison.ICON_PATH_MISSION, 16, false)
 Garrison.ICON_BUILDING = Garrison.getIconString(Garrison.ICON_PATH_BUILDING, 16, false)
@@ -504,6 +512,10 @@ Garrison.ldbTemplate = {
 	["A4"] = {
 		name = L["Order Resources (No icon)"],
 		text = "%oresfmt%",
+	},
+	["A5"] = {
+		name = L["Order Resources + Ancient Mana (Current char)"],
+		text = "%oresfmt% %oresicon% %amfmt% %amicon%",
 	},
 	["M1"] = {
 		name = L["Progress, Complete"],
@@ -735,6 +747,10 @@ Garrison.ldbVars = {
 		name = L["Order Resources (Formatted)"],
 		data = function(data) return _G.BreakUpLargeNumbers(Garrison.getTableValue(data, "currencyOrderResourcesAmount") or 0) end,
 	},
+	["amfmt"] = {
+		name = L["Ancient Mana (Formatted)"],
+		data = function(data) return _G.BreakUpLargeNumbers(Garrison.getTableValue(data, "currencyAncientManaAmount") or 0) end,
+	},
 	["tres"] = {
 		name = L["Garrison Resources (Total)"],
 		data = function(data) return Garrison.getTableValue(data, "currencyTotal") or 0 end,
@@ -750,6 +766,10 @@ Garrison.ldbVars = {
 	["oresicon"] = {
 		name = L["Icon: Order Resources"],
 		data = function(data) return Garrison.ICON_CURRENCY_ORDER_RESOURCES end,
+	},
+	["amicon"] = {
+		name = L["Icon: Ancient Mana"],
+		data = function(data) return Garrison.ICON_CURRENCY_ANCIENT_MANA end,
 	},
 	["apexis"] = {
 		name = L["Apexis Crystals"],

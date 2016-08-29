@@ -157,12 +157,10 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
             end
         end
     end
-
     if dataCount == 0 then
         row = AddRow(tooltip, colors.darkGray)
         tooltip:SetCell(row, 1, getColoredString(L["OrderHalls not available"], colors.lightGray), nil, "LEFT", 6)
     end
-
     AddEmptyRow(tooltip)
     
 end

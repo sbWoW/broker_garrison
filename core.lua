@@ -1350,6 +1350,9 @@ function Garrison:UpdateLDB()
     local currencySealOfInevitableFateAmount = 0
     local currencyOil = 0
 
+    local currencyOrderResourcesAmount = 0
+    local currencyAncientManaAmount = 0
+
     local resourceCacheAmountMaxFilling = 0
     local cacheSize = 0
 
@@ -1375,6 +1378,7 @@ function Garrison:UpdateLDB()
                     currencySealOfTemperedFateAmount = playerData.currencySealOfTemperedFateAmount or 0
                     currencySealOfInevitableFateAmount = playerData.currencySealOfInevitableFateAmount or 0
                     currencyOrderResourcesAmount = playerData.currencyOrderResourcesAmount or 0
+                    currencyAncientManaAmount = playerData.currencyAncientManaAmount or 0
                     currencyOil = playerData.currencyOil or 0
                     cacheSize = playerData.cacheSize or 0
 
@@ -1416,6 +1420,7 @@ function Garrison:UpdateLDB()
         currencySealOfTemperedFateAmount = currencySealOfTemperedFateAmount,
         currencySealOfInevitableFateAmount = currencySealOfInevitableFateAmount,
         currencyOrderResourcesAmount = currencyOrderResourcesAmount,
+        currencyAncientManaAmount = currencyAncientManaAmount,
         currencyApexisTotal = currencyApexisTotal,
         currencyOil = currencyOil,
         cacheSize = cacheSize,
