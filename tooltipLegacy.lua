@@ -218,6 +218,7 @@ local function TooltipBuilding(tooltip)
 
     local name, row, realmName, realmData, playerName, playerData, missionID, missionData
     local realmNum = 0
+    local now = time()
 
     local sortOptions, groupBy = Garrison.getSortOptions(Garrison.TYPE_BUILDING, "name")
 
