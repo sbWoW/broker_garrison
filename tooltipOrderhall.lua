@@ -76,7 +76,7 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
 
                     if playerData.orderhallExpanded and ((playerData.categories and #playerData.categories > 0) or (playerData.talents and #playerData.talents > 0 )) then
 
-                        AddEmptyRow(tooltip, colors.darkGray)
+                        AddEmptyRow(tooltip, tooltipType, colors.darkGray)
 
                         -- Categories
                         for categoryId, categoryData in pairs(playerData.categories) do
