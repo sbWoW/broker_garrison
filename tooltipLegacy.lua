@@ -18,6 +18,7 @@ local function TooltipMission(tooltip, ExpandButton_OnMouseUp)
     local name, row, realmName, realmData, playerName, playerData, missionID, missionData
     local realmNum = 0
     local now = time()
+    local tooltipType = Garrison.TYPE_MISSION
 
     local sortOptions, groupBy = Garrison.getSortOptions(Garrison.TYPE_MISSION, "name")
 
@@ -41,7 +42,7 @@ local function TooltipMission(tooltip, ExpandButton_OnMouseUp)
             row = tooltip:AddHeader()
             tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 3)
 
-            AddEmptyRow(tooltip)
+            AddEmptyRow(tooltip, tooltipType)
             AddSeparator(tooltip)
 
             local sortedPlayerTable = Garrison.sort(realmData, "order,a", "info.playerName,a")
@@ -85,12 +86,12 @@ local function TooltipMission(tooltip, ExpandButton_OnMouseUp)
                     tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, { ("%s:%s"):format(realmName, playerName), Garrison.TYPE_MISSION })
                     tooltip:SetCellScript(row, 2, "OnMouseUp", ExpandButton_OnMouseUp, { ("%s:%s"):format(realmName, playerName), Garrison.TYPE_MISSION })
 
-                    AddEmptyRow(tooltip)
+                    AddEmptyRow(tooltip, tooltipType)
                     AddSeparator(tooltip)
 
                     if playerData.missionsExpanded and missionCount.total > 0 then
 
-                        AddEmptyRow(tooltip, colors.darkGray)
+                        AddEmptyRow(tooltip, tooltipType, colors.darkGray)
 
                         if not configDb.general.mission.hideHeader then
                             --row = AddRow(tooltip, colors.darkGray)
@@ -112,9 +113,9 @@ local function TooltipMission(tooltip, ExpandButton_OnMouseUp)
                                     if lastGroupValue == groupByValue then
                                         -- OK
                                     else
-                                        AddEmptyRow(tooltip, colors.darkGray)
+                                        AddEmptyRow(tooltip, tooltipType, colors.darkGray)
                                         AddSeparator(tooltip)
-                                        AddEmptyRow(tooltip, colors.darkGray)
+                                        AddEmptyRow(tooltip, tooltipType, colors.darkGray)
 
                                         lastGroupValue = groupByValue
 
@@ -199,7 +200,7 @@ local function TooltipMission(tooltip, ExpandButton_OnMouseUp)
                             end
                         end
 
-                        AddEmptyRow(tooltip, colors.darkGray)
+                        AddEmptyRow(tooltip, tooltipType, colors.darkGray)
 
                         AddSeparator(tooltip)
                     end
@@ -210,7 +211,7 @@ local function TooltipMission(tooltip, ExpandButton_OnMouseUp)
         else
             debugPrint(("[%s]: No players for realm - hiding"):format(realmName))
         end
-        AddEmptyRow(tooltip)
+        AddEmptyRow(tooltip, tooltipType)
     end
 end
 
@@ -219,6 +220,8 @@ local function TooltipBuilding(tooltip)
     local name, row, realmName, realmData, playerName, playerData, missionID, missionData
     local realmNum = 0
     local now = time()
+
+    local tooltipType = Garrison.TYPE_BUILDING
 
     local sortOptions, groupBy = Garrison.getSortOptions(Garrison.TYPE_BUILDING, "name")
 
@@ -241,13 +244,13 @@ local function TooltipBuilding(tooltip)
         if playerCount > 0 and not (configDb.general.building.showOnlyCurrentRealm and realmName ~= charInfo.realmName) then
 
             if realmNum > 1 then
-                AddEmptyRow(tooltip)
+                AddEmptyRow(tooltip, tooltipType)
             end
 
             row = tooltip:AddHeader()
             tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 4)
 
-            AddEmptyRow(tooltip)
+            AddEmptyRow(tooltip, tooltipType)
             AddSeparator(tooltip)
 
             local sortedPlayerTable = Garrison.sort(realmData, "order,a", "info.playerName,a")
@@ -287,7 +290,7 @@ local function TooltipBuilding(tooltip)
                 if playerData.tooltipEnabled == nil or playerData.tooltipEnabled and (buildingCount.building.total > 0 or cacheWarning) then
                     playerCount = playerCount + 1
 
-                    AddEmptyRow(tooltip)
+                    AddEmptyRow(tooltip, tooltipType)
                     row = AddRow(tooltip)
 
                     local invasionAvailable = ""
@@ -311,7 +314,7 @@ local function TooltipBuilding(tooltip)
                     tooltip:SetCellScript(row, 2, "OnMouseUp", ExpandButton_OnMouseUp, { ("%s:%s"):format(realmName, playerName), Garrison.TYPE_BUILDING })
                     --tooltip:SetCellScript(row, 2, "OnMouseDown", ExpandButton_OnMouseDown, {playerData.buildingsExpanded, Garrison.TYPE_BUILDING})
 
-                    AddEmptyRow(tooltip)
+                    AddEmptyRow(tooltip, tooltipType)
                     AddSeparator(tooltip)
 
                     if not (playerData.buildingsExpanded) then
@@ -347,13 +350,13 @@ local function TooltipBuilding(tooltip)
                         tooltip:SetCell(row, 4, formattedShipment, nil, "LEFT", 1)
 
                     elseif playerData.buildingsExpanded and buildingCount.building.total > 0 then
-                        AddEmptyRow(tooltip, colors.darkGray)
+                        AddEmptyRow(tooltip, tooltipType, colors.darkGray)
 
                         if not configDb.general.building.hideHeader then
                             row = AddRow(tooltip, colors.darkGray)
                             tooltip:SetCell(row, 4, getColoredString(L["SHIPMENT"], colors.lightGray), nil, "CENTER", 1)
                             tooltip:SetCell(row, 5, getColoredString(L["TIME"], colors.lightGray), nil, "CENTER", 1)
-                            AddEmptyRow(tooltip, colors.darkGray)
+                            AddEmptyRow(tooltip, tooltipType, colors.darkGray)
                         end
 
                         local sortedBuildingTable = Garrison.sort(playerData.buildings, unpack(sortOptions))
@@ -404,9 +407,9 @@ local function TooltipBuilding(tooltip)
                                         if lastGroupValue == groupByValue then
                                             -- OK
                                         else
-                                            AddEmptyRow(tooltip, colors.darkGray)
+                                            AddEmptyRow(tooltip, tooltipType, colors.darkGray)
                                             AddSeparator(tooltip)
-                                            AddEmptyRow(tooltip, colors.darkGray)
+                                            AddEmptyRow(tooltip, tooltipType, colors.darkGray)
 
                                             if not configDb.general.building.hideHeader then
                                                 row = AddRow(tooltip, colors.darkGray)
@@ -495,7 +498,7 @@ local function TooltipBuilding(tooltip)
                             end
                         end
 
-                        AddEmptyRow(tooltip, colors.darkGray)
+                        AddEmptyRow(tooltip, tooltipType, colors.darkGray)
                         AddSeparator(tooltip)
                     end
                 else
@@ -506,7 +509,7 @@ local function TooltipBuilding(tooltip)
         debugPrint(("[%s]: No players for realm - hiding"):format(realmName))
         end
     end
-    AddEmptyRow(tooltip)
+    AddEmptyRow(tooltip, tooltipType)
 end
 
 function Garrison:InitTooltipLegacy()

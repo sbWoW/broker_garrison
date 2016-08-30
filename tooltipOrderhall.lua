@@ -19,6 +19,7 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
     local realmNum = 0
     local now = time()
     local dataCount = 0
+    local tooltipType = Garrison.TYPE_ORDERHALL
 
     local sortOptions, groupBy = Garrison.getSortOptions(Garrison.TYPE_ORDERHALL, "name")
 
@@ -43,13 +44,13 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
 
             dataCount = dataCount + 1
             if realmNum > 1 then
-                AddEmptyRow(tooltip)
+                AddEmptyRow(tooltip, tooltipType)
             end
 
             row = tooltip:AddHeader()
             tooltip:SetCell(row, 1, ("%s"):format(getColoredString(("%s"):format(realmName), colors.lightGray)), nil, "LEFT", 6)
 
-            AddEmptyRow(tooltip)
+            AddEmptyRow(tooltip, tooltipType)
             AddSeparator(tooltip)
 
             local sortedPlayerTable = Garrison.sort(realmData, "order,a", "info.playerName,a")
@@ -59,7 +60,7 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
 
                 if orderhallCount.talent.tiersAvailable > 0 and (playerData.tooltipEnabled == nil or playerData.tooltipEnabled and (orderhallCount.talent.total > 0 or orderhallCount.category.total > 0)) then
 
-                    AddEmptyRow(tooltip)
+                    AddEmptyRow(tooltip, tooltipType)
                     row = AddRow(tooltip)
 
                     tooltip:SetCell(row, 1, playerData.orderhallExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN, nil, "LEFT", 1, nil, 0, 0, 20, 20)
@@ -68,7 +69,7 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
                     tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, { ("%s:%s"):format(realmName, playerName), Garrison.TYPE_ORDERHALL })
                     tooltip:SetCellScript(row, 2, "OnMouseUp", ExpandButton_OnMouseUp, { ("%s:%s"):format(realmName, playerName), Garrison.TYPE_ORDERHALL })
 
-                    AddEmptyRow(tooltip)
+                    AddEmptyRow(tooltip, tooltipType)
                     AddSeparator(tooltip)
 
                     local followerShipmentsTable = Garrison:SortFollowerShipments(playerData.followerShipments)
@@ -95,9 +96,9 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
                                 Garrison:DoTooltipShipment(tooltip, row, followerShipmentsTable[categoryData.name], playerData.info)
                             end
 
-                            AddEmptyRow(tooltip)
+                            AddEmptyRow(tooltip, tooltipType)
                             AddSeparator(tooltip)
-                            AddEmptyRow(tooltip)
+                            AddEmptyRow(tooltip, tooltipType)
                         end
 
                         -- Talents
@@ -161,7 +162,7 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
         row = AddRow(tooltip, colors.darkGray)
         tooltip:SetCell(row, 1, getColoredString(L["OrderHalls not available"], colors.lightGray), nil, "LEFT", 6)
     end
-    AddEmptyRow(tooltip)
+    AddEmptyRow(tooltip, tooltipType)
     
 end
 

@@ -511,7 +511,7 @@ function Garrison.AddRow(tooltip, ...)
     return row
 end
 
-function Garrison.AddEmptyRow(tooltip, ...)
+function Garrison.AddEmptyRow(tooltip, tooltipType, ...)
     if not tooltipType or not configDb.general[tooltipType].compactTooltip then
         Garrison.AddRow(tooltip, ...)
     end
