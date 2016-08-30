@@ -216,3 +216,7 @@ L["Order Resources (Current char)"] = true
 L["Garrison: Orderhall"] = true
 L["Orderhall"] = true
 L["OrderHalls not available"] = true
+
+L["Order Resources + Ancient Mana (Current char)"] = true
+L["Ancient Mana (Formatted)"] = true
+L["Icon: Ancient Mana"] = true
