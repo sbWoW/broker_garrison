@@ -501,10 +501,10 @@ function Garrison:FullUpdateShipments()
         if (name and shipmentCapacity > 0 and shipmentIndex < maxShipments) then
             shipmentIndex = shipmentIndex + 1;
 
-            local tmpShipment = Garrison:UpdateShipment(followerShipments[i])
+            local tmpShipment = Garrison:UpdateShipment(looseShipments[i])
 
             if tmpShipment ~= nil then
-                tmpShipments[i] = Garrison:UpdateShipment(followerShipments[i])
+                tmpShipments[i] = Garrison:UpdateShipment(looseShipments[i])
             end
         end
     end
