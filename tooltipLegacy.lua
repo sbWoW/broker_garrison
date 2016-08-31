@@ -53,7 +53,7 @@ local function TooltipMission(tooltip, ExpandButton_OnMouseUp)
                 if playerData.tooltipEnabled == nil or playerData.tooltipEnabled
                         and (missionCount.total > 0 or (not configDb.general.mission.hideCharactersWithoutMissions)) then
 
-                    AddEmptyRow(tooltip)
+                    AddEmptyRow(tooltip, tooltipType)
                     row = AddRow(tooltip)
 
                     tooltip:SetCell(row, 1, playerData.missionsExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN)
@@ -415,7 +415,7 @@ local function TooltipBuilding(tooltip)
                                                 row = AddRow(tooltip, colors.darkGray)
                                                 tooltip:SetCell(row, 4, getColoredString(L["SHIPMENT"], colors.lightGray), nil, "CENTER", 1)
                                                 tooltip:SetCell(row, 5, getColoredString(L["TIME"], colors.lightGray), nil, "CENTER", 1)
-                                                AddEmptyRow(tooltip, colors.darkGray)
+                                                AddEmptyRow(tooltip, tooltipType, colors.darkGray)
                                             end
 
                                             lastGroupValue = groupByValue
