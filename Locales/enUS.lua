@@ -207,6 +207,7 @@ L["Resource Cache Size"] = true
 L["Complete"] = true
 L["Active"] = true
 L["Inactive"] = true
+L["Unavailable"] = true
 L["Don't display inactive talents"] = true
 L["Hide inactive talents"] = true
 L["Icon: Order Resources"] = true

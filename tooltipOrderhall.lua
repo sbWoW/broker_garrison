@@ -34,11 +34,15 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
         for playerName, playerData in pairsByKeys(realmData) do
             orderhallCountTable[playerName] = Garrison:GetOrderhallCount(playerData.info)
 
+            --debugPrint(("%s => %s"):format(playerName, orderhallCountTable[playerName].talent.tiersAvailable))
+
             if orderhallCountTable[playerName].talent.tiersAvailable > 0 and (playerData.tooltipEnabled == nil or playerData.tooltipEnabled and
                     (orderhallCountTable[playerName].talent.total > 0 or orderhallCountTable[playerName].category.total > 0)) then
                 playerCount = playerCount + 1
             end
         end
+
+        --debugPrint(playerCount)
 
         if playerCount > 0 and not (configDb.general.orderhall.showOnlyCurrentRealm and realmName ~= charInfo.realmName) then
 

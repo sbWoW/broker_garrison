@@ -734,10 +734,11 @@ function Garrison:GetPlayerOrderhallCount(paramCharInfo, orderhallCount, categor
     end
 
     local numTalentsPlayer = tableSize(talents)
-
+    local tiersAvailable = 0
     if numTalentsPlayer > 0 then
-        tiersAvailable = 0    
         for _, talentData in pairs(talents) do
+            --debugPrint(("%s: %s"):format(talentData.name, talentData.talentAvailability))
+
             if Garrison.CheckOrderTalentAvailability(talentData.talentAvailability, 0) then
                 tiersAvailable = tiersAvailable + 1
             end            
@@ -746,6 +747,8 @@ function Garrison:GetPlayerOrderhallCount(paramCharInfo, orderhallCount, categor
         orderhallCount.talent.tiersAvailable = tiersAvailable  
         orderhallCount.talent.total = orderhallCount.talent.total + numTalentsPlayer
     end
+
+    --debugPrint(("%s => %s / %s / %s"):format(paramCharInfo.playerName, numCategoriesPlayer, numTalentsPlayer, tiersAvailable))
 end
 
 function Garrison:GetOrderhallCount(paramCharInfo)
@@ -763,9 +766,11 @@ function Garrison:GetOrderhallCount(paramCharInfo)
         }
     }
 
+    local orderhallCountCurrent
+
 
     if paramCharInfo then
-        Garrison:GetPlayerOrderhallCount(paramCharInfo, orderhallCount, globalDb.data[paramCharInfo.realmName][paramCharInfo.playerName].categories, globalDb.data[charInfo.realmName][charInfo.playerName].talents)
+        Garrison:GetPlayerOrderhallCount(paramCharInfo, orderhallCount, globalDb.data[paramCharInfo.realmName][paramCharInfo.playerName].categories, globalDb.data[paramCharInfo.realmName][paramCharInfo.playerName].talents)
         --missionCountCurrent = missionCount
     else
         Garrison:GetPlayerOrderhallCount(charInfo, orderhallCount, globalDb.data[charInfo.realmName][charInfo.playerName].categories, globalDb.data[charInfo.realmName][charInfo.playerName].talents)
