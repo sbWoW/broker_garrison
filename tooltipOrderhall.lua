@@ -73,8 +73,9 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
                     AddSeparator(tooltip)
 
                     local followerShipmentsTable = Garrison:SortFollowerShipments(playerData.followerShipments)
+                    local looseShipmentsTable = Garrison:SortFollowerShipments(playerData.looseShipments)
 
-                    if playerData.orderhallExpanded and ((playerData.categories and #playerData.categories > 0) or (playerData.talents and #playerData.talents > 0 )) then
+                    if playerData.orderhallExpanded and ((playerData.categories and #playerData.categories > 0) or (playerData.talents and #playerData.talents > 0)) then
 
                         AddEmptyRow(tooltip, tooltipType, colors.darkGray)
 
@@ -98,6 +99,18 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
 
                             AddEmptyRow(tooltip, tooltipType)
                             AddSeparator(tooltip)
+                            AddEmptyRow(tooltip, tooltipType)
+                        end
+
+                        for _, looseShipment in pairs(looseShipmentsTable) do
+                            row = AddRow(tooltip, colors.darkGray)
+                            if configDb.display.showIcon then
+                                tooltip:SetCell(row, 1, getIconString(looseShipment.texture, configDb.display.iconSize, false), nil, "LEFT", 1)
+                            end
+                            tooltip:SetCell(row, 2, looseShipment.name, nil, "LEFT", 1)
+
+                            Garrison:DoTooltipShipment(tooltip, row, looseShipment, playerData.info)
+
                             AddEmptyRow(tooltip, tooltipType)
                         end
 
@@ -163,7 +176,6 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
         tooltip:SetCell(row, 1, getColoredString(L["OrderHalls not available"], colors.lightGray), nil, "LEFT", 6)
     end
     AddEmptyRow(tooltip, tooltipType)
-    
 end
 
 
