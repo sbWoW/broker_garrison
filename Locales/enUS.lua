@@ -221,3 +221,4 @@ L["OrderHalls not available"] = true
 L["Order Resources + Ancient Mana (Current char)"] = true
 L["Ancient Mana (Formatted)"] = true
 L["Icon: Ancient Mana"] = true
+L["Oil (Formatted)"] = true
