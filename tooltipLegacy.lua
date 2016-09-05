@@ -215,7 +215,7 @@ local function TooltipMission(tooltip, ExpandButton_OnMouseUp)
     end
 end
 
-local function TooltipBuilding(tooltip)
+local function TooltipBuilding(tooltip, ExpandButton_OnMouseUp)
 
     local name, row, realmName, realmData, playerName, playerData, missionID, missionData
     local realmNum = 0

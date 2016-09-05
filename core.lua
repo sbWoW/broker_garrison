@@ -958,8 +958,6 @@ do
 
         local realm, character_name = (":"):split(realm_and_character, 2)
 
-        --debugPrint(LDB_anchor)
-
         if paramType == TYPE_MISSION then
             globalDb.data[realm][character_name].missionsExpanded = not globalDb.data[realm][character_name].missionsExpanded
         elseif paramType == TYPE_BUILDING then
@@ -1639,6 +1637,9 @@ function Garrison:OnInitialize()
             end
             if configDb.general.mission.collapseOtherCharsOnLogin then
                 playerData.missionsExpanded = isCurrentChar
+            end
+            if configDb.general.mission.collapseOtherCharsOnLogin then
+                playerData.orderhallExpanded = isCurrentChar
             end
 
             -- add sort order for players
