@@ -572,6 +572,27 @@ function Garrison.CheckOrderTalentAvailability(talentAvailability, type)
     return retVal
 end
 
+function Garrison.IsTooltipEnabled(type, addon)
+    if type == Garrison.TYPE_BUILDING and addon == Garrison.ADDON_WOD then
+        return configDb.general.legacyEnabled or false
+    end
+
+    return true
+end
+
+function Garrison.IsEnabled(type, addon)
+    return configDb.general.legacyEnabled or false
+end
+
+function Garrison.IsValidMission(mission)
+    if Garrison.IsEnabled(Garrison.TYPE_MISSION, Garrison.ADDON_WOD) == true then
+        if mission.followerTypeID ~= LE_FOLLOWER_TYPE_GARRISON_7_0 then
+            return false
+        end
+    end
+
+    return true
+end
 
 function Garrison:InitHelper()
     garrisonDb = self.DB

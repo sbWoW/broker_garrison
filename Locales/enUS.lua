@@ -222,3 +222,7 @@ L["Order Resources + Ancient Mana (Current char)"] = true
 L["Ancient Mana (Formatted)"] = true
 L["Icon: Ancient Mana"] = true
 L["Oil (Formatted)"] = true
+L["Icon: Artifact Knowledge"] = true
+L["Artifact Knowledge (Formatted)"] = true
+L["Artifact Knowledge (Percentage Increase)"] = true
+L["Order Resources, Ancient Mana and Artifact Knowledge Increase (Current char)"] = true

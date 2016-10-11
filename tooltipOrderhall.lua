@@ -67,8 +67,17 @@ local function TooltipOrderhall(tooltip, ExpandButton_OnMouseUp)
                     AddEmptyRow(tooltip, tooltipType)
                     row = AddRow(tooltip)
 
+                    local artifactKnowledge = ""
+                    if playerData.currencyArtifactKnowledge and playerData.currencyArtifactKnowledge > 0 then
+                        artifactKnowledge = ("%s%s %s (%s%%)"):format(textPlaceholder, Garrison.ICON_CURRENCY_ARTIFACT_KNOWLEDGE, playerData.currencyArtifactKnowledge or 0, Garrison.ARTIFACT_KNOWLEDGE[playerData.currencyArtifactKnowledge])
+                    end
+
                     tooltip:SetCell(row, 1, playerData.orderhallExpanded and Garrison.ICON_CLOSE or Garrison.ICON_OPEN, nil, "LEFT", 1, nil, 0, 0, 20, 20)
-                    tooltip:SetCell(row, 2, ("%s %s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), "", ""), nil, "LEFT", 4)
+                    tooltip:SetCell(row, 2, ("%s %s %s"):format(getColoredUnitName(playerData.info.playerName, playerData.info.playerClass, realmName), "", ""), nil, "LEFT", 3)
+                    tooltip:SetCell(row, 5, ("%s %s %s %s%s"):format(Garrison.ICON_CURRENCY_ORDER_RESOURCES, BreakUpLargeNumbers(playerData.currencyOrderResourcesAmount or 0),
+                        Garrison.ICON_CURRENCY_ANCIENT_MANA, BreakUpLargeNumbers(playerData.currencyAncientManaAmount or 0),
+                        artifactKnowledge),
+                        nil, "RIGHT", 1)
 
                     tooltip:SetCellScript(row, 1, "OnMouseUp", ExpandButton_OnMouseUp, { ("%s:%s"):format(realmName, playerName), Garrison.TYPE_ORDERHALL })
                     tooltip:SetCellScript(row, 2, "OnMouseUp", ExpandButton_OnMouseUp, { ("%s:%s"):format(realmName, playerName), Garrison.TYPE_ORDERHALL })

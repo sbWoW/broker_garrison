@@ -42,6 +42,35 @@ Garrison.GARRISON_CURRENTY_SEAL_OF_INEVITABLE_FATE = 1129
 Garrison.GARRISON_CURRENTY_OIL = 1101
 Garrison.GARRISON_CURRENCY_ORDER_RESOURCES = C_Garrison.GetCurrencyTypes(LE_GARRISON_TYPE_7_0) -- 1220
 Garrison.GARRISON_CURRENCY_ANCIENT_MANA = 1155
+Garrison.GARRISON_CURRENCY_ARTIFACT_KNOWLEDGE = 1171
+
+Garrison.ARTIFACT_KNOWLEDGE = {
+    [1] = 0,
+    [2] = 50,
+    [3] = 90,
+    [4] = 140,
+    [5] = 200,
+    [6] = 275,
+    [7] = 375,
+    [8] = 500,
+    [9] = 650,
+    [10] = 850,
+    [11] = 1100,
+    [12] = 1400,
+    [13] = 1775,
+    [14] = 2250,
+    [15] = 2850,
+    [16] = 3600,
+    [17] = 4550,
+    [18] = 5700,
+    [19] = 7200,
+    [20] = 9000,
+    [21] = 11300,
+    [22] = 14200,
+    [23] = 17800,
+    [24] = 22300,
+    [25] = 24900
+}
 
 Garrison.cacheSizeQuestId = {
     [37935] = 750, -- improved logistics horde
@@ -245,6 +274,8 @@ Garrison.ICON_PATH_CURRENCY_ORDER_RESOURCES_TOOLTIP = mediaPath .. "bg_orderhall
 Garrison.ICON_PATH_CURRENCY_ANCIENT_MANA = mediaPath .. "bg_orderhall_toolbar_ancientmana"
 Garrison.ICON_PATH_CURRENCY_ANCIENT_MANA_TOOLTIP = mediaPath .. "bg_orderhall_tooltip_ancientmana"
 
+Garrison.ICON_PATH_CURRENCY_ARTIFACT_KNOWLEDGE = mediaPath .. "bg_orderhall_tooltip_artifactknowledge"
+Garrison.ICON_PATH_CURRENCY_ARTIFACT_KNOWLEDGE_TOOLTIP = mediaPath .. "bg_orderhall_tooltip_artifactknowledge"
 
 Garrison.ICON_PATH_ABOUT1 = mediaPath .. "bg_garrison_about_h1"
 
@@ -294,6 +325,9 @@ Garrison.ICON_CURRENCY_ORDER_RESOURCES_TOOLTIP = Garrison.getIconString(Garrison
 
 Garrison.ICON_CURRENCY_ANCIENT_MANA = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_ANCIENT_MANA, 16, false)
 Garrison.ICON_CURRENCY_ANCIENT_MANA_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_ANCIENT_MANA_TOOLTIP, 16, false)
+
+Garrison.ICON_CURRENCY_ARTIFACT_KNOWLEDGE = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_ARTIFACT_KNOWLEDGE, 16, false)
+Garrison.ICON_CURRENCY_ARTIFACT_KNOWLEDGE_TOOLTIP = Garrison.getIconString(Garrison.ICON_PATH_CURRENCY_ARTIFACT_KNOWLEDGE_TOOLTIP, 16, false)
 
 Garrison.ICON_MISSION = Garrison.getIconString(Garrison.ICON_PATH_MISSION, 16, false)
 Garrison.ICON_BUILDING = Garrison.getIconString(Garrison.ICON_PATH_BUILDING, 16, false)
@@ -512,6 +546,10 @@ Garrison.ldbTemplate = {
     ["A5"] = {
         name = L["Order Resources + Ancient Mana (Current char)"],
         text = "%oresfmt% %oresicon% %amfmt% %amicon%",
+    },
+    ["A6"] = {
+        name = L["Order Resources, Ancient Mana and Artifact Knowledge Increase (Current char)"],
+        text = "%oresfmt% %oresicon% %amfmt% %amicon% +%akpct%% %akicon%",
     },
     ["M1"] = {
         name = L["Progress, Complete"],
@@ -747,6 +785,14 @@ Garrison.ldbVars = {
         name = L["Ancient Mana (Formatted)"],
         data = function(data) return _G.BreakUpLargeNumbers(Garrison.getTableValue(data, "currencyAncientManaAmount") or 0) end,
     },
+    ["akfmt"] = {
+        name = L["Artifact Knowledge (Formatted)"],
+        data = function(data) return _G.BreakUpLargeNumbers(Garrison.getTableValue(data, "currencyArtifactKnowledge") or 0) end,
+    },
+    ["akpct"] = {
+        name = L["Artifact Knowledge (Percentage Increase)"],
+        data = function(data) return _G.BreakUpLargeNumbers(Garrison.getTableValue(data, "artifactKnowledgeIncreate") or 0) end,
+    },
     ["tres"] = {
         name = L["Garrison Resources (Total)"],
         data = function(data) return Garrison.getTableValue(data, "currencyTotal") or 0 end,
@@ -766,6 +812,10 @@ Garrison.ldbVars = {
     ["amicon"] = {
         name = L["Icon: Ancient Mana"],
         data = function(data) return Garrison.ICON_CURRENCY_ANCIENT_MANA end,
+    },
+    ["akicon"] = {
+        name = L["Icon: Artifact Knowledge"],
+        data = function(data) return Garrison.ICON_CURRENCY_ARTIFACT_KNOWLEDGE end,
     },
     ["apexis"] = {
         name = L["Apexis Crystals"],

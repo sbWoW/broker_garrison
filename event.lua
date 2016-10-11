@@ -87,48 +87,55 @@ function Garrison:GARRISON_MISSION_STARTED(event, missionID, start)
                 followerTypeID = garrisonMission.followerTypeID
             }
 
-            debugPrint("Added Mission: " .. missionID)
+            -- 09.10.2016, Don't add disabled missions
+            if Garrison.IsValidMission(mission) == true then
 
-            -- get followers
-            --local followers = {}
+                debugPrint("Added Mission: " .. missionID)
 
-            for i = 1, #garrisonMission.followers do
-                local followerId = garrisonMission.followers[i]
+                -- get followers
+                --local followers = {}
 
-                local tmpAbilites = C_Garrison.GetFollowerAbilities(followerId)
-                local tmpFollower = C_Garrison.GetFollowerInfo(followerId)
+                for i = 1, #garrisonMission.followers do
+                    local followerId = garrisonMission.followers[i]
 
-                local name, portraitIconID, classIcon = tmpFollower.name, tmpFollower.portraitIconID, tmpFollower.classAtlas
+                    local tmpAbilites = C_Garrison.GetFollowerAbilities(followerId)
+                    local tmpFollower = C_Garrison.GetFollowerInfo(followerId)
 
-                mission.followers[i] = {
-                    id = followerId,
-                    name = tmpFollower.name,
-                    iconId = tmpFollower.portraitIconID,
-                    classIcon = tmpFollower.classAtlas,
-                    abilities = {},
-                }
+                    local name, portraitIconID, classIcon = tmpFollower.name, tmpFollower.portraitIconID, tmpFollower.classAtlas
 
-                for abilityNum, tmpAbility in pairs(tmpAbilites) do
-                    local abilityId, abilityName, abilityIcon = tmpAbility.id, tmpAbility.name, tmpAbility.icon
-                    mission.followers[i].abilities[abilityNum] = {
-                        id = tmpAbility.id,
-                        name = tmpAbility.name,
-                        icon = tmpAbility.icon,
+                    mission.followers[i] = {
+                        id = followerId,
+                        name = tmpFollower.name,
+                        iconId = tmpFollower.portraitIconID,
+                        classIcon = tmpFollower.classAtlas,
+                        abilities = {},
                     }
 
-                    local missionModifier = Garrison.missionModifier[tmpAbility.id]
-                    if start == nil and missionModifier then
-                        -- modified mission time
-                        if not mission.durationOriginal then
-                            mission.durationOriginal = mission.duration
+                    for abilityNum, tmpAbility in pairs(tmpAbilites) do
+                        local abilityId, abilityName, abilityIcon = tmpAbility.id, tmpAbility.name, tmpAbility.icon
+                        mission.followers[i].abilities[abilityNum] = {
+                            id = tmpAbility.id,
+                            name = tmpAbility.name,
+                            icon = tmpAbility.icon,
+                        }
+
+                        local missionModifier = Garrison.missionModifier[tmpAbility.id]
+                        if start == nil and missionModifier then
+                            -- modified mission time
+                            if not mission.durationOriginal then
+                                mission.durationOriginal = mission.duration
+                            end
+                            mission.duration = math.floor((mission.duration * Garrison.missionModifier[tmpAbility.id] + 0.5))
+                            debugPrint(("Mission modifier detected (%s): %s - duration: %s (old: %s)"):format(tmpAbility.name, tostring(missionModifier), tostring(mission.duration), tostring(mission.durationOriginal)))
                         end
-                        mission.duration = math.floor((mission.duration * Garrison.missionModifier[tmpAbility.id] + 0.5))
-                        debugPrint(("Mission modifier detected (%s): %s - duration: %s (old: %s)"):format(tmpAbility.name, tostring(missionModifier), tostring(mission.duration), tostring(mission.durationOriginal)))
                     end
                 end
-            end
 
-            globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
+                globalDb.data[charInfo.realmName][charInfo.playerName].missions[missionID] = mission
+            else
+                debugPrint("Invalid/Legacy Mission: " .. missionID)
+            end -- isValidMission
+
         end
     end
 
@@ -947,25 +954,35 @@ function Garrison:UpdateCategories()
 end
 
 function Garrison:UpdateCurrency()
-    local _, amount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY)
-    local _, amountApexis, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_APEXIS)
-    local _, amountSealOfTemperedFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE)
-    local _, amountOil, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_OIL)
-    local _, amountSealOfInevitableFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_INEVITABLE_FATE)
-  
+    -- 09.10.2016, Don't count disabled resources
+    if Garrison.IsEnabled(Garrison.TYPE_BUILDING, Garrison.ADDON_WOD) == true then
+        local _, amount, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY)
+        local _, amountApexis, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_APEXIS)
+        local _, amountSealOfTemperedFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_TEMPERED_FATE)
+        local _, amountOil, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_OIL)
+        local _, amountSealOfInevitableFate, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENTY_SEAL_OF_INEVITABLE_FATE)
+
+        globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
+        globalDb.data[charInfo.realmName][charInfo.playerName].currencyApexisAmount = amountApexis
+        globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfTemperedFateAmount = amountSealOfTemperedFate
+        globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfInevitableFateAmount = amountSealOfInevitableFate
+        globalDb.data[charInfo.realmName][charInfo.playerName].currencyOil = amountOil
+    else
+        globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount = 0
+        globalDb.data[charInfo.realmName][charInfo.playerName].currencyApexisAmount = 0
+        globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfTemperedFateAmount = 0
+        globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfInevitableFateAmount = 0
+        globalDb.data[charInfo.realmName][charInfo.playerName].currencyOil = 0
+    end
 
     local _, amountOrderResources, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_ORDER_RESOURCES);
     local _, amountAncientMana, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_ANCIENT_MANA);
-
-    globalDb.data[charInfo.realmName][charInfo.playerName].currencyAmount = amount
-    globalDb.data[charInfo.realmName][charInfo.playerName].currencyApexisAmount = amountApexis
-    globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfTemperedFateAmount = amountSealOfTemperedFate
-    globalDb.data[charInfo.realmName][charInfo.playerName].currencySealOfInevitableFateAmount = amountSealOfInevitableFate
-    globalDb.data[charInfo.realmName][charInfo.playerName].currencyOil = amountOil
+    local _, amountArtifactKnowledge, _ = GetCurrencyInfo(Garrison.GARRISON_CURRENCY_ARTIFACT_KNOWLEDGE);
 
     -- 7.0
     globalDb.data[charInfo.realmName][charInfo.playerName].currencyOrderResourcesAmount = amountOrderResources
     globalDb.data[charInfo.realmName][charInfo.playerName].currencyAncientManaAmount = amountAncientMana
+    globalDb.data[charInfo.realmName][charInfo.playerName].currencyArtifactKnowledge = amountArtifactKnowledge
 
     Garrison:Update()
 

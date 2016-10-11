@@ -47,6 +47,9 @@ Garrison.TYPE_MISSION = TYPE_MISSION
 Garrison.TYPE_SHIPMENT = TYPE_SHIPMENT
 Garrison.TYPE_ORDERHALL = TYPE_ORDERHALL
 
+Garrison.ADDON_WOD = 6
+Garrison.ADDON_LEGION = 7
+
 local addonInitialized = false
 local delayedInit = false
 local dependencyLoaded = false
@@ -118,6 +121,7 @@ local DB_DEFAULTS = {
             highAccuracy = true,
             showSeconds = true,
             updateInCombat = true,
+            legacyEnabled = true,
         },
         tooltip = {
             building = {
@@ -340,9 +344,11 @@ end
 function Garrison:LoadDependencies()
     if not GarrisonMissionFrame or not GarrisonLandingPage then
         debugPrint("Loading Blizzard_GarrisonUI...")
+        --UIParentLoadAddOn("Blizzard_OrderHallUI");
         if UIParentLoadAddOn("Blizzard_GarrisonUI") then
             Garrison:OnDependencyLoaded()
         end
+
     end
 
     if not dependencyLoaded and _G.IsAddOnLoaded("Blizzard_GarrisonUI") then
@@ -569,50 +575,55 @@ function Garrison:GetPlayerMissionCount(paramCharInfo, missionCount, missions)
         missionCount.total = missionCount.total + numMissionsPlayer
 
         for missionID, missionData in pairs(missions) do
-            local timeLeft = missionData.duration - (now - missionData.start)
 
-            -- Do mission handling while we are at it
-            if (timeLeft < 0 and missionData.start == -1) then
-                -- Detect completed mission
+            -- 09.10.2016, Don't count disabled missions
+            if Garrison.IsValidMission(missionData) then
+
+                local timeLeft = missionData.duration - (now - missionData.start)
+
+                -- Do mission handling while we are at it
+                if (timeLeft < 0 and missionData.start == -1) then
+                    -- Detect completed mission
 
 
-                -- Deprecated - should be detected on finished event
-                local parsedTimeLeft = string.match(missionData.timeLeft, Garrison.COMPLETED_PATTERN)
-                if (parsedTimeLeft == "0") then
-                    -- 1 * 0 found in string -> assuming mission complete
-                    missionData.start = 0
-                end
-            end
-
-            -- Count
-            if missionData.start > 0 then
-                if (timeLeft <= 0) then
-                    missionCount.complete = missionCount.complete + 1
-                    missionData.statusComplete = true
-                else
-                    if missionCount.nextTime == -1 or timeLeft < missionCount.nextTime then
-                        missionCount.nextTime = timeLeft
-                        missionCount.nextData = missionData
-                        missionCount.nextChar = paramCharInfo
+                    -- Deprecated - should be detected on finished event
+                    local parsedTimeLeft = string.match(missionData.timeLeft, Garrison.COMPLETED_PATTERN)
+                    if (parsedTimeLeft == "0") then
+                        -- 1 * 0 found in string -> assuming mission complete
+                        missionData.start = 0
                     end
-
-                    missionCount.inProgress = missionCount.inProgress + 1
                 end
-            else
-                if missionData.start == 0 then
-                    missionCount.complete = missionCount.complete + 1
-                    missionData.statusComplete = true
+
+                -- Count
+                if missionData.start > 0 then
+                    if (timeLeft <= 0) then
+                        missionCount.complete = missionCount.complete + 1
+                        missionData.statusComplete = true
+                    else
+                        if missionCount.nextTime == -1 or timeLeft < missionCount.nextTime then
+                            missionCount.nextTime = timeLeft
+                            missionCount.nextData = missionData
+                            missionCount.nextChar = paramCharInfo
+                        end
+
+                        missionCount.inProgress = missionCount.inProgress + 1
+                    end
                 else
-                    missionCount.inProgress = missionCount.inProgress + 1
+                    if missionData.start == 0 then
+                        missionCount.complete = missionCount.complete + 1
+                        missionData.statusComplete = true
+                    else
+                        missionCount.inProgress = missionCount.inProgress + 1
+                    end
                 end
-            end
 
-            missionData.missionState = missionData.statusComplete and Garrison.STATE_MISSION_COMPLETE or Garrison.STATE_MISSION_INPROGRESS
+                missionData.missionState = missionData.statusComplete and Garrison.STATE_MISSION_COMPLETE or Garrison.STATE_MISSION_INPROGRESS
 
-            missionData.timeLeftCalc = math.max(0, timeLeft)
+                missionData.timeLeftCalc = math.max(0, timeLeft)
 
-            if (timeLeft < 0 and missionData.start >= 0) then
-                Garrison:SendNotification(paramCharInfo, missionData, TYPE_MISSION)
+                if (timeLeft < 0 and missionData.start >= 0) then
+                    Garrison:SendNotification(paramCharInfo, missionData, TYPE_MISSION)
+                end
             end
         end
     end
@@ -741,10 +752,10 @@ function Garrison:GetPlayerOrderhallCount(paramCharInfo, orderhallCount, categor
 
             if Garrison.CheckOrderTalentAvailability(talentData.talentAvailability, 0) then
                 tiersAvailable = tiersAvailable + 1
-            end            
+            end
         end
 
-        orderhallCount.talent.tiersAvailable = tiersAvailable  
+        orderhallCount.talent.tiersAvailable = tiersAvailable
         orderhallCount.talent.total = orderhallCount.talent.total + numTalentsPlayer
     end
 
@@ -850,21 +861,23 @@ function Garrison:GetBuildingCount(paramCharInfo)
     }
     local buildingCountCurrent
 
+    if Garrison.IsEnabled(TYPE_BUILDING, Garrison.ADDON_WOD) then
 
-    if paramCharInfo then
-        Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, globalDb.data[paramCharInfo.realmName][paramCharInfo.playerName].buildings)
-        --buildingCountCurrent = buildingCount
-    else
-        Garrison:GetPlayerBuildingCount(charInfo, buildingCount, globalDb.data[charInfo.realmName][charInfo.playerName].buildings)
+        if paramCharInfo then
+            Garrison:GetPlayerBuildingCount(paramCharInfo, buildingCount, globalDb.data[paramCharInfo.realmName][paramCharInfo.playerName].buildings)
+            --buildingCountCurrent = buildingCount
+        else
+            Garrison:GetPlayerBuildingCount(charInfo, buildingCount, globalDb.data[charInfo.realmName][charInfo.playerName].buildings)
 
-        buildingCountCurrent = Garrison.deepcopy(buildingCount, nil)
+            buildingCountCurrent = Garrison.deepcopy(buildingCount, nil)
 
-        for realmName, realmData in pairs(globalDb.data) do
-            for playerName, playerData in pairs(realmData) do
-                -- don't count/show disabled characters
-                if playerData.ldbEnabled == nil or playerData.ldbEnabled then
-                    if not Garrison.isCurrentChar(playerData.info) then
-                        Garrison:GetPlayerBuildingCount(playerData.info, buildingCount, playerData.buildings)
+            for realmName, realmData in pairs(globalDb.data) do
+                for playerName, playerData in pairs(realmData) do
+                    -- don't count/show disabled characters
+                    if playerData.ldbEnabled == nil or playerData.ldbEnabled then
+                        if not Garrison.isCurrentChar(playerData.info) then
+                            Garrison:GetPlayerBuildingCount(playerData.info, buildingCount, playerData.buildings)
+                        end
                     end
                 end
             end
@@ -1102,7 +1115,10 @@ do
         local realmNum = 0
         local textPlaceholder = getColoredString(" | ", colors.lightGray)
 
-        tooltipFunctions[tooltipType](tooltip, ExpandButton_OnMouseUp)
+        -- 09.10.2016, Disable specific tooltips
+        if Garrison.IsTooltipEnabled(tooltipType, Garrison.ADDON_WOD) then
+            tooltipFunctions[tooltipType](tooltip, ExpandButton_OnMouseUp)
+        end
 
         --debugPrint(("r: %s, g: %s, b: %s, a: %s"):format(configDb.display.backgroundColor.r, configDb.display.backgroundColor.g, configDb.display.backgroundColor.b, configDb.display.backgroundColor.a))
 
@@ -1330,7 +1346,11 @@ function Garrison:Update()
         return
     end
 
-    Garrison:FullUpdateBuilding(TYPE_SHIPMENT)
+    if Garrison.IsEnabled(TYPE_SHIPMENT, Garrison.ADDON_WOD) then
+        Garrison:FullUpdateBuilding(TYPE_SHIPMENT)
+    end
+
+    Garrison:FullUpdateShipments()
 
     Garrison:UpdateUnknownMissions(false)
 
@@ -1355,9 +1375,11 @@ function Garrison:UpdateLDB()
 
     local currencyOrderResourcesAmount = 0
     local currencyAncientManaAmount = 0
+    local currencyArtifactKnowledge = 0
 
     local resourceCacheAmountMaxFilling = 0
     local cacheSize = 0
+    local artifactKnowledgeIncreate = 0
 
     local resourceCacheAmount, resourceCacheAmountMax = 0, 0
     local resourceCacheAmountMaxChar = nil
@@ -1382,6 +1404,12 @@ function Garrison:UpdateLDB()
                     currencySealOfInevitableFateAmount = playerData.currencySealOfInevitableFateAmount or 0
                     currencyOrderResourcesAmount = playerData.currencyOrderResourcesAmount or 0
                     currencyAncientManaAmount = playerData.currencyAncientManaAmount or 0
+                    currencyArtifactKnowledge = playerData.currencyArtifactKnowledge or 0
+
+                    if currencyArtifactKnowledge > 0 then
+                        artifactKnowledgeIncreate = Garrison.ARTIFACT_KNOWLEDGE[playerData.currencyArtifactKnowledge]
+                    end
+
                     currencyOil = playerData.currencyOil or 0
                     cacheSize = playerData.cacheSize or 0
 
@@ -1424,6 +1452,7 @@ function Garrison:UpdateLDB()
         currencySealOfInevitableFateAmount = currencySealOfInevitableFateAmount,
         currencyOrderResourcesAmount = currencyOrderResourcesAmount,
         currencyAncientManaAmount = currencyAncientManaAmount,
+        currencyArtifactKnowledge = currencyArtifactKnowledge,
         currencyApexisTotal = currencyApexisTotal,
         currencyOil = currencyOil,
         cacheSize = cacheSize,
@@ -1438,6 +1467,7 @@ function Garrison:UpdateLDB()
         resourceCacheAmount = resourceCacheAmount,
         invasionAvailable = invasionAvailable,
         invasionAvailableCurrent = invasionAvailableCurrent,
+        artifactKnowledgeIncreate = artifactKnowledgeIncreate,
     }
     Garrison.data = data
     --_G["BrokerGarrison"].data = Garrison.data
