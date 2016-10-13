@@ -139,7 +139,7 @@ function Garrison:GARRISON_MISSION_STARTED(event, missionID, start)
         end
     end
 
-    Garrison:Update()
+    Garrison:UpdateLDB()
 end
 
 function Garrison:GARRISON_MISSION_FINISHED(event, followerTypeID, missionID)
