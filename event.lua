@@ -152,7 +152,7 @@ function Garrison:GARRISON_MISSION_FINISHED(event, followerTypeID, missionID)
         debugPrint("Unknown Mission: " .. missionID)
     end
 
-    Garrison:Update()
+    Garrison:UpdateLDB()
 end
 
 function Garrison:GARRISON_SHOW_LANDING_PAGE(...)
