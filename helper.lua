@@ -585,7 +585,7 @@ function Garrison.IsEnabled(type, addon)
 end
 
 function Garrison.IsValidMission(mission)
-    if Garrison.IsEnabled(Garrison.TYPE_MISSION, Garrison.ADDON_WOD) == true then
+    if Garrison.IsEnabled(Garrison.TYPE_MISSION, Garrison.ADDON_WOD) == false then
         if mission.followerTypeID ~= LE_FOLLOWER_TYPE_GARRISON_7_0 then
             return false
         end
