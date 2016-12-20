@@ -45,7 +45,7 @@ Garrison.GARRISON_CURRENCY_ANCIENT_MANA = 1155
 Garrison.GARRISON_CURRENCY_ARTIFACT_KNOWLEDGE = 1171
 
 Garrison.ARTIFACT_KNOWLEDGE = {
-    [1] = 0,
+    [1] = 25,
     [2] = 50,
     [3] = 90,
     [4] = 140,
